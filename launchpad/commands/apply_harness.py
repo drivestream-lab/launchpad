@@ -142,6 +142,139 @@ def _seed_harness_pin(
     print(f"  ✔  harness-pin synced ← {tpl_name}  (profile: {profile_name})")
 
 
+def _fill_agents_placeholders(
+    content: str,
+    *,
+    profile_name: str,
+    profile: HarnessProfile,
+    skill_names: list[str],
+    delivery_contract: str,
+    target: str,
+    org: str,
+    meta_repo: str,
+    board_name: str,
+    board_url: str,
+) -> str:
+    con = profile.constitution
+    skill = profile.skills[0] if profile.skills else None
+    filled = content
+    filled = filled.replace("{{DISPLAY_NAME}}", org)
+    filled = filled.replace("{{ORG}}", org)
+    filled = filled.replace("{{META_REPO}}", meta_repo)
+    filled = filled.replace("{{SERVICE_NAME}}", target)
+    filled = filled.replace("{{PROFILE}}", profile_name)
+    filled = filled.replace("{{RULES_PIN}}", con.ref if con else "")
+    filled = filled.replace("{{AGENT_SKILLS_REF}}", skill.ref if skill else "")
+    filled = filled.replace("{{DELIVERY_CONTRACT}}", delivery_contract)
+    filled = filled.replace("{{BOARD_NAME}}", board_name or "Engineering board")
+    filled = filled.replace(
+        "{{BOARD_URL}}", board_url or f"https://github.com/orgs/{org}/projects"
+    )
+    filled = filled.replace("{{AGENT_SKILLS_SLASH_LIST}}", slash_list(skill_names))
+    filled = filled.replace("{{CHECK_COMMAND}}", "")
+    filled = filled.replace("{{TEST_COMMAND}}", "")
+    filled = filled.replace("{{VERIFY_SMOKE}}", "")
+    filled = filled.replace("{{SETUP_NOTES}}", "")
+    return filled
+
+
+_HARNESS_BLOCK_START = "<!-- launchpad:harness-start -->"
+_HARNESS_BLOCK_END = "<!-- launchpad:harness-end -->"
+_HARNESS_BLOCK_RE = re.compile(
+    re.escape(_HARNESS_BLOCK_START) + r".*?" + re.escape(_HARNESS_BLOCK_END),
+    re.DOTALL,
+)
+
+
+def _harness_block_present(text: str) -> bool:
+    return bool(_HARNESS_BLOCK_RE.search(text))
+
+
+def _extract_harness_block(text: str) -> str | None:
+    match = _HARNESS_BLOCK_RE.search(text)
+    return match.group(0) if match else None
+
+
+def _replace_harness_block(text: str, new_block: str) -> str:
+    if not _HARNESS_BLOCK_RE.search(text):
+        raise ValueError("AGENTS.md has no launchpad harness markers")
+    return _HARNESS_BLOCK_RE.sub(new_block.strip(), text, count=1)
+
+
+def _insert_harness_block(text: str, block: str) -> str:
+    """Insert managed harness block after the first H1 (or at file start)."""
+    block = block.strip() + "\n\n"
+    match = re.search(r"^# .+$", text, re.MULTILINE)
+    if match is None:
+        return block + text.lstrip()
+    insert_at = match.end()
+    # skip a single blank line after the title if present
+    if insert_at < len(text) and text[insert_at] == "\n":
+        insert_at += 1
+    return text[:insert_at] + "\n" + block + text[insert_at:].lstrip("\n")
+
+
+def _render_agents_document(
+    tpl_path: Path,
+    *,
+    profile_name: str,
+    profile: HarnessProfile,
+    skill_names: list[str],
+    delivery_contract: str,
+    target: str,
+    org: str,
+    meta_repo: str,
+    board_name: str,
+    board_url: str,
+) -> str:
+    return _fill_agents_placeholders(
+        tpl_path.read_text(encoding="utf-8"),
+        profile_name=profile_name,
+        profile=profile,
+        skill_names=skill_names,
+        delivery_contract=delivery_contract,
+        target=target,
+        org=org,
+        meta_repo=meta_repo,
+        board_name=board_name,
+        board_url=board_url,
+    )
+
+
+def _render_harness_block(
+    tpl_path: Path,
+    *,
+    profile_name: str,
+    profile: HarnessProfile,
+    skill_names: list[str],
+    delivery_contract: str,
+    target: str,
+    org: str,
+    meta_repo: str,
+    board_name: str,
+    board_url: str,
+) -> str:
+    rendered = _render_agents_document(
+        tpl_path,
+        profile_name=profile_name,
+        profile=profile,
+        skill_names=skill_names,
+        delivery_contract=delivery_contract,
+        target=target,
+        org=org,
+        meta_repo=meta_repo,
+        board_name=board_name,
+        board_url=board_url,
+    )
+    block = _extract_harness_block(rendered)
+    if block is None:
+        raise ValueError(
+            f"kit template {tpl_path.name} is missing "
+            f"{_HARNESS_BLOCK_START} / {_HARNESS_BLOCK_END} markers"
+        )
+    return block
+
+
 def _seed_agents_md(
     repo_path: Path,
     profile_name: str,
@@ -155,47 +288,80 @@ def _seed_agents_md(
     board_name: str,
     board_url: str,
     apply: bool,
+    adopt_agents: bool = False,
 ) -> None:
+    """Seed or refresh AGENTS.md using a launchpad-owned harness marker block.
+
+    Ownership contract:
+    - Between ``<!-- launchpad:harness-start -->`` / ``end`` → factory regenerates
+    - Outside markers → team-owned; never overwritten by apply-harness
+    - Existing file without markers → skip (warn) unless ``--adopt-agents``
+    """
     is_meta = profile_name == PM_HARNESS_PROFILE
     tpl_name = "AGENTS.meta.md" if is_meta else "AGENTS.md"
     tpl_path = _resolve_kit_template(tpl_name)
     if tpl_path is None:
         return
 
-    if not apply:
-        action = "preserve existing" if (repo_path / "AGENTS.md").is_file() else f"seed from {tpl_name}"
-        print(f"    [dry-run] AGENTS.md  ({action})")
-        return
-
     dest = repo_path / "AGENTS.md"
-    if dest.is_file():
-        print("  –  AGENTS.md  (existing team file preserved)")
+    render_kwargs = dict(
+        profile_name=profile_name,
+        profile=profile,
+        skill_names=skill_names,
+        delivery_contract=delivery_contract,
+        target=target,
+        org=org,
+        meta_repo=meta_repo,
+        board_name=board_name,
+        board_url=board_url,
+    )
+
+    if not apply:
+        if not dest.is_file():
+            print(f"    [dry-run] AGENTS.md  (seed from {tpl_name})")
+        elif _harness_block_present(dest.read_text(encoding="utf-8")):
+            print("    [dry-run] AGENTS.md  (refresh launchpad harness block)")
+        elif adopt_agents:
+            print("    [dry-run] AGENTS.md  (adopt: insert launchpad harness block)")
+        else:
+            print(
+                "    [dry-run] AGENTS.md  "
+                "(no harness markers — skip; pass --adopt-agents to insert once)"
+            )
         return
 
-    con = profile.constitution
-    skill = profile.skills[0] if profile.skills else None
-    content = tpl_path.read_text(encoding="utf-8")
-    content = content.replace("{{DISPLAY_NAME}}", org)
-    content = content.replace("{{ORG}}", org)
-    content = content.replace("{{META_REPO}}", meta_repo)
-    content = content.replace("{{SERVICE_NAME}}", target)
-    content = content.replace("{{PROFILE}}", profile_name)
-    content = content.replace("{{RULES_PIN}}", con.ref if con else "")
-    content = content.replace("{{AGENT_SKILLS_REF}}", skill.ref if skill else "")
-    content = content.replace("{{DELIVERY_CONTRACT}}", delivery_contract)
-    content = content.replace("{{BOARD_NAME}}", board_name or "Engineering board")
-    content = content.replace("{{BOARD_URL}}", board_url or f"https://github.com/orgs/{org}/projects")
-    content = content.replace("{{AGENT_SKILLS_SLASH_LIST}}", slash_list(skill_names))
-    content = content.replace("{{CHECK_COMMAND}}", "")
-    content = content.replace("{{TEST_COMMAND}}", "")
-    content = content.replace("{{VERIFY_SMOKE}}", "")
-    content = content.replace("{{SETUP_NOTES}}", "")
-    content = content.replace(
-        "`.agents/skills/prayog-skills/` (git submodule",
-        "`.agents/skills/prayog-skills/` (git submodule at root)",
+    if not dest.is_file():
+        dest.write_text(_render_agents_document(tpl_path, **render_kwargs), encoding="utf-8")
+        print(f"  ✔  AGENTS.md  ← {tpl_name}")
+        return
+
+    original = dest.read_text(encoding="utf-8")
+    try:
+        new_block = _render_harness_block(tpl_path, **render_kwargs)
+    except ValueError as exc:
+        print(f"  WARN: {exc} — leaving AGENTS.md unchanged", file=sys.stderr)
+        return
+
+    if _harness_block_present(original):
+        updated = _replace_harness_block(original, new_block)
+        if updated == original:
+            print("  –  AGENTS.md  (harness block already current)")
+        else:
+            dest.write_text(updated, encoding="utf-8")
+            print("  ✔  AGENTS.md  (refreshed launchpad harness block)")
+        return
+
+    if adopt_agents:
+        updated = _insert_harness_block(original, new_block)
+        dest.write_text(updated, encoding="utf-8")
+        print("  ✔  AGENTS.md  (adopted launchpad harness block — team content kept)")
+        return
+
+    print(
+        "  –  AGENTS.md  (no harness markers — team file preserved; "
+        "re-run with --adopt-agents to insert a managed block)",
+        file=sys.stderr,
     )
-    dest.write_text(content, encoding="utf-8")
-    print(f"  ✔  AGENTS.md  ← {tpl_name}")
 
 
 _HARNESS_GITIGNORE_MARKER = "# launchpad harness — skill symlinks (apply-harness)"
@@ -371,6 +537,7 @@ def _apply_harness_to_repo(
     board_name: str = "",
     board_url: str = "",
     apply: bool = False,
+    adopt_agents: bool = False,
 ) -> int:
     prayog_submodule = repo_path / PRAYOG_SKILLS_SUBMODULE_REL
     skill_names: list[str] = []
@@ -440,6 +607,7 @@ def _apply_harness_to_repo(
             board_name=board_name,
             board_url=board_url,
             apply=False,
+            adopt_agents=adopt_agents,
         )
         _seed_gitignore_harness(repo_path, apply=False)
         _seed_delivery_workflows(
@@ -541,6 +709,7 @@ def _apply_harness_to_repo(
         board_name=board_name,
         board_url=board_url,
         apply=True,
+        adopt_agents=adopt_agents,
     )
     _seed_gitignore_harness(repo_path, apply=True)
     _seed_delivery_workflows(
@@ -557,6 +726,7 @@ def run_apply_harness(
     meta: bool = False,
     repo_name: str = "",
     apply: bool = False,
+    adopt_agents: bool = False,
     config_dir: Path | None = None,
     workspace: Path | None = None,
 ) -> int:
@@ -645,6 +815,7 @@ def run_apply_harness(
         board_name=board_name,
         board_url=board_url,
         apply=apply,
+        adopt_agents=adopt_agents,
     )
     if result != 0:
         return result

@@ -2,7 +2,8 @@
 
 PM workspace for **{{ORG}}** (`{{META_REPO}}`).
 
-## Agent skills
+<!-- launchpad:harness-start -->
+## Harness (managed by launchpad — do not edit)
 
 Installed under **`.harness/skills/<skill>/`** (hub) mirrored to **`.agents/skills/`** and **`.claude/skills/`**:
 
@@ -13,20 +14,17 @@ Pin record: [`.harness-pin.yaml`](.harness-pin.yaml) (`profile: meta-pm`).
 
 Re-sync after clone: `launchpad apply-harness --meta --apply`
 
----
-
-## Delivery bootstrap
+### Delivery bootstrap
 
 - Contract: **{{DELIVERY_CONTRACT}}**
-- Workflow: `.agents/skills/prayog-skills/workflow.yaml`
+- Workflow: `prayog-skills/workflow.yaml`
 - Pin record: `.harness-pin.yaml`
 - Skill hub: `.harness/skills/`
 
 When asked “what next?”, read the latest persistent handoff and the pinned
 workflow, then explain the current stage, blockers, and next candidate. Do not
 perform file or GitHub mutations unless the user explicitly authorizes them.
-
----
+<!-- launchpad:harness-end -->
 
 ## Repository truth
 

@@ -11,6 +11,21 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.21] — 2026-07-16
+
+### Changed
+
+- **`AGENTS.md` ownership contract (Option A):** launchpad regenerates only the
+  marked harness block between `<!-- launchpad:harness-start -->` and
+  `<!-- launchpad:harness-end -->`. Team sections outside the markers
+  (Run/verify, Product, local notes) are never overwritten.
+- Greenfield seed writes templates that already include the markers.
+- Brownfield without markers: **skip** (preserve file). One-shot adopt with
+  `apply-harness --adopt-agents` inserts the managed block and keeps the rest.
+- AGENTS templates: workflow path is `prayog-skills/workflow.yaml` (root submodule).
+
+---
+
 ## [0.5.20] — 2026-07-15
 
 ### Changed

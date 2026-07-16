@@ -1,6 +1,7 @@
 # Agent guide ({{SERVICE_NAME}})
 
-## Constitution (how to code)
+<!-- launchpad:harness-start -->
+## Harness (managed by launchpad — do not edit)
 
 Shared rules: **`.cursor/rules/*.mdc`** (git submodule, pinned at **{{RULES_PIN}}**).
 
@@ -9,12 +10,10 @@ Agent skills: **`prayog-skills/`** (git submodule at root, pinned at **{{AGENT_S
 **Do not edit** `.cursor/rules/`. Skill changes go upstream in prayog-skills.
 Pin record: [`.harness-pin.yaml`](.harness-pin.yaml) (`profile: {{PROFILE}}`).
 
----
-
-## Delivery bootstrap
+### Delivery bootstrap
 
 - Contract: **{{DELIVERY_CONTRACT}}**
-- Workflow: `.agents/skills/prayog-skills/workflow.yaml`
+- Workflow: `prayog-skills/workflow.yaml`
 - Pin record: `.harness-pin.yaml`
 - Skill hub: `.harness/skills/`
 
@@ -24,17 +23,14 @@ perform file or GitHub mutations unless the user explicitly authorizes them.
 
 **PRs:** use `.github/pull_request_template.md` — Initiative, Spec path, Verify command.
 
----
-
-## Programme board
+### Programme board
 
 Engineering work is tracked on **[{{BOARD_NAME}}]({{BOARD_URL}})** (org Project).
 
 - SSOT: `{{META_REPO}}/config/governance-*.yaml` → `project_board` (read-only meta clone)
 - Resolve binding: `launchpad board-bind --client <id>`
 - After spec merge: `/board-seed INIT-<id>` — creates EPIC + wave sub-issues on this board (all app stacks)
-
----
+<!-- launchpad:harness-end -->
 
 ## Product (what to build)
 
