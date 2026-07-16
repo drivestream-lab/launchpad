@@ -14,7 +14,7 @@ Pin record: [`.harness-pin.yaml`](.harness-pin.yaml) (`profile: {{PROFILE}}`).
 ## Delivery bootstrap
 
 - Contract: **{{DELIVERY_CONTRACT}}**
-- Workflow: `.agents/skills/prayog-skills/workflow.yaml`
+- Workflow: `prayog-skills/workflow.yaml`
 - Pin record: `.harness-pin.yaml`
 - Skill hub: `.harness/skills/`
 

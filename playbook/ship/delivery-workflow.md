@@ -8,14 +8,14 @@ the delivery workflow installed from Prayog.
 The normative stage graph is the pinned Prayog file:
 
 ```text
-.agents/skills/prayog-skills/workflow.yaml
+prayog-skills/workflow.yaml
 ```
 
 Its contract is recorded in:
 
 ```text
 .harness-pin.yaml
-.agents/skills/prayog-skills/delivery-contract.yaml
+prayog-skills/delivery-contract.yaml
 ```
 
 Do not copy skill transitions, checks, or output schemas into this playbook.

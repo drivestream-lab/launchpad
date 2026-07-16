@@ -11,6 +11,19 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.21] — 2026-07-16
+
+### Fixed
+
+- **`apply-harness` migrates existing `AGENTS.md`** when re-applying: rewrites stale
+  `.agents/skills/prayog-skills/` → `prayog-skills/`, normalizes “submodule at root”
+  wording, and refreshes skills/rules pin + slash list from the current harness
+  profile. Team-owned sections outside those lines are preserved.
+- AGENTS templates + delivery-workflow playbook: workflow/contract paths point at
+  `prayog-skills/workflow.yaml` (root submodule), not the pre-0.5.20 nested path.
+
+---
+
 ## [0.5.20] — 2026-07-15
 
 ### Changed

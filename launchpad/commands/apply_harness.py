@@ -142,6 +142,99 @@ def _seed_harness_pin(
     print(f"  ✔  harness-pin synced ← {tpl_name}  (profile: {profile_name})")
 
 
+def _migrate_agents_md_content(
+    text: str,
+    *,
+    skills_ref: str,
+    skill_names: list[str],
+    rules_pin: str = "",
+) -> tuple[str, list[str]]:
+    """Rewrite stale prayog paths/pins in a team-owned AGENTS.md; keep the rest."""
+    notes: list[str] = []
+    updated = text
+
+    if ".agents/skills/prayog-skills/" in updated:
+        updated = updated.replace(".agents/skills/prayog-skills/", "prayog-skills/")
+        notes.append("prayog path → root")
+
+    # Only the prayog skills line is "at root" — do not rewrite constitution wording.
+    new, n = re.subn(
+        r"(Agent skills: \*\*`prayog-skills/`\*\* \(git submodule), pinned at",
+        r"\1 at root, pinned at",
+        updated,
+        count=1,
+    )
+    if n and new != updated:
+        updated = new
+        notes.append("submodule wording")
+
+    # Undo accidental "at root" on Shared rules from earlier migrations.
+    if "Shared rules:" in updated and "(git submodule at root, pinned at" in updated:
+        fixed = updated.replace(
+            "Shared rules: **`.cursor/rules/*.mdc`** (git submodule at root, pinned at",
+            "Shared rules: **`.cursor/rules/*.mdc`** (git submodule, pinned at",
+        )
+        if fixed != updated:
+            updated = fixed
+            notes.append("restore rules submodule wording")
+
+    if rules_pin:
+        new, n = re.subn(
+            r"(Shared rules: \*\*`\.cursor/rules/\*\.mdc`\*\* \(git submodule(?: at root)?, pinned at \*\*)([^ *]+)(\*\*)",
+            rf"\g<1>{rules_pin}\3",
+            updated,
+            count=1,
+        )
+        if n and new != updated:
+            updated = new
+            notes.append(f"rules pin → {rules_pin}")
+
+    if skills_ref:
+        new, n = re.subn(
+            r"(Agent skills: \*\*`prayog-skills/`\*\* \(git submodule at root, pinned at \*\*)([^ *]+)(\*\*)",
+            rf"\g<1>{skills_ref}\3",
+            updated,
+            count=1,
+        )
+        if n and new != updated:
+            updated = new
+            notes.append(f"skills pin → {skills_ref}")
+
+        new, n = re.subn(
+            r"(Prayog PM bundle @ \*\*)([^ *]+)(\*\*)",
+            rf"\g<1>{skills_ref}\3",
+            updated,
+            count=1,
+        )
+        if n and new != updated:
+            updated = new
+            notes.append(f"meta skills pin → {skills_ref}")
+
+    if skill_names:
+        sl = slash_list(skill_names)
+        new, n = re.subn(
+            r"(Agent skills: \*\*`prayog-skills/`\*\* \(git submodule at root, pinned at \*\*[^*]+\*\*\) — )[^\n]+",
+            rf"\1{sl}.",
+            updated,
+            count=1,
+        )
+        if n and new != updated:
+            updated = new
+            notes.append("skills slash list")
+
+        new, n = re.subn(
+            r"(Prayog PM bundle @ \*\*[^*]+\*\*: )[^\n]+",
+            rf"\1{sl}",
+            updated,
+            count=1,
+        )
+        if n and new != updated:
+            updated = new
+            notes.append("meta skills slash list")
+
+    return updated, notes
+
+
 def _seed_agents_md(
     repo_path: Path,
     profile_name: str,
@@ -162,26 +255,45 @@ def _seed_agents_md(
     if tpl_path is None:
         return
 
-    if not apply:
-        action = "preserve existing" if (repo_path / "AGENTS.md").is_file() else f"seed from {tpl_name}"
-        print(f"    [dry-run] AGENTS.md  ({action})")
-        return
-
     dest = repo_path / "AGENTS.md"
-    if dest.is_file():
-        print("  –  AGENTS.md  (existing team file preserved)")
-        return
-
     con = profile.constitution
     skill = profile.skills[0] if profile.skills else None
+    skills_ref = skill.ref if skill else ""
+    rules_pin = con.ref if con else ""
+
+    if not apply:
+        if dest.is_file():
+            print(
+                "    [dry-run] AGENTS.md  "
+                "(preserve team file; migrate stale prayog paths/pins if present)"
+            )
+        else:
+            print(f"    [dry-run] AGENTS.md  (seed from {tpl_name})")
+        return
+
+    if dest.is_file():
+        original = dest.read_text(encoding="utf-8")
+        updated, notes = _migrate_agents_md_content(
+            original,
+            skills_ref=skills_ref,
+            skill_names=skill_names,
+            rules_pin=rules_pin,
+        )
+        if updated != original:
+            dest.write_text(updated, encoding="utf-8")
+            print(f"  ✔  AGENTS.md  (migrated: {', '.join(notes)})")
+        else:
+            print("  –  AGENTS.md  (existing team file preserved)")
+        return
+
     content = tpl_path.read_text(encoding="utf-8")
     content = content.replace("{{DISPLAY_NAME}}", org)
     content = content.replace("{{ORG}}", org)
     content = content.replace("{{META_REPO}}", meta_repo)
     content = content.replace("{{SERVICE_NAME}}", target)
     content = content.replace("{{PROFILE}}", profile_name)
-    content = content.replace("{{RULES_PIN}}", con.ref if con else "")
-    content = content.replace("{{AGENT_SKILLS_REF}}", skill.ref if skill else "")
+    content = content.replace("{{RULES_PIN}}", rules_pin)
+    content = content.replace("{{AGENT_SKILLS_REF}}", skills_ref)
     content = content.replace("{{DELIVERY_CONTRACT}}", delivery_contract)
     content = content.replace("{{BOARD_NAME}}", board_name or "Engineering board")
     content = content.replace("{{BOARD_URL}}", board_url or f"https://github.com/orgs/{org}/projects")
@@ -190,10 +302,6 @@ def _seed_agents_md(
     content = content.replace("{{TEST_COMMAND}}", "")
     content = content.replace("{{VERIFY_SMOKE}}", "")
     content = content.replace("{{SETUP_NOTES}}", "")
-    content = content.replace(
-        "`.agents/skills/prayog-skills/` (git submodule",
-        "`.agents/skills/prayog-skills/` (git submodule at root)",
-    )
     dest.write_text(content, encoding="utf-8")
     print(f"  ✔  AGENTS.md  ← {tpl_name}")
 
