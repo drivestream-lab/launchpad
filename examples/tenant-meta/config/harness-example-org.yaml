@@ -13,6 +13,9 @@ delivery_roles:
 # constitution.ref — must be a pinned tag (never a branch).
 # To upgrade rules: bump the ref here, then re-run apply-harness.
 #
+# skills[].ref — tenant-owned. Resolve GitHub releases/latest for
+# drivestream-lab/prayog-skills before pinning (v0.4.3 below is illustrative).
+#
 # codeowners_template  — filename in kit templates/ seeded as .github/CODEOWNERS
 # harness_pin_template — filename in kit templates/ seeded as .harness-pin.yaml
 # Both default to the convention:  CODEOWNERS.<profile-name>
@@ -25,7 +28,7 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: v0.4.3
     community_skills:
       - source: github/awesome-copilot
         ref: v1.0.0
@@ -43,7 +46,7 @@ profiles:
       ref: v2.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: v0.4.3
     codeowners_template: CODEOWNERS.python-backend
     harness_pin_template: harness-pin.python-backend.yaml
 
@@ -65,7 +68,7 @@ profiles:
       ref: v0.1.2
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: v0.4.3
     codeowners_template: CODEOWNERS.terraform-iac
     harness_pin_template: harness-pin.terraform-iac.yaml
 
