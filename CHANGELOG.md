@@ -31,6 +31,10 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
   `releases/latest` (advisory only — tenants own `skills[].ref` bumps).
 - Docs/examples: drop stale `v0.4.3-rc.1`; pin choice is tenant-owned via
   GitHub latest (illustrative examples use `v0.4.3`).
+- **Selective agent skills:** do not symlink the full `prayog-skills` pack into
+  `.agents/skills/` / `.claude/skills/`. Only names from the pinned
+  `profiles/*.yaml` list are linked; leftover full-pack runtime links are removed
+  on apply.
 
 ---
 

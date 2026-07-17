@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -183,6 +184,34 @@ class TestMaterializeSkillTree:
             assert runtime_skill_present(repo, name, ".agents/skills")
             assert runtime_skill_present(repo, name, ".claude/skills")
         assert all_runtime_skills_present(repo, names, profile.skill_runtimes)
+        for runtime in profile.skill_runtimes:
+            pack = repo / runtime / "prayog-skills"
+            assert not pack.exists() and not pack.is_symlink()
+
+    def test_materialize_does_not_expose_full_pack_in_runtime(self, repo: Path):
+        """Profile YAML guides activation — full submodule must stay out of agent roots."""
+        agents = repo / ".agents" / "skills"
+        agents.mkdir(parents=True)
+        leak = agents / "prayog-skills"
+        leak.symlink_to(os.path.relpath(repo / PRAYOG_SKILLS_SUBMODULE_REL, agents))
+
+        profile = _meta_profile()
+        names = resolve_skill_names(repo / PRAYOG_SKILLS_SUBMODULE_REL, profile, "meta-pm")
+        materialize_skill_tree(
+            repo,
+            prayog_submodule_rel=PRAYOG_SKILLS_SUBMODULE_REL,
+            skill_names=names,
+            runtime_roots=profile.skill_runtimes,
+            lane_key="requirements_skills",
+            community_submodule_dirs=[],
+            apply=True,
+        )
+        assert (repo / PRAYOG_SKILLS_SUBMODULE_REL).is_dir()
+        for runtime in profile.skill_runtimes:
+            pack = repo / runtime / "prayog-skills"
+            assert not pack.exists() and not pack.is_symlink()
+        for name in names:
+            assert runtime_skill_present(repo, name, ".agents/skills")
 
     def test_materialize_removes_stale_runtime_skill(self, repo: Path):
         stale = repo / ".agents" / "skills" / "pre-implement"

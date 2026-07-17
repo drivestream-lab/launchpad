@@ -102,14 +102,15 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 4. Pin **prayog-skills** submodule @ declared ref → `prayog-skills/`
 5. Resolve skill names from prayog `profiles/{prayog_profile}.yaml` at the pinned ref
    (`requirements_skills` for `meta-pm`, `development_skills` for app profiles)
-6. Materialize **hub** symlinks → `.harness/skills/<skill-name>/`
+6. Materialize **hub** symlinks → `.harness/skills/<skill-name>/` (names from that profile only)
 7. Mirror hub into each path in `skill_runtimes` (default: `.agents/skills`, `.claude/skills`)
-8. Pin **community** submodules under `.harness/community/<repo>/` when declared in harness YAML
-9. **App repos only:** copy prayog profile → `.harness/profile.yaml`
-10. **prayog-skills at root:** symlink `prayog-skills/` into runtime roots
-10. Stage gitlinks — commit `.harness-pin.yaml`, `AGENTS.md`, `.gitmodules`, submodule paths (prayog-skills at root)
+8. Remove any leftover full-pack link under runtime roots (`…/prayog-skills`) so agents
+   discover only profile-selected skills — the full submodule stays at repo-root `prayog-skills/`
+9. Pin **community** submodules under `.harness/community/<repo>/` when declared in harness YAML
+10. **App repos only:** copy prayog profile → `.harness/profile.yaml`
+11. Stage gitlinks — commit `.harness-pin.yaml`, `AGENTS.md`, `.gitmodules`, submodule paths (prayog-skills at root)
 
-**Gitignored (local only):** `.harness/skills/<skill>/` hub symlinks and mirrors under `skill_runtimes` (e.g. `.agents/skills/<skill>/` except the **prayog-skills** submodule at root). Re-run `apply-harness --apply` on every machine after clone.
+**Gitignored (local only):** `.harness/skills/<skill>/` hub symlinks and mirrors under `skill_runtimes` (e.g. `.agents/skills/<skill>/`). The **prayog-skills** submodule at repo root is tracked. Re-run `apply-harness --apply` on every machine after clone.
 
 **Tracked submodules:** `.cursor/rules/` (constitution), `prayog-skills/` (root), and any **community** repos under `.harness/community/`.
 
