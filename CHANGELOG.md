@@ -20,8 +20,8 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
   `<!-- launchpad:harness-end -->`. Team sections outside the markers
   (Run/verify, Product, local notes) are never overwritten.
 - Greenfield seed writes templates that already include the markers.
-- Brownfield without markers: **skip** (preserve file). One-shot adopt with
-  `apply-harness --adopt-agents` inserts the managed block and keeps the rest.
+- Unmarked brownfield: `apply-harness` strips stale factory prose, inserts the
+  managed block, and keeps team sections — no extra CLI flags.
 - AGENTS templates: workflow path is `prayog-skills/workflow.yaml` (root submodule).
 - **`status --repo` skills drift** checks `prayog-skills/` at repo root (not the
   pre-v0.5.20 nested `.agents/skills/prayog-skills/` path).

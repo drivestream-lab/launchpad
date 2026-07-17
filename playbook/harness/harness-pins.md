@@ -25,8 +25,7 @@ Platform-owned constitution (rules submodule) and **prayog-skills** dev bundle. 
 
 **Never** enumerate prayog skill names or slash commands in `*-rules` MDC files — they drift from `AGENTS.md` and prayog. Rules repos run `scripts/check_mdc_boundary.sh` in CI to enforce this.
 
-Brownfield without markers: `apply-harness` leaves `AGENTS.md` alone. One-shot insert:
-`launchpad apply-harness --repo <name> --adopt-agents --apply`.
+Unmarked brownfield `AGENTS.md`: `apply-harness` strips known factory-owned prose, inserts the managed harness block after the H1, and leaves team sections (Product, Run/verify, …) intact. No extra flags.
 
 ---
 

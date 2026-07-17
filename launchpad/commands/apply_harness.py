@@ -231,6 +231,67 @@ def _insert_harness_block(text: str, block: str) -> str:
     return text[:insert_at] + "\n" + block + text[insert_at:].lstrip("\n")
 
 
+# Unmarked AGENTS.md: strip known factory prose before inserting the managed block
+# so legacy kit files do not keep duplicate Shared-rules / Delivery / Board sections.
+_FACTORY_SECTION_RES: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"^## Harness\b.*?(?=^## |\Z)",
+        re.MULTILINE | re.DOTALL | re.IGNORECASE,
+    ),
+    re.compile(
+        r"^### Delivery bootstrap\b.*?(?=^#{1,3} |\Z)",
+        re.MULTILINE | re.DOTALL | re.IGNORECASE,
+    ),
+    re.compile(
+        r"^### Programme board\b.*?(?=^#{1,3} |\Z)",
+        re.MULTILINE | re.DOTALL | re.IGNORECASE,
+    ),
+)
+
+_FACTORY_LINE_RE = re.compile(
+    r"^(?:"
+    r"Shared rules:"
+    r"|Agent skills:"
+    r"|Prayog PM bundle"
+    r"|Installed under \*\*`"
+    r"|Pin record:"
+    r"|Re-sync after clone:"
+    r"|\*\*Do not edit\*\* `\.\s*cursor/rules"
+    r"|Skill changes go upstream"
+    r"|Community: `/prd`"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def _strip_factory_owned_agents_prose(text: str) -> str:
+    """Remove unmarked factory-owned chunks; leave team sections intact."""
+    updated = text
+    for pattern in _FACTORY_SECTION_RES:
+        updated = pattern.sub("", updated)
+
+    kept: list[str] = []
+    for line in updated.splitlines(keepends=True):
+        stripped = line.lstrip()
+        if _FACTORY_LINE_RE.match(stripped):
+            continue
+        if ".agents/skills/prayog-skills/" in line:
+            # Stale nested path lines from pre-v0.5.20 kit templates
+            continue
+        kept.append(line)
+
+    # Collapse runs of blank lines left by stripped sections
+    cleaned = "".join(kept)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    return cleaned.strip() + ("\n" if cleaned.strip() else "")
+
+
+def _prepare_unmarked_agents_for_insert(text: str, block: str) -> str:
+    """Insert managed harness block into unmarked AGENTS.md without duplicating factory prose."""
+    prepared = _strip_factory_owned_agents_prose(text)
+    return _insert_harness_block(prepared, block)
+
+
 def _render_agents_document(
     tpl_path: Path,
     *,
@@ -309,7 +370,6 @@ def _seed_agents_md(
     board_name: str,
     board_url: str,
     apply: bool,
-    adopt_agents: bool = False,
     agent_skills_ref: str = "",
 ) -> None:
     """Seed or refresh AGENTS.md using a launchpad-owned harness marker block.
@@ -317,7 +377,7 @@ def _seed_agents_md(
     Ownership contract:
     - Between ``<!-- launchpad:harness-start -->`` / ``end`` → factory regenerates
     - Outside markers → team-owned; never overwritten by apply-harness
-    - Existing file without markers → skip (warn) unless ``--adopt-agents``
+    - Existing file without markers → strip stale factory prose, insert marked block
     """
     is_meta = profile_name == PM_HARNESS_PROFILE
     tpl_name = "AGENTS.meta.md" if is_meta else "AGENTS.md"
@@ -344,12 +404,10 @@ def _seed_agents_md(
             print(f"    [dry-run] AGENTS.md  (seed from {tpl_name})")
         elif _harness_block_present(dest.read_text(encoding="utf-8")):
             print("    [dry-run] AGENTS.md  (refresh launchpad harness block)")
-        elif adopt_agents:
-            print("    [dry-run] AGENTS.md  (adopt: insert launchpad harness block)")
         else:
             print(
                 "    [dry-run] AGENTS.md  "
-                "(no harness markers — skip; pass --adopt-agents to insert once)"
+                "(insert launchpad harness block; keep team sections)"
             )
         return
 
@@ -374,17 +432,9 @@ def _seed_agents_md(
             print("  ✔  AGENTS.md  (refreshed launchpad harness block)")
         return
 
-    if adopt_agents:
-        updated = _insert_harness_block(original, new_block)
-        dest.write_text(updated, encoding="utf-8")
-        print("  ✔  AGENTS.md  (adopted launchpad harness block — team content kept)")
-        return
-
-    print(
-        "  –  AGENTS.md  (no harness markers — team file preserved; "
-        "re-run with --adopt-agents to insert a managed block)",
-        file=sys.stderr,
-    )
+    updated = _prepare_unmarked_agents_for_insert(original, new_block)
+    dest.write_text(updated, encoding="utf-8")
+    print("  ✔  AGENTS.md  (inserted launchpad harness block — team content kept)")
 
 
 _HARNESS_GITIGNORE_MARKER = "# launchpad harness — skill symlinks (apply-harness)"
@@ -560,7 +610,6 @@ def _apply_harness_to_repo(
     board_name: str = "",
     board_url: str = "",
     apply: bool = False,
-    adopt_agents: bool = False,
 ) -> int:
     prayog_submodule = repo_path / PRAYOG_SKILLS_SUBMODULE_REL
     skill_names: list[str] = []
@@ -644,7 +693,6 @@ def _apply_harness_to_repo(
             board_name=board_name,
             board_url=board_url,
             apply=False,
-            adopt_agents=adopt_agents,
             agent_skills_ref=agent_skills_ref,
         )
         _seed_gitignore_harness(repo_path, apply=False)
@@ -753,7 +801,6 @@ def _apply_harness_to_repo(
         board_name=board_name,
         board_url=board_url,
         apply=True,
-        adopt_agents=adopt_agents,
         agent_skills_ref=agent_skills_ref,
     )
     _seed_gitignore_harness(repo_path, apply=True)
@@ -771,7 +818,6 @@ def run_apply_harness(
     meta: bool = False,
     repo_name: str = "",
     apply: bool = False,
-    adopt_agents: bool = False,
     config_dir: Path | None = None,
     workspace: Path | None = None,
 ) -> int:
@@ -860,7 +906,6 @@ def run_apply_harness(
         board_name=board_name,
         board_url=board_url,
         apply=apply,
-        adopt_agents=adopt_agents,
     )
     if result != 0:
         return result

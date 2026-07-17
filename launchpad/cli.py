@@ -128,7 +128,6 @@ def cmd_apply_harness(args: argparse.Namespace) -> int:
         meta=args.meta,
         repo_name=args.repo or "",
         apply=getattr(args, "apply", False),
-        adopt_agents=getattr(args, "adopt_agents", False),
         config_dir=_config_dir(args),
     )
 
@@ -248,14 +247,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_scope_flags(p)
     _add_apply_flags(p)
-    p.add_argument(
-        "--adopt-agents",
-        action="store_true",
-        help=(
-            "If AGENTS.md exists without launchpad harness markers, insert a managed "
-            "block once (team content outside the markers is kept)"
-        ),
-    )
     p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
     p.set_defaults(func=cmd_apply_harness)
 
