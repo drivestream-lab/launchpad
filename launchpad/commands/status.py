@@ -259,6 +259,12 @@ def _print_prayog_freshness(h: Any) -> None:
         latest = _latest_release_tag(org, repo)
         for declared in sorted(refs):
             declared_n = declared.lstrip("v")
+            if declared.lower() == "latest":
+                if latest is None:
+                    print(f"  [?] {org}/{repo}  @latest  (check unavailable)")
+                else:
+                    print(f"  [✔] {org}/{repo}  @latest → v{latest}  (floating)")
+                continue
             if latest is None:
                 print(f"  [?] {org}/{repo}  @{declared}  (check unavailable)")
             elif latest == declared_n:
@@ -270,7 +276,7 @@ def _print_prayog_freshness(h: Any) -> None:
                 )
                 print(
                     "      Bump skills[].ref in harness YAML when ready "
-                    "(tenant-owned pin; apply-harness does not auto-float)"
+                    "(or use ref: latest for floating pins)"
                 )
 
 

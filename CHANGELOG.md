@@ -35,6 +35,12 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
   `.agents/skills/` / `.claude/skills/`. Only names from the pinned
   `profiles/*.yaml` list are linked; leftover full-pack runtime links are removed
   on apply.
+- **`onboard interview` day-1:** asks for PM/PE team slugs (defaults `pm-team` /
+  `pe-team`), writes them into governance + `delivery_roles`; seeds meta-pm with
+  `prayog-skills` `ref: latest`, community `/prd`, and `delivery_contract`; app
+  profiles commented for Day N. Drops `platform-core` / `python-agent-skills`.
+- **`ref: latest` for skills:** `apply-harness` resolves GitHub `releases/latest`
+  and pins that tag; harness-pin / AGENTS record the concrete resolved ref.
 
 ---
 
