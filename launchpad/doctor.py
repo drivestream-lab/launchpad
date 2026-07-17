@@ -104,6 +104,26 @@ def run(*, verbose: bool = False) -> int:
         elif verbose:
             print(".launchpad-version: not pinned  (optional — add it to lock kit version)")
 
+        harness_matches = list((meta_path / "config").glob("harness-*.yaml"))
+        if harness_matches:
+            try:
+                from launchpad.schema.harness import load_harness
+
+                harness = load_harness(harness_matches[0])
+                if harness.delivery_contract:
+                    print(f"delivery_contract: {harness.delivery_contract}")
+                    print(
+                        "  Tip: run `launchpad status --meta` to verify the "
+                        "pinned prayog-skills contract and GitHub freshness"
+                    )
+                else:
+                    print(
+                        "delivery_contract: (not declared — legacy pin; "
+                        "apply-gates skips)"
+                    )
+            except Exception as exc:
+                warnings.append(f"harness YAML invalid: {exc}")
+
     # ── GitHub token ─────────────────────────────────────────────────────────
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or ""
     if not token:

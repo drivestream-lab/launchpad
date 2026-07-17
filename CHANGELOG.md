@@ -11,7 +11,7 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
-## [0.5.21] — 2026-07-16
+## [0.5.21] — 2026-07-17
 
 ### Changed
 
@@ -23,6 +23,14 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 - Brownfield without markers: **skip** (preserve file). One-shot adopt with
   `apply-harness --adopt-agents` inserts the managed block and keeps the rest.
 - AGENTS templates: workflow path is `prayog-skills/workflow.yaml` (root submodule).
+- **`status --repo` skills drift** checks `prayog-skills/` at repo root (not the
+  pre-v0.5.20 nested `.agents/skills/prayog-skills/` path).
+- **`apply-gates`** skips with exit 0 when `delivery_contract` is omitted
+  (legacy pin); still requires a contract-compatible prayog pin when declared.
+- **`status --meta`** reports prayog-skills declared refs vs GitHub
+  `releases/latest` (advisory only — tenants own `skills[].ref` bumps).
+- Docs/examples: drop stale `v0.4.3-rc.1`; pin choice is tenant-owned via
+  GitHub latest (illustrative examples use `v0.4.3`).
 
 ---
 

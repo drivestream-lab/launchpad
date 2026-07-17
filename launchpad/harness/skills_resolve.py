@@ -26,7 +26,8 @@ def load_delivery_contract(submodule_root: Path) -> dict:
     if not contract_path.is_file():
         raise HarnessResolveError(
             "pinned prayog-skills has no delivery-contract.yaml; "
-            "use a compatible ref or omit delivery_contract for a legacy pin"
+            "bump skills[].ref to a GitHub release that ships the contract, "
+            "or omit delivery_contract for a legacy pin"
         )
     if not workflow_path.is_file():
         raise HarnessResolveError(

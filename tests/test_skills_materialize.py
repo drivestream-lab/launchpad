@@ -57,7 +57,7 @@ def _terraform_profile() -> HarnessProfile:
     return HarnessProfile(
         "terraform-iac",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.4.3-rc.1"}],
+            "skills": [{"repo": "prayog-skills", "ref": "v0.4.3"}],
             "skill_runtimes": RUNTIMES,
         },
     )

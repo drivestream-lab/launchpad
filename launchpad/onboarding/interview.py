@@ -186,7 +186,8 @@ profiles:
       ref: v0.1.2
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        # illustrative — resolve GitHub releases/latest before pinning
+        ref: v0.4.3
     codeowners_template: CODEOWNERS.terraform-iac
     harness_pin_template: harness-pin.terraform-iac.yaml
 

@@ -43,7 +43,7 @@ rules:
 
 agent_skills:
   repo: drivestream-lab/prayog-skills
-  ref: v0.4.3-rc.1
+  ref: v0.4.3   # example only — resolve GitHub releases/latest before pinning
   profile: python-backend
   skills:
     - spec-draft
@@ -60,19 +60,37 @@ agent_skills:
 
 ---
 
-## Approved pairs (examples)
+## Who owns the prayog-skills pin
 
-Document your org's approved `rules` + `agent_skills` ref pairs in tenant `config/harness-<org>.yaml`.
+| Surface | Owner |
+|---------|--------|
+| `skills[].ref` in `config/harness-<org>.yaml` | **Tenant** (PM / programme) — explicit tag, never floating |
+| Discover candidate tag | GitHub `releases/latest` on `drivestream-lab/prayog-skills` |
+| Compatibility | Pin must ship `delivery-contract.yaml` when harness sets `delivery_contract`; string must match `{id}/v{version}` from that file |
+| `apply-harness` | Pins the **declared** ref only (does not auto-float to latest) |
+| `status --meta` | Advises when declared ref is behind GitHub latest |
+
+```bash
+gh release view --repo drivestream-lab/prayog-skills --json tagName,publishedAt
+```
+
+When `delivery_contract` is set, confirm the chosen tag includes `delivery-contract.yaml` before merging the harness PR. Omit `delivery_contract` only for a deliberate legacy pin (`apply-gates` skips).
+
+---
+
+## Rules + skills pairs (tenant-owned)
+
+Document your org's `rules` + `agent_skills` ref pairs in tenant `config/harness-<org>.yaml`. The kit does **not** maintain a frozen “approved pair” table — those go stale. Use GitHub latest for skills when adopting SDD delivery, and bump via harness PR when the programme chooses.
+
+Example (illustrative refs — re-query before use):
 
 | rules | agent_skills | Notes |
 |-------|--------------|-------|
-| v2.1.0 | v0.4.3-rc.1 | Pilot — python-services-rules (python-backend) |
-| v0.3.0 | v0.4.3-rc.1 | Pilot — data-platform-rules (data-platform profile) |
-| v0.1.6 | v0.4.3-rc.1 | Pilot — nextjs-bff-rules (frontend profile) |
-| v0.5.5 | v0.3.1 | Superseded — previous python-backend pin |
-| v0.5.5 | v0.2.0 | Superseded — 4-skill dev bundle |
+| v2.1.0 | *(GitHub latest that ships your `delivery_contract`)* | python-services-rules (python-backend) |
+| v0.3.0 | same skills tag across profiles | data-platform-rules |
+| v0.1.6 | same skills tag across profiles | nextjs-bff-rules |
 
-Bump via harness PR after platform publishes a new approved rules + skills pair.
+Keep **every** harness profile on the **same** prayog-skills `ref` within a programme so `delivery_contract` stays consistent.
 
 ---
 
