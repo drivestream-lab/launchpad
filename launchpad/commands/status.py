@@ -144,6 +144,7 @@ def _print_kit_section() -> bool:
 
 
 def _latest_tag(org: str, repo: str) -> str | None:
+    """Return latest tag name without leading ``v``, or None on failure."""
     try:
         r = httpx.get(
             f"https://api.github.com/repos/{org}/{repo}/tags",
@@ -157,6 +158,23 @@ def _latest_tag(org: str, repo: str) -> str | None:
     except Exception:
         pass
     return None
+
+
+def _latest_release_tag(org: str, repo: str) -> str | None:
+    """Prefer GitHub ``releases/latest``; fall back to newest tag."""
+    try:
+        r = httpx.get(
+            f"https://api.github.com/repos/{org}/{repo}/releases/latest",
+            timeout=_API_TIMEOUT,
+            headers={"Accept": "application/vnd.github+json"},
+        )
+        if r.status_code == 200:
+            tag = str(r.json().get("tag_name") or "").lstrip("v")
+            if tag:
+                return tag
+    except Exception:
+        pass
+    return _latest_tag(org, repo)
 
 
 def _print_foundation_section(sca: Any) -> None:
@@ -218,6 +236,48 @@ def _print_governance_pins(h: Any) -> None:
             for skill in profile.skills:
                 label = f"{skill.org}/{skill.repo}"
                 print(f"  [→] {pname:<20}  {label:<34}  @ {skill.ref or 'HEAD'}")
+
+
+def _print_prayog_freshness(h: Any) -> None:
+    """Advisory: declared prayog-skills refs vs GitHub releases/latest."""
+    pins: dict[tuple[str, str], set[str]] = {}
+    for profile in h.profiles.values():
+        for skill in profile.skills:
+            repo_name = skill.repo.split("/")[-1] if skill.repo else ""
+            if repo_name != "prayog-skills":
+                continue
+            ref = (skill.ref or "").strip()
+            if not ref:
+                continue
+            pins.setdefault((skill.org, "prayog-skills"), set()).add(ref)
+
+    if not pins:
+        return
+
+    _section("Prayog skills freshness")
+    for (org, repo), refs in sorted(pins.items()):
+        latest = _latest_release_tag(org, repo)
+        for declared in sorted(refs):
+            declared_n = declared.lstrip("v")
+            if declared.lower() == "latest":
+                if latest is None:
+                    print(f"  [?] {org}/{repo}  @latest  (check unavailable)")
+                else:
+                    print(f"  [✔] {org}/{repo}  @latest → v{latest}  (floating)")
+                continue
+            if latest is None:
+                print(f"  [?] {org}/{repo}  @{declared}  (check unavailable)")
+            elif latest == declared_n:
+                print(f"  [✔] {org}/{repo}  @{declared}  (up to date)")
+            else:
+                print(
+                    f"  [!] {org}/{repo}  @{declared} declared — "
+                    f"v{latest} available on GitHub"
+                )
+                print(
+                    "      Bump skills[].ref in harness YAML when ready "
+                    "(or use ref: latest for floating pins)"
+                )
 
 
 # ── Submodule drift (Engineer view) ───────────────────────────────────────────
@@ -317,10 +377,19 @@ def _print_skills_drift(profile: Any, repo_path: Path) -> bool:
         return False
 
     drift = False
+    legacy_nested = repo_path / ".agents" / "skills" / "prayog-skills"
+    if legacy_nested.is_dir() and not (repo_path / PRAYOG_SKILLS_SUBMODULE_REL).is_dir():
+        _section("Skills bundle  (prayog-skills)")
+        print(
+            "  [✗] local:     nested .agents/skills/prayog-skills/ "
+            f"(expected {PRAYOG_SKILLS_SUBMODULE_REL}/ at repo root — re-run apply-harness)"
+        )
+        drift = True
+
     for skill in profile.skills:
         declared = skill.ref or "HEAD"
         label = f"{skill.org}/{skill.repo}"
-        rel = f".agents/skills/{skill.repo}"
+        rel = PRAYOG_SKILLS_SUBMODULE_REL
         if _print_submodule_drift(
             section=f"Skills bundle  ({skill.repo})",
             repo_label=label,
@@ -433,11 +502,19 @@ def _print_delivery_contract_check(repo_path: Path, expected: str) -> bool:
         actual = resolve_delivery_contract(submodule_root)
     except HarnessResolveError as exc:
         print(f"  [✗] {exc}")
+        print(
+            "      Bump skills[].ref to a GitHub release that ships "
+            "delivery-contract.yaml, or omit delivery_contract for a legacy pin"
+        )
         return True
     if actual == expected:
         print(f"  [✔] {actual}  (matches harness)")
         return False
     print(f"  [✗] declared: {expected}  pinned: {actual}")
+    print(
+        "      Align harness delivery_contract with the pin, or bump skills[].ref "
+        "to a release that provides the expected contract"
+    )
     return True
 
 
@@ -727,6 +804,7 @@ def run_status(
     if meta:
         if h:
             _print_governance_pins(h)
+            _print_prayog_freshness(h)
         if sca:
             _print_foundation_section(sca)
         if profile and clone_ok and profile.skills:

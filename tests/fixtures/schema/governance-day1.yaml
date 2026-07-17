@@ -8,14 +8,17 @@ stack_profiles:
   meta-pm: Programme management & ADR meta repo
 
 teams:
-  - name: platform-core
-    description: Platform owners
+  - name: pm-team
+    description: Product — PRD and meta develop merges
+    privacy: closed
+  - name: pe-team
+    description: Platform engineering — delivery gates
     privacy: closed
 
 repos:
   kola-meta:
     stack: meta-pm
-    teams: [platform-core]
+    teams: [pm-team, pe-team]
     visibility: private
     description: Control-plane for KOLA
 

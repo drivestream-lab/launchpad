@@ -77,6 +77,15 @@ def run_apply_gates(
     except ClientRegistryError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
+    if not harness.delivery_contract:
+        print(
+            f"apply-gates  →  {governance.org}/{target}  [profile: {profile_name}]"
+        )
+        print("  [–] delivery_contract not declared  (legacy Prayog pin; gate apply skipped)")
+        target_flag = "--meta" if meta else f"--repo {target}"
+        print_next_box([f"launchpad status {target_flag}"])
+        return 0
+
     prayog_root = repo_path / PRAYOG_SKILLS_SUBMODULE_REL
     if not prayog_root.is_dir():
         print(
@@ -87,7 +96,7 @@ def run_apply_gates(
 
     try:
         actual_contract = resolve_delivery_contract(prayog_root)
-        if harness.delivery_contract and actual_contract != harness.delivery_contract:
+        if actual_contract != harness.delivery_contract:
             raise HarnessResolveError(
                 f"delivery contract mismatch: harness expects "
                 f"{harness.delivery_contract!r}, pinned Prayog provides "

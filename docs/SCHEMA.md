@@ -115,7 +115,8 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        # illustrative — resolve GitHub releases/latest before pinning
+        ref: v0.4.3
     community_skills:
       - source: github/awesome-copilot
         ref: v1.0.0
@@ -131,7 +132,7 @@ profiles:
       ref: v2.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: v0.4.3
     skill_runtimes:
       - .agents/skills
       - .claude/skills
@@ -143,11 +144,16 @@ profiles:
       ref: v0.1.5
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: v0.4.3
 
 repos:
   special-repo: python-backend
 ```
+
+`skills[].ref` is **tenant-owned**. Prefer GitHub `releases/latest` on
+`drivestream-lab/prayog-skills` when adopting or bumping; `apply-harness` pins
+the declared ref only (does not auto-float). When `delivery_contract` is set,
+the pin must ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
 
 Skill **names** resolve from prayog `profiles/{prayog_profile}.yaml` at the pinned
 `skills[].ref` (`requirements_skills` for `meta-pm`, `development_skills` for app profiles).

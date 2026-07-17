@@ -11,6 +11,39 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.21] — 2026-07-17
+
+### Changed
+
+- **`AGENTS.md` ownership contract (Option A):** launchpad regenerates only the
+  marked harness block between `<!-- launchpad:harness-start -->` and
+  `<!-- launchpad:harness-end -->`. Team sections outside the markers
+  (Run/verify, Product, local notes) are never overwritten.
+- Greenfield seed writes templates that already include the markers.
+- Unmarked brownfield: `apply-harness` strips stale factory prose, inserts the
+  managed block, and keeps team sections — no extra CLI flags.
+- AGENTS templates: workflow path is `prayog-skills/workflow.yaml` (root submodule).
+- **`status --repo` skills drift** checks `prayog-skills/` at repo root (not the
+  pre-v0.5.20 nested `.agents/skills/prayog-skills/` path).
+- **`apply-gates`** skips with exit 0 when `delivery_contract` is omitted
+  (legacy pin); still requires a contract-compatible prayog pin when declared.
+- **`status --meta`** reports prayog-skills declared refs vs GitHub
+  `releases/latest` (advisory only — tenants own `skills[].ref` bumps).
+- Docs/examples: drop stale `v0.4.3-rc.1`; pin choice is tenant-owned via
+  GitHub latest (illustrative examples use `v0.4.3`).
+- **Selective agent skills:** do not symlink the full `prayog-skills` pack into
+  `.agents/skills/` / `.claude/skills/`. Only names from the pinned
+  `profiles/*.yaml` list are linked; leftover full-pack runtime links are removed
+  on apply.
+- **`onboard interview` day-1:** asks for PM/PE team slugs (defaults `pm-team` /
+  `pe-team`), writes them into governance + `delivery_roles`; seeds meta-pm with
+  `prayog-skills` `ref: latest`, community `/prd`, and `delivery_contract`; app
+  profiles commented for Day N. Drops `platform-core` / `python-agent-skills`.
+- **`ref: latest` for skills:** `apply-harness` resolves GitHub `releases/latest`
+  and pins that tag; harness-pin / AGENTS record the concrete resolved ref.
+
+---
+
 ## [0.5.20] — 2026-07-15
 
 ### Changed
