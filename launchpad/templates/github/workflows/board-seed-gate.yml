@@ -1,6 +1,6 @@
 # Optional gate after spec PR merge — copy to .github/workflows/ and customize.
 # Validates that a merged spec PR had spec-lgtm and left a plan on develop.
-# Does not create board issues automatically; run board-seed manually or add a job.
+# Does not create board issues automatically; run /create-board-tickets manually or add a job.
 
 name: board-seed-gate
 
@@ -35,9 +35,9 @@ jobs:
             echo "::error::No Implementation-Plan on develop after spec merge"
             exit 1
           fi
-          echo "Plan present on develop — run board-seed from plan section 9"
+          echo "Plan present on develop — run /create-board-tickets from plan section 9"
 
       - name: Next step
         run: |
-          echo "Board seed is manual in pilot: create W0..Wn issues from plan section 9"
+          echo "Board tickets are manual in pilot: /create-board-tickets INIT-<id> from plan section 9"
           echo "Then /pre-implement on the wave branch — not on the spec PR branch"

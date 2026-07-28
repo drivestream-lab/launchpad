@@ -76,7 +76,7 @@ def run_board_bind(
         print_next_box(
             [
                 f"launchpad board-bind {target_flag} --apply  # link repo(s) to board",
-                "/board-seed INIT-<id>  # after spec merge (in app repo)",
+                "/create-board-tickets INIT-<id>  # after spec merge (in app repo)",
             ]
         )
         return 0

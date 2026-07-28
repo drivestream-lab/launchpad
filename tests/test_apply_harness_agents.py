@@ -23,7 +23,7 @@ def _seed(tmp_path, *, profile: str = "python-backend", skills=None):
         tmp_path,
         profile,
         _profile(profile),
-        skills or ["spec-draft", "board-seed", "verify"],
+        skills or ["spec-draft", "create-board-tickets", "verify"],
         "sdd-delivery/v2",
         target="example-api" if profile != "meta-pm" else "example-meta",
         org="example-org",
@@ -77,13 +77,13 @@ def test_seed_agents_refreshes_only_harness_block(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    _seed(tmp_path, skills=["spec-draft", "board-seed", "verify"])
+    _seed(tmp_path, skills=["spec-draft", "create-board-tickets", "verify"])
 
     text = agents.read_text(encoding="utf-8")
     assert "conda activate example-api" in text
     assert "make verify-all" in text
     assert "pinned at **v0.4.3**" in text
-    assert "/board-seed" in text
+    assert "/create-board-tickets" in text
     assert "Eng Board" in text
 
 
@@ -107,7 +107,7 @@ def test_seed_agents_legacy_kit_dedupes_factory_prose(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    _seed(tmp_path, skills=["spec-draft", "board-seed", "verify"])
+    _seed(tmp_path, skills=["spec-draft", "create-board-tickets", "verify"])
 
     text = agents.read_text(encoding="utf-8")
     assert text.count(_HARNESS_BLOCK_START) == 1
