@@ -156,7 +156,8 @@ the declared ref only (does not auto-float). When `delivery_contract` is set,
 the pin must ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
 
 Skill **names** resolve from prayog `profiles/{prayog_profile}.yaml` at the pinned
-`skills[].ref` (`requirements_skills` for `meta-pm`, `development_skills` for app profiles).
+`skills[].ref`: lane lists (`requirements_skills` for `meta-pm`, `development_skills`
+for app profiles) plus required `forge_skills` (sources under `skills/forge/`).
 
 **Resolution order:** `repos.<name>` → `repo.stack` from governance → no harness.
 

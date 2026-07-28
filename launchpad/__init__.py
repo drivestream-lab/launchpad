@@ -1,8 +1,6 @@
 """Launchpad automation — GitHub factory setup (PAT / GITHUB_TOKEN).
 
-v0.5.21 — AGENTS.md harness block ownership (always insert/refresh, team sections kept);
-prayog pin freshness in status;
-  apply-gates skips cleanly when delivery_contract is omitted.
+v0.5.22 — forge_skills materialize (skills/forge/) fail-closed for meta + app.
 """
 
-__version__ = "0.5.21"
+__version__ = "0.5.22"

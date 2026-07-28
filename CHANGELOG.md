@@ -11,6 +11,27 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.22] — 2026-07-28
+
+### Added
+
+- **Forge skills install surface:** `apply-harness` resolves required
+  `forge_skills` from prayog `profiles/*.yaml` and materializes
+  `skills/forge/<name>/` into the hub and configured runtimes (meta + app).
+  Shared human skills: `/commit-workspace`, `/open-draft-pr`,
+  `/create-board-tickets`. Not workflow graph nodes; distinct from kit forge
+  templates (`apply-forge-templates`).
+
+### Changed
+
+- **Fail-closed skill materialize:** missing or empty `forge_skills`, or any
+  listed skill without `SKILL.md` under `skills/{requirements|development|forge}/`,
+  causes `apply-harness` to exit non-zero (no soft WARN skip).
+- Playbook / SCHEMA: document the third install bucket and forge-skills vs
+  forge-templates terminology.
+
+---
+
 ## [0.5.21] — 2026-07-17
 
 ### Changed

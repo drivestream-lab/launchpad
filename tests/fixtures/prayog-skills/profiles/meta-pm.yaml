@@ -6,6 +6,11 @@ requirements_skills:
   - update-documents
   - prd-impact-map
 
+forge_skills:
+  - commit-workspace
+  - open-draft-pr
+  - create-board-tickets
+
 layout:
   prd_root: prd/
   reports_dir: prd/reports/

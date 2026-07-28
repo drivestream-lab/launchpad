@@ -86,7 +86,9 @@ def materialize_skill_tree(
     for name in skill_names:
         src = find_skill_source_dir(submodule_root, name, lane_key=lane_key)
         if src is None:
-            print(f"  ✗  hub skill: {name} not found in {prayog_submodule_rel}", file=sys.stderr)
+            print(f"  ✗  hub skill: {name} not found in {prayog_submodule_rel} "
+                  f"(searched skills/{{requirements|development|forge}}/{name}/)",
+                  file=sys.stderr)
             continue
 
         hub_dest = hub_root / name
