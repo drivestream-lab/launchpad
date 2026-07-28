@@ -100,7 +100,8 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 3. Remove legacy **`.cursor/skills`** submodule if present
 4. Pin **prayog-skills** submodule @ declared ref → `prayog-skills/`
 5. Resolve skill names from prayog `profiles/{prayog_profile}.yaml` at the pinned ref
-   (`requirements_skills` for `meta-pm`, `development_skills` for app profiles)
+   (`requirements_skills` for `meta-pm`, `development_skills` for app profiles, plus
+   required `forge_skills` → `skills/forge/` — human forge surface, not workflow graph nodes)
 6. Materialize **hub** symlinks → `.harness/skills/<skill-name>/` (names from that profile only)
 7. Mirror hub into each path in `skill_runtimes` (default: `.agents/skills`, `.claude/skills`)
 8. Remove any leftover full-pack link under runtime roots (`…/prayog-skills`) so agents
@@ -114,6 +115,8 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 **Tracked submodules:** `.cursor/rules/` (constitution), `prayog-skills/` (root), and any **community** repos under `.harness/community/`.
 
 **PM pipeline skills** (`validate-requirements`, `prd-impact-map`, …) install in **`<slug>-meta`** only — not app repos.
+
+**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
 
 ---
 

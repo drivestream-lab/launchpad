@@ -18,6 +18,7 @@ from launchpad.harness.skills_materialize import (
     runtime_skill_present,
 )
 from launchpad.harness.skills_resolve import (
+    FORGE_SKILLS_KEY,
     HarnessResolveError,
     find_skill_source_dir,
     resolve_delivery_contract,
@@ -29,6 +30,12 @@ from launchpad.schema.harness import HarnessProfile
 
 FIXTURES = Path(__file__).parent / "fixtures" / "prayog-skills"
 RUNTIMES = [".agents/skills", ".claude/skills"]
+
+_FORGE_SKILLS = [
+    "commit-workspace",
+    "open-draft-pr",
+    "create-board-tickets",
+]
 
 
 def _meta_profile() -> HarnessProfile:
@@ -72,6 +79,7 @@ class TestResolveSkillNames:
             "review-findings",
             "update-documents",
             "prd-impact-map",
+            *_FORGE_SKILLS,
         ]
 
     def test_python_backend_from_profile_yaml(self):
@@ -86,6 +94,7 @@ class TestResolveSkillNames:
             "loop-spec",
             "ground-spec",
             "verify",
+            *_FORGE_SKILLS,
         ]
 
     def test_delivery_contract_from_pinned_fixture(self):
@@ -124,6 +133,7 @@ class TestResolveSkillNames:
             "loop-spec",
             "ground-spec",
             "verify",
+            *_FORGE_SKILLS,
         ]
 
     def test_missing_profile_suggests_prayog_profile(self, tmp_path: Path):
@@ -132,6 +142,27 @@ class TestResolveSkillNames:
 
     def test_missing_profile_raises(self, tmp_path: Path):
         with pytest.raises(HarnessResolveError, match="profiles/meta-pm.yaml"):
+            resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
+
+    def test_missing_forge_skills_raises(self, tmp_path: Path):
+        profiles = tmp_path / "profiles"
+        profiles.mkdir()
+        (profiles / "meta-pm.yaml").write_text(
+            "profile: meta-pm\n\nrequirements_skills:\n  - validate-requirements\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(HarnessResolveError, match=FORGE_SKILLS_KEY):
+            resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
+
+    def test_empty_forge_skills_raises(self, tmp_path: Path):
+        profiles = tmp_path / "profiles"
+        profiles.mkdir()
+        (profiles / "meta-pm.yaml").write_text(
+            "profile: meta-pm\n\nrequirements_skills:\n  - validate-requirements\n\n"
+            "forge_skills:\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(HarnessResolveError, match=FORGE_SKILLS_KEY):
             resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
 
 
@@ -143,6 +174,14 @@ class TestFindSkillSourceDir:
     def test_finds_development_skill(self):
         src = find_skill_source_dir(FIXTURES, "pre-implement", lane_key="development_skills")
         assert src == FIXTURES / "skills" / "development" / "pre-implement"
+
+    def test_finds_forge_skill_with_development_lane(self):
+        src = find_skill_source_dir(FIXTURES, "open-draft-pr", lane_key="development_skills")
+        assert src == FIXTURES / "skills" / "forge" / "open-draft-pr"
+
+    def test_finds_forge_skill_with_requirements_lane(self):
+        src = find_skill_source_dir(FIXTURES, "commit-workspace", lane_key="requirements_skills")
+        assert src == FIXTURES / "skills" / "forge" / "commit-workspace"
 
 
 class TestMaterializeSkillTree:
@@ -184,9 +223,45 @@ class TestMaterializeSkillTree:
             assert runtime_skill_present(repo, name, ".agents/skills")
             assert runtime_skill_present(repo, name, ".claude/skills")
         assert all_runtime_skills_present(repo, names, profile.skill_runtimes)
+        for name in _FORGE_SKILLS:
+            assert hub_skill_present(repo, name)
+            assert runtime_skill_present(repo, name, ".agents/skills")
         for runtime in profile.skill_runtimes:
             pack = repo / runtime / "prayog-skills"
             assert not pack.exists() and not pack.is_symlink()
+
+    def test_materialize_forge_skills_for_app_profile(self, repo: Path):
+        profile = _python_profile()
+        names = resolve_skill_names(repo / PRAYOG_SKILLS_SUBMODULE_REL, profile, "python-backend")
+        materialized = materialize_skill_tree(
+            repo,
+            prayog_submodule_rel=PRAYOG_SKILLS_SUBMODULE_REL,
+            skill_names=names,
+            runtime_roots=profile.skill_runtimes,
+            lane_key="development_skills",
+            community_submodule_dirs=[],
+            apply=True,
+        )
+        assert materialized == names
+        for name in _FORGE_SKILLS:
+            assert hub_skill_present(repo, name)
+            assert runtime_skill_present(repo, name, ".agents/skills")
+
+    def test_materialize_skips_missing_skill_source(self, repo: Path):
+        profile = _meta_profile()
+        names = resolve_skill_names(repo / PRAYOG_SKILLS_SUBMODULE_REL, profile, "meta-pm")
+        missing_name = "does-not-exist"
+        materialized = materialize_skill_tree(
+            repo,
+            prayog_submodule_rel=PRAYOG_SKILLS_SUBMODULE_REL,
+            skill_names=names + [missing_name],
+            runtime_roots=profile.skill_runtimes,
+            lane_key="requirements_skills",
+            community_submodule_dirs=[],
+            apply=True,
+        )
+        assert missing_name not in materialized
+        assert len(materialized) == len(names)
 
     def test_materialize_does_not_expose_full_pack_in_runtime(self, repo: Path):
         """Profile YAML guides activation — full submodule must stay out of agent roots."""

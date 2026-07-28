@@ -14,6 +14,14 @@ _SKILL_LIST_KEYS = {
     PM_HARNESS_PROFILE: "requirements_skills",
 }
 
+FORGE_SKILLS_KEY = "forge_skills"
+
+_FORGE_SKILL_NAMES = (
+    "commit-workspace",
+    "open-draft-pr",
+    "create-board-tickets",
+)
+
 
 class HarnessResolveError(Exception):
     """Prayog profile or skill list could not be resolved at the pinned ref."""
@@ -57,11 +65,6 @@ def resolve_delivery_contract(submodule_root: Path) -> str:
     contract_id = str(raw["id"]).strip()
     version = raw["version"]
     return f"{contract_id}/v{version}"
-
-
-_SKILL_LIST_KEYS = {
-    PM_HARNESS_PROFILE: "requirements_skills",
-}
 
 
 def _profile_matches(profile_name: str, profiles: list[str]) -> bool:
@@ -129,12 +132,21 @@ def _parse_skill_list_block(text: str, key: str) -> list[str]:
     return re.findall(r"-\s*(\S+)", match.group(1))
 
 
+def parse_forge_skill_names(profile_path: Path) -> list[str]:
+    """Return forge_skills names from a prayog profile YAML path."""
+    return _parse_skill_list_block(profile_path.read_text(encoding="utf-8"), FORGE_SKILLS_KEY)
+
+
 def resolve_skill_names(
     submodule_root: Path,
     profile: HarnessProfile,
     harness_profile_name: str,
 ) -> list[str]:
-    """Return skill directory names from prayog profiles/{prayog_profile}.yaml."""
+    """Return lane + forge skill directory names from prayog profiles/{prayog_profile}.yaml.
+
+    Order is stable: lane skills first, then forge_skills (deduped, first wins).
+    ``forge_skills`` must be present and non-empty at the pinned ref.
+    """
     profile_file = profile.prayog_profile
     profile_path = submodule_root / "profiles" / f"{profile_file}.yaml"
     if not profile_path.is_file():
@@ -148,22 +160,43 @@ def resolve_skill_names(
             f"in pinned prayog-skills submodule. {hint}"
         )
 
+    text = profile_path.read_text(encoding="utf-8")
     key = skill_list_key(harness_profile_name)
-    names = _parse_skill_list_block(profile_path.read_text(encoding="utf-8"), key)
-    if not names:
+    lane_names = _parse_skill_list_block(text, key)
+    if not lane_names:
         raise HarnessResolveError(
             f"profiles/{profile_file}.yaml has no {key} list at the pinned prayog ref. "
             f"Update prayog-skills or bump the harness skills ref."
         )
+
+    forge_names = _parse_skill_list_block(text, FORGE_SKILLS_KEY)
+    if not forge_names:
+        raise HarnessResolveError(
+            f"profiles/{profile_file}.yaml has no {FORGE_SKILLS_KEY} list at the pinned "
+            f"prayog ref. Add a non-empty {FORGE_SKILLS_KEY} block "
+            f"(e.g. {', '.join(_FORGE_SKILL_NAMES)}) and bump the harness skills ref."
+        )
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for name in lane_names + forge_names:
+        if name in seen:
+            continue
+        seen.add(name)
+        names.append(name)
     return names
 
 
 def find_skill_source_dir(submodule_root: Path, skill_name: str, *, lane_key: str) -> Path | None:
-    """Locate skills/{requirements|development}/{name} inside prayog-skills."""
+    """Locate skills/{requirements|development|forge}/{name} inside prayog-skills.
+
+    Search order: lane bucket (requirements or development from ``lane_key``), then forge.
+    """
     bucket = "requirements" if lane_key == "requirements_skills" else "development"
-    candidate = submodule_root / "skills" / bucket / skill_name
-    if (candidate / "SKILL.md").is_file():
-        return candidate
+    for area in (bucket, "forge"):
+        candidate = submodule_root / "skills" / area / skill_name
+        if (candidate / "SKILL.md").is_file():
+            return candidate
     return None
 
 

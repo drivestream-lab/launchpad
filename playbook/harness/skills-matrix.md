@@ -15,8 +15,10 @@ Skills CLI installs to **`.agents/skills/`** (project) or **`~/.agents/skills/`*
 
 | Who | Open in Cursor | Skills |
 |-----|----------------|--------|
-| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle via `apply-harness --meta` |
-| **Developer** | app repo | prayog dev bundle — `/spec-draft` through `/verify` |
+| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle + forge skills via `apply-harness --meta` |
+| **Developer** | app repo | prayog dev bundle + forge skills — `/spec-draft` through `/verify`, plus forge |
+
+**Shared forge skills** (meta + app, from `forge_skills` → `skills/forge/`): `/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`. Not workflow graph nodes — human install surface only. Unrelated to kit forge templates (`apply-forge-templates`).
 
 ---
 

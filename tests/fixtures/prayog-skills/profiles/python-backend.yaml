@@ -10,3 +10,8 @@ development_skills:
   - loop-spec
   - ground-spec
   - verify
+
+forge_skills:
+  - commit-workspace
+  - open-draft-pr
+  - create-board-tickets
