@@ -116,7 +116,7 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 
 **PM pipeline skills** (`validate-requirements`, `prd-impact-map`, …) install in **`<slug>-meta`** only — not app repos.
 
-**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
+**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Board seeding is forge `/create-board-tickets` only (not a development-lane skill). Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
 
 ---
 

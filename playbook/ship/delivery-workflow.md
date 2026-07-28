@@ -67,7 +67,7 @@ PE owns engineering decisions; PE does not choose product behavior.
   digests, artifact paths) — never infer approval from the label alone
 - Mark **Ready for review** before merge (Draft PRs cannot merge while Draft)
 - New commits after `spec-lgtm` → add `spec-revised`, remove `spec-lgtm`
-- Merge means the repo slice is ready to build; then board-seed from plan §9
+- Merge means the repo slice is ready to build; then `/create-board-tickets` from plan §9
 
 #### Gate 2 label transitions (PE)
 
@@ -103,15 +103,19 @@ artifacts:
 - Applicable live verification runs before grounding.
 - Ground Report is committed before human approval.
 
-## Board seed binding
+## Board tickets
 
-Board seeding uses **`/board-seed`** (development lane, **stack-agnostic**) after
-spec PR merge. Preconditions:
+Board tickets use forge **`/create-board-tickets`** (**stack-agnostic**; not a
+development-lane skill) after spec PR merge. WorkManifest already lives in plan
+§9 — there is no separate content hop. Preconditions:
 
 1. Merged spec PR head had **`spec-lgtm`**
 2. `Implementation-Plan-{initiative}.md` and valid §9 WorkManifest on `develop`
 3. Programme board resolved from read-only meta governance (`launchpad board-bind`)
 4. Explicit developer authorization before `gh issue create`
+
+Sequencing: **spec merge → `/create-board-tickets` → `/pre-implement`**
+(orchestrators: `board-tickets-action` with `forge.action: create_board_tickets`).
 
 The skill reads plan §9 and governance `project_board`, creates **EPIC + wave
 sub-issues** on the org Project (`--parent`, `--project`), and groups under the
@@ -122,7 +126,8 @@ Requires `gh auth refresh -s project` and **Project WRITER** on the programme bo
 
 Optional: enable `github/workflows/board-seed-gate.yml` from the launchpad
 template to fail CI when a spec PR merges without `spec-lgtm` or without a
-plan file on the merge commit.
+plan file on the merge commit (filename is historical; skill is
+`/create-board-tickets`).
 
 ## Q&A routing
 

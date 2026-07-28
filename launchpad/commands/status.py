@@ -667,7 +667,7 @@ def run_status(
             if binding.url:
                 board_detail += f" — {binding.url}"
             if not meta and stack != PM_HARNESS_PROFILE:
-                board_detail += " — run /board-seed after spec merge"
+                board_detail += " — run /create-board-tickets after spec merge"
         else:
             board_detail = "project_board disabled in governance"
     print(f"  [{_mark(board_ok if not board_neutral else None, neutral=board_neutral)}] Programme board          ({board_detail})")

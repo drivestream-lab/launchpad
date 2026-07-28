@@ -29,7 +29,7 @@ Engineering work is tracked on **[{{BOARD_NAME}}]({{BOARD_URL}})** (org Project)
 
 - SSOT: `{{META_REPO}}/config/governance-*.yaml` → `project_board` (read-only meta clone)
 - Resolve binding: `launchpad board-bind --client <id>`
-- After spec merge: `/board-seed INIT-<id>` — creates EPIC + wave sub-issues on this board (all app stacks)
+- After spec merge: `/create-board-tickets INIT-<id>` — creates EPIC + wave sub-issues on this board (forge skill; all app stacks)
 <!-- launchpad:harness-end -->
 
 ## Product (what to build)

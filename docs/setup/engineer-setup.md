@@ -94,7 +94,7 @@ After a spec PR merges to `develop`:
 
 ```bash
 launchpad --client example board-bind          # programme board from meta governance
-/board-seed INIT-<id>                          # EPIC + waves on board (any app stack)
+/create-board-tickets INIT-<id>                # EPIC + waves on board (forge; any app stack)
 gh auth refresh -s project                     # once per machine — Project scope
 ```
 
@@ -121,7 +121,7 @@ gh auth refresh -s project                     # once per machine — Project sc
 | Implement feature | Cursor + dev skills in app repo |
 | Open PR | `gh` / GitHub |
 | Read PRD | GitHub `example-meta/prd/` or local meta clone |
-| Board | `launchpad board-bind` → `/board-seed` after spec merge |
+| Board | `launchpad board-bind` → `/create-board-tickets` after spec merge |
 | Process | `AGENTS.md` → [playbook](../../playbook/README.md) |
 
 Do **not** run `apply-harness --meta` or commit to meta unless explicitly asked.
