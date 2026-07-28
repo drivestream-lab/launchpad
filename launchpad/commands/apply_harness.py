@@ -642,7 +642,11 @@ def _apply_harness_to_repo(
                 f"← {skill_url}@{concrete_ref}{suffix}"
             )
         install_community_skills(repo_path, profile, apply=False)
-        preview = _preview_or_resolve_skills(prayog_submodule, profile, profile_name)
+        try:
+            preview = _preview_or_resolve_skills(prayog_submodule, profile, profile_name)
+        except HarnessResolveError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
         if prayog_submodule.is_dir() and delivery_contract:
             try:
                 actual_contract = _verify_delivery_contract(
@@ -654,7 +658,7 @@ def _apply_harness_to_repo(
                 return 1
         preview_names = (preview or []) + community_skill_names(profile)
         if preview is not None:
-            materialize_skill_tree(
+            preview_materialized = materialize_skill_tree(
                 repo_path,
                 prayog_submodule_rel=PRAYOG_SKILLS_SUBMODULE_REL,
                 skill_names=preview,
@@ -663,6 +667,16 @@ def _apply_harness_to_repo(
                 community_submodule_dirs=community_dirs,
                 apply=False,
             )
+            if len(preview_materialized) < len(preview):
+                missing = [name for name in preview if name not in preview_materialized]
+                print(
+                    f"ERROR: missing skill sources for {len(missing)}/{len(preview)} "
+                    f"prayog skills: {', '.join(missing)}. "
+                    f"Expected under skills/{{requirements|development|forge}}/<name>/ "
+                    f"in {PRAYOG_SKILLS_SUBMODULE_REL} at the pinned ref.",
+                    file=sys.stderr,
+                )
+                return 1
         copy_harness_profile(
             prayog_submodule,
             profile,
@@ -762,10 +776,15 @@ def _apply_harness_to_repo(
         apply=True,
     )
     if len(materialized) < len(skill_names):
+        missing = [name for name in skill_names if name not in materialized]
         print(
-            f"  WARN: materialized {len(materialized)}/{len(skill_names)} prayog skills",
+            f"ERROR: missing skill sources for {len(missing)}/{len(skill_names)} "
+            f"prayog skills: {', '.join(missing)}. "
+            f"Expected under skills/{{requirements|development|forge}}/<name>/ "
+            f"in {PRAYOG_SKILLS_SUBMODULE_REL} at the pinned ref.",
             file=sys.stderr,
         )
+        return 1
 
     copy_harness_profile(
         prayog_submodule,
