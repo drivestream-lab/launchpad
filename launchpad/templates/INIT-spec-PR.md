@@ -14,6 +14,6 @@
 3. Initial label: **`spec-pending`** (`launchpad apply-gates --repo <name> --apply`).
 4. Stack feasibility, TDD, ADRs, and plan on the **same** Draft PR.
 5. PE sets **`spec-lgtm`** + Approve + attestation only when the full package
-   is on head — then Ready for review → merge → board-seed.
+   is on head — then Ready for review → merge → `/create-board-tickets`.
 
 See `playbook/ship/delivery-workflow.md` and pinned `workflow.yaml`.

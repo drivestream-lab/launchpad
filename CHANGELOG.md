@@ -11,6 +11,22 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.23] — 2026-07-28
+
+### Changed
+
+- **Retire `/board-seed` guidance:** human copy, AGENTS, status, board-bind,
+  engineer-setup, and delivery-workflow point at forge
+  `/create-board-tickets` after spec merge (plan §9 WorkManifest; no separate
+  content hop). Pairs with prayog Option B
+  (`spec-merge` → `board-tickets-action` → `pre-implement`).
+- Fixtures/tests: drop `board-seed` from app `development_skills` expectations;
+  keep forge trio including `create-board-tickets`.
+- `board-seed-gate.yml`: filename and workflow `name` unchanged; comments/echo
+  say `/create-board-tickets`.
+
+---
+
 ## [0.5.22] — 2026-07-28
 
 ### Added
