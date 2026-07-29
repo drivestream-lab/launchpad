@@ -21,7 +21,7 @@ jobs:
           labels="${{ join(github.event.pull_request.labels.*.name, ',') }}"
           echo "Merged PR labels: $labels"
           if ! echo "$labels" | grep -q 'spec-lgtm'; then
-            echo "::error::Spec PR merged without spec-lgtm on head — Gate 2 violation"
+            echo "::error::Spec PR merged without spec-lgtm on head — coding-readiness violation"
             exit 1
           fi
 

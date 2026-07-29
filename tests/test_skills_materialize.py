@@ -91,6 +91,7 @@ class TestResolveSkillNames:
             "spec-implementation-plan",
             "pre-implement",
             "loop-spec",
+            "learning-extract",
             "ground-spec",
             "verify",
             *_FORGE_SKILLS,
@@ -114,11 +115,11 @@ class TestResolveSkillNames:
     def test_gate_resources_are_profile_scoped(self):
         labels, roles = resolve_gate_resources(FIXTURES, "meta-pm")
         assert [label["name"] for label in labels] == ["impact-map-pending"]
-        assert roles == {"gate-1": "engineering-gate"}
+        assert roles == {"prd-impact-acceptance": "engineering-gate"}
 
         app_labels, app_roles = resolve_gate_resources(FIXTURES, "python-backend")
         assert [label["name"] for label in app_labels] == ["spec-pending", "spec-lgtm"]
-        assert app_roles == {"gate-2": "engineering-gate"}
+        assert app_roles == {"coding-readiness": "engineering-gate"}
 
     def test_terraform_iac_from_profile_yaml(self):
         names = resolve_skill_names(FIXTURES, _terraform_profile(), "terraform-iac")
@@ -129,6 +130,7 @@ class TestResolveSkillNames:
             "spec-implementation-plan",
             "pre-implement",
             "loop-spec",
+            "learning-extract",
             "ground-spec",
             "verify",
             *_FORGE_SKILLS,
