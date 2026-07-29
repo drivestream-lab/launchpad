@@ -82,10 +82,11 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 ## Dev delivery (board issue)
 
 1. `/pre-implement` — read `AGENTS.md`, **product** spec for slice, **as-built**
-2. Implement code + `tests/unit/` + verify scripts per overlap rules
+2. `/loop-spec` — implement + unit/check; **stop at human live-verify** (Pass-1)
 3. **Same PR:** update `as-built/implementation-status.md` (verification rows; `## Testing harness` if layout changed); update `tests/README.md` feature map
-4. `/verify` — board **Verify command**
-5. PR to **`develop`** with template traceability
+4. Pass-2 closeout: `/learning-extract` → `/ground-spec` → `wave-signoff`
+5. Optional `/verify` — manual live-verify aid (not on the Pass-1 auto edge)
+6. PR to **`develop`** with template traceability
 
 Test-quality retro (**INIT-EXAMPLE-001**): board spec path points to `product/INIT-EXAMPLE-001.md` and capability docs (e.g. `05-roles-and-authz.md`), not bootstrap artifacts.
 

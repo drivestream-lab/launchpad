@@ -26,12 +26,12 @@ pinned workflow.
 
 | Surface | Owner | Purpose |
 |---------|-------|---------|
-| `<client>-meta` PRD PR | PM team | Product clarification, PRD, impact map, Gate 1 |
-| App spec PR | Profile developer team | Repo spec, feasibility, optional TDD, plan, Gate 2 |
-| App wave PR | Profile developer team | Code, tests, verify evidence, ground report |
-| Gate 1 | PE / tech lead | Engineering handoff readiness |
-| Gate 2 | PE / engineering gate | Coding readiness |
-| Wave checkpoint | Peer/tech lead | Grounded implementation evidence |
+| `<client>-meta` PRD PR | PM team | Product clarification, PRD, impact map, `prd-impact-acceptance` |
+| App spec PR | Profile developer team | Repo spec, feasibility, optional TDD, plan, `coding-readiness` |
+| App wave PR | Profile developer team | Code, tests, live-verify evidence, learning + ground |
+| `prd-impact-acceptance` | PE / tech lead | Engineering handoff readiness (`review_roles` key; labels `impact-map-*`) |
+| `coding-readiness` | PE / engineering gate | Coding readiness (`review_roles` key; labels `spec-*`) |
+| `wave-signoff` | Peer/tech lead | Grounded implementation evidence after Pass-2 closeout |
 
 PM owns product decisions and PRD artifacts. Developers own app specs and code.
 PE owns engineering decisions; PE does not choose product behavior.
@@ -46,8 +46,8 @@ PE owns engineering decisions; PE does not choose product behavior.
 - PR creation/update requires explicit user authorization.
 - Product/domain clarification happens on this PR.
 - Decisions are committed into PRD/map artifacts before threads resolve.
-- Gate 1 labels: `impact-map-pending`, `impact-map-blocked`,
-  `impact-map-lgtm`; `impact-map-revised` or `impact-map-stale` closes the gate.
+- `prd-impact-acceptance` labels: `impact-map-pending`, `impact-map-blocked`,
+  `impact-map-lgtm`; `impact-map-revised` or `impact-map-stale` closes the checkpoint.
 - Labels are projections; matching review/head/artifact evidence remains
   authoritative.
 - Pilot default: merge this PR before opening app spec PRs.
@@ -60,7 +60,7 @@ PE owns engineering decisions; PE does not choose product behavior.
 - Contains no product domain code (docs/specification only; light verify stubs optional)
 - Engineering clarification happens on this PR
 - Product questions link back to a PRD amendment surface
-- Initial Gate 2 label: **`spec-pending`** (provision with `launchpad apply-gates --repo <name> --apply`)
+- Initial `coding-readiness` label: **`spec-pending`** (provision with `launchpad apply-gates --repo <name> --apply`)
 - PE sets **`spec-lgtm`** only when spec + feasibility + TDD + Accepted ADRs +
   implementation plan §9 are on the current head
 - PE also submits GitHub **Approve** with attestation (initiative, head SHA,
@@ -69,7 +69,7 @@ PE owns engineering decisions; PE does not choose product behavior.
 - New commits after `spec-lgtm` → add `spec-revised`, remove `spec-lgtm`
 - Merge means the repo slice is ready to build; then `/create-board-tickets` from plan §9
 
-#### Gate 2 label transitions (PE)
+#### `coding-readiness` label transitions (PE)
 
 | Action | Remove | Add |
 |--------|--------|-----|
@@ -100,8 +100,12 @@ artifacts:
 - Branch: `feature/INIT-{COMPONENT}-{NUMBER}-w{N}-{slug}`
 - Target: `develop`
 - One issue maps to one wave PR.
-- Applicable live verification runs before grounding.
-- Ground Report is committed before human approval.
+- **Pass-1:** `/pre-implement` → `/loop-spec` → human **`live-verify`** → park at
+  `wave-awaiting-closeout`. Orchestrators must **not** auto-run `/verify`,
+  `/learning-extract`, or `/ground-spec` after loop.
+- **`/verify`** is manual (`dispatch: manual`) — optional aid; not on the Pass-1 edge.
+- **Pass-2 closeout:** `/learning-extract` → `/ground-spec` → human **`wave-signoff`**.
+- Ground Report is committed before human `wave-signoff`.
 
 ## Board tickets
 

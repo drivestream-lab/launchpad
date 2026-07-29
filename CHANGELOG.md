@@ -11,6 +11,22 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.24] — 2026-07-29
+
+### Changed
+
+- **Pass-1 / learning-extract alignment:** fixtures and docs match prayog purpose-named
+  checkpoints (`prd-impact-acceptance`, `coding-readiness`) and Pass-1 stop at
+  `live-verify` with Pass-2 closeout `/learning-extract` → `/ground-spec` →
+  `wave-signoff`. `/verify` remains installable as manual.
+- Fixture `review_roles` keys retargeted; app profiles add `learning-extract`
+  (order mirrors prayog); label descriptions use purpose names (label **names**
+  unchanged).
+- Playbook, skills audition, agent prompt templates, spec-layout, exit criteria
+  updated for the new wave sequencing.
+
+---
+
 ## [0.5.23] — 2026-07-28
 
 ### Changed

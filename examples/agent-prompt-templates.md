@@ -11,7 +11,7 @@ Copy-paste starters for Cursor Agent. **Use the section for your role** — work
 | Role | Open in Cursor | Skills | Typical work |
 |------|----------------|--------|--------------|
 | **Product owner / PM** | `<client>-meta` | `/prd`, `/validate-requirements`, `/review-findings`, `/update-documents`, `/prd-impact-map` | PRD writing, impact mapping, product Q&A on PRD PR |
-| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/ground-spec`, `/verify` | Opens spec PR, spec/feasibility/TDD/plan, board seed after merge, wave implementation |
+| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/learning-extract`, `/ground-spec`, `/verify` | Opens spec PR, plan, `/create-board-tickets` after merge; Pass-1 loop → live-verify; Pass-2 `/learning-extract` → `/ground-spec` |
 
 **Board:** cite **GitHub issue #** and **full title** — not manifest ids (`Q1`, `T2`) in conversation.
 
@@ -114,7 +114,7 @@ Service catalog: config/service-catalog.yaml
 Generate prd/reports/Impact-Map-INIT-EXAMPLE-002.md locally.
 Present the PR-readiness handoff and stop without GitHub side effects.
 After I explicitly authorize PR creation, use gh when configured; otherwise
-provide exact commands. Initialize impact-map-pending for PE Gate 1.
+provide exact commands. Initialize impact-map-pending for PE `prd-impact-acceptance`.
 ```
 
 ---
@@ -137,22 +137,17 @@ Report only — list gaps; do not merge spec PR until clean.
 
 ---
 
-## 7 — Seed board (dev — after spec PR merges)
+## 7 — Board tickets (dev — after spec PR merges)
 
 **When:** Spec PR merged to `develop` in app repo.  
 **Workspace:** app repo (not meta).  
-**Output:** GitHub Issues — one per wave (`W0`, `W1`, …) from plan §9
+**Skill:** forge `/create-board-tickets` (plan §9 WorkManifest already in the plan)
 
 ```text
-From Implementation-Plan-INIT-EXAMPLE-002.md §9 WorkManifest YAML:
-
-Create one GitHub Issue per wave using gh issue create:
-- id W0 → title "[INIT-EXAMPLE-002 W0] {wave goal}"
-- id W1 → depends_on W0
-Use §9 body text for issue bodies. Label: init-example-002.
-
-Optional: archive §9 in <client>-meta/work/INIT-EXAMPLE-002.yaml for traceability (PM merges meta PR).
+/create-board-tickets INIT-EXAMPLE-002
 ```
+
+**Pass if:** EPIC + wave sub-issues on the programme board from plan §9.
 
 ---
 
@@ -316,14 +311,14 @@ Feasibility report: docs/specification/reports/Initiative-Feasibility-Report-INI
 Spec: docs/specification/product/INIT-EXAMPLE-003.md
 
 Output: docs/specification/reports/Implementation-Plan-INIT-EXAMPLE-003.md
-Includes §WorkManifest YAML. Merge spec PR, then gh issue create to seed board.
+Includes §WorkManifest YAML. Merge spec PR, then `/create-board-tickets`.
 ```
 
 ---
 
-## D4 — Verify only (post-implementation)
+## D4 — Verify only (optional / manual)
 
-**When:** Code done; run board verify before opening PR or after CI.
+**When:** Human wants a live-verify aid; **not** required on the Pass-1 edge after `/loop-spec`.
 
 ```text
 /verify
@@ -367,10 +362,10 @@ Confirm example-api changes do not break EMQX auth, device validation, or Kafka 
 
 ---
 
-## D6 — Wave implementation (implement → verify → ground)
+## D6 — Wave implementation (Pass-1 → live-verify → Pass-2 closeout)
 
 **When:** Board wave issue is In Progress; pre-implement checklist is done.  
-**One wave = one PR.** Ground report is the last commit before PR is marked ready.
+**One wave = one PR.** Pass-1 stops at human live-verify; closeout is separate.
 
 ```text
 Initiative: INIT-EXAMPLE-002
@@ -382,11 +377,20 @@ Branch: feature/INIT-EXMPL-002-w1-extraction (already open from /pre-implement)
 
 Implement W1 tasks in order from plan.
 Run {check_command} and {test_command} after each task.
-Fix failures before moving on. Stop when all tasks green.
+Fix failures before moving on. Stop when all tasks green for human live-verify.
+Do not run /learning-extract or /ground-spec in this hop.
 Do not implement W2 scope.
 ```
 
-When loop exits green:
+After human live-verify / tip fixes (Pass-2 closeout):
+
+```text
+/learning-extract
+
+Wave: W1 of INIT-EXAMPLE-002
+```
+
+Then:
 
 ```text
 /ground-spec
