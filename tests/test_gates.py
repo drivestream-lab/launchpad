@@ -27,7 +27,7 @@ def test_ensure_label_creates_missing_label() -> None:
         "repo",
         "impact-map-pending",
         color="bfd4f2",
-        description="Gate 1 awaiting PE review",
+        description="prd-impact-acceptance awaiting PE review",
     )
     assert client.calls[-1] == (
         "POST",
@@ -35,14 +35,14 @@ def test_ensure_label_creates_missing_label() -> None:
         {
             "name": "impact-map-pending",
             "color": "BFD4F2",
-            "description": "Gate 1 awaiting PE review",
+            "description": "prd-impact-acceptance awaiting PE review",
         },
     )
 
 
 def test_ensure_label_is_idempotent() -> None:
     client = FakeClient(
-        [{"color": "bfd4f2", "description": "Gate 1 awaiting PE review"}]
+        [{"color": "bfd4f2", "description": "prd-impact-acceptance awaiting PE review"}]
     )
     ensure_label(
         client,  # type: ignore[arg-type]
@@ -50,7 +50,7 @@ def test_ensure_label_is_idempotent() -> None:
         "repo",
         "impact-map-pending",
         color="BFD4F2",
-        description="Gate 1 awaiting PE review",
+        description="prd-impact-acceptance awaiting PE review",
     )
     assert len(client.calls) == 1
 
@@ -63,7 +63,7 @@ def test_ensure_label_updates_drift() -> None:
         "repo",
         "impact-map-pending",
         color="BFD4F2",
-        description="Gate 1 awaiting PE review",
+        description="prd-impact-acceptance awaiting PE review",
     )
     assert client.calls[-1][0] == "PATCH"
 

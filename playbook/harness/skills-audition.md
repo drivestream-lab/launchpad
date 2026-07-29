@@ -22,8 +22,9 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 | spec-implementation-plan | | | prayog-skills dev |
 | pre-implement | | | prayog-skills dev |
 | loop-spec | | | prayog-skills dev |
+| learning-extract | | | prayog-skills dev (Pass-2 closeout) |
 | ground-spec | | | prayog-skills dev |
-| verify | | | prayog-skills dev |
+| verify | | | prayog-skills dev (manual; optional) |
 
 ---
 
@@ -41,9 +42,11 @@ Slice: one board issue / wave from initiative spec.
 
 ---
 
-## 2. verify (app repo)
+## 2. verify (app repo — optional / manual)
 
-**Workspace:** app repo — server running, `tests/config.yaml` configured
+**Workspace:** app repo — server running, `tests/config.yaml` configured  
+**Note:** Not on the Pass-1 auto edge after `/loop-spec`. Human live-verify is the
+checkpoint; `/verify` may aid that stop or an optional path toward closeout.
 
 ```text
 /verify
@@ -55,14 +58,14 @@ Run verify for one feature area per tests/README.md.
 
 ---
 
-## 3. Board seed (operator — not a skill)
+## 3. Board tickets (forge skill — after spec merge)
 
-```bash
-# After spec PR merge — one issue per wave from plan §9
-gh issue create --title "[INIT-EXAMPLE-001 W0] ..." --body-file w0-body.md
+```text
+/create-board-tickets INIT-<id>
 ```
 
-**Pass if:** epic + wave issues exist on the board with required project fields populated.
+**Pass if:** epic + wave issues exist on the board with required project fields populated
+(plan §9 WorkManifest; not a development-lane skill).
 
 ---
 
@@ -106,24 +109,40 @@ Feasibility report path: docs/specification/reports/Initiative-Feasibility-Repor
 Technical review path: docs/specification/reports/Technical-Review-INIT-EXAMPLE-003.md (or N/A)
 ```
 
-**Pass if:** §0 PE sign-off referenced; W0–Wn phases with REQ/TASK/FILE; done-when per task; P1–P14 checks; §9 WorkManifest YAML present. Board seed happens **after** spec merge.
+**Pass if:** §0 PE sign-off referenced; W0–Wn phases with REQ/TASK/FILE; done-when per task; P1–P14 checks; §9 WorkManifest YAML present. Board tickets (`/create-board-tickets`) happen **after** spec merge.
 
 ---
 
-## 7. loop-spec (app repo, during wave implementation)
+## 7. loop-spec (app repo, Pass-1 wave implementation)
 
 ```text
 /loop-spec
 
-Implement W1 for INIT-EXAMPLE-003. Run {verify_command} and {check_command} after each task.
-Fix failures before moving on. Stop when all tasks green.
+Implement W1 for INIT-EXAMPLE-003. Run {check_command} and {test_command} after each task.
+Fix failures before moving on. Stop when all tasks green for human live-verify.
+Do not run /learning-extract or /ground-spec in this hop.
 ```
 
-**Pass if:** agent implements task-by-task; verifies after each; fixes before proceeding; stops and requests human checkpoint — does not self-approve or advance to next wave.
+**Pass if:** agent implements task-by-task; verifies after each; fixes before proceeding;
+stops at **live-verify** (human prove) — does not self-approve, ground, or extract learning.
 
 ---
 
-## 8. ground-spec (app repo, after wave implementation)
+## 8. learning-extract (app repo, Pass-2 closeout)
+
+**When:** After human live-verify / tip fixes; park at `wave-awaiting-closeout` cleared.
+
+```text
+/learning-extract
+
+Wave: W1 of INIT-EXAMPLE-003
+```
+
+**Pass if:** structured learning report produced (L-* taxonomy); handoff toward `/ground-spec`.
+
+---
+
+## 9. ground-spec (app repo, after learning-extract)
 
 ```text
 /ground-spec
@@ -131,11 +150,12 @@ Fix failures before moving on. Stop when all tasks green.
 Spec: 01  (or wave W1 of INIT-EXAMPLE-003)
 ```
 
-**Pass if:** ground check output included; FR checklist evidenced; §Contracts produced table populated with module, entry point, input/output shapes; PR instructions present.
+**Pass if:** ground check output included; FR checklist evidenced; §Contracts produced table
+populated; handoff toward `wave-signoff`; PR instructions present.
 
 ---
 
 ## Exit
 
-- [ ] Dev bundle (§1–2, §4–8) scored **Y** on pilot repo
+- [ ] Dev bundle (§1–3, §4–9) scored **Y** on pilot repo
 - [ ] `launchpad status --repo <pilot>` passes after harness migration PR

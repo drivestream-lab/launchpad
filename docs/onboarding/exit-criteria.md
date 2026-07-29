@@ -19,7 +19,7 @@ Use when closing the **first factory bootstrap** epic for a new tenant (repos, t
 - [ ] `launchpad apply-harness --repo <name> --apply` merged
 - [ ] `launchpad status --repo <name>` passes
 - [ ] Rules submodule + prayog-skills pin documented in harness config
-- [ ] `/pre-implement` and `/verify` audition pass — [skills audition](../../playbook/harness/skills-audition.md)
+- [ ] `/pre-implement` and Pass-1/closeout audition pass — [skills audition](../../playbook/harness/skills-audition.md)
 
 ---
 
