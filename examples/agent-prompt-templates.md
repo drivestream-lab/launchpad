@@ -381,8 +381,11 @@ Run {check_command} and {test_command} after each task.
 Do not open the Draft PR or run /learning-extract / /ground-spec in this hop.
 # then /commit-workspace when required
 
+# wave-pr-action — Draft PR after loop (no mid-coding Draft PR).
+# When pin authorization: automated, do not require /open-draft-pr.
+# Walker fallback:
 /open-draft-pr
-# wave-pr-action — title, body_path, head_ref, base_ref; draft: true
+# title, body_path, head_ref, base_ref; draft: true
 # then human live-verify on the Draft PR
 ```
 

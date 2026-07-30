@@ -83,7 +83,9 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 
 1. `/pre-implement` — gate-only checklist (no product code / no branch open)
 2. `/loop-spec` — implement + unit/check on `head_ref`; Forge `/commit-workspace` as required
-3. `wave-pr-action` — `/open-draft-pr` then human **live-verify** on the Draft PR
+3. `wave-pr-action` — Draft PR after `/loop-spec` (no required human
+   `/open-draft-pr` when pin `authorization: automated`; walkers may still run
+   it) → human **live-verify** on the Draft PR
 4. **Same PR:** update `as-built/implementation-status.md` and `tests/README.md` as needed
 5. Pass-2 closeout: `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge)
 6. Optional `/verify` — manual live-verify aid (not on the Pass-1 auto edge)

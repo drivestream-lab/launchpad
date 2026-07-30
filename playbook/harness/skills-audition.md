@@ -22,7 +22,7 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 | spec-implementation-plan | | | prayog-skills dev |
 | pre-implement | | | prayog-skills dev (gate-only) |
 | loop-spec | | | prayog-skills dev |
-| open-draft-pr | | | forge — wave-pr-action after loop |
+| open-draft-pr | | | forge walker — optional at wave-pr-action |
 | learning-extract | | | prayog-skills dev (Pass-2 closeout) |
 | ground-spec | | | prayog-skills dev (G1–G10) |
 | verify | | | prayog-skills dev (manual; optional) |
@@ -132,13 +132,15 @@ Do not open the Draft PR, commit/push, or run /learning-extract / /ground-spec i
 
 **Pass if:** agent implements task-by-task; records proof locally; does **not** run git/gh
 mutations as skill success; leaves Forge readiness for `/commit-workspace` then
-`wave-pr-action` (`/open-draft-pr`).
+`wave-pr-action` (`open_draft_pr` requires).
 
 ---
 
-## 8. open-draft-pr (forge — wave-pr-action)
+## 8. open-draft-pr (forge walker — optional at wave-pr-action)
 
-**When:** After `/loop-spec` + required `/commit-workspace` on the same `head_ref`.
+**When:** Walker path after `/loop-spec` + required `/commit-workspace` on the same
+`head_ref`. Not required when the pin sets `authorization: automated` on
+`wave-pr-action`.
 
 ```text
 /open-draft-pr

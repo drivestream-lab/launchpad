@@ -100,10 +100,13 @@ artifacts:
 - Branch: `feature/INIT-{COMPONENT}-{NUMBER}-w{N}-{slug}`
 - Target: `develop`
 - One issue maps to one wave PR.
-- **Pass-1:** `/pre-implement` → `/loop-spec` → **`wave-pr-action`** (human
-  `/open-draft-pr`) → human **`live-verify`** → park at `wave-awaiting-closeout`.
+- **Pass-1:** `/pre-implement` → `/loop-spec` → **`wave-pr-action`** → human
+  **`live-verify`** → park at `wave-awaiting-closeout`.
   Checklist then code land on the same `head_ref` via Forge `commit_workspace`
-  readiness + `/commit-workspace`; Draft PR opens **after** `/loop-spec`.
+  readiness + `/commit-workspace`; Draft PR opens **after** `/loop-spec` (no
+  mid-coding Draft PR). When the pin sets `authorization: automated` on
+  `wave-pr-action` / `spec-pr-action`, do **not** require a human
+  `/open-draft-pr` click — walkers may still use that forge skill.
 - **`/verify`** is manual (`dispatch: manual`) — optional aid; not on the Pass-1 edge.
 - **Pass-2 closeout:** `/learning-extract` → `/ground-spec` → human **`wave-signoff`**
   (review head, **manual merge**, record merge SHA).

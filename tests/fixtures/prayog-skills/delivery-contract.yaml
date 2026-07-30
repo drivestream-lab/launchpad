@@ -1,6 +1,5 @@
-# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 (b3180b3f549f11641ae8f2b3dd0710e3b3a8ec2c).
-# Trimmed for fixture size only if needed — prefer full pin file.
-# Do not hand-edit — refresh from that tag when remounting.
+# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (355f40378b2eeacc31478ad2306e1f58172c6156).
+# Fixture tracks tip workflow/contract for kit tests; example harness ref stays v0.5.0-rc.2.
 apiVersion: prayog/v1
 kind: DeliveryContract
 
@@ -87,13 +86,18 @@ dispatch:
 #
 # Skill nodes: forge.commit_workspace only (absent → disabled).
 # External-action nodes: forge.action + draft/labels/requires as applicable.
-# `open_draft_pr` is reused for PRD/spec Draft PRs and for wave Draft-PR
-# preparation (`wave-pr-action`). There is **no** merge Forge action — wave
-# approval and merge remain human-only at `wave-signoff`.
-# Head/ref binding is run context (not pin). Approval labels (*-lgtm) never auto.
+# Every external-action MUST set authorization: explicit | automated (required;
+# no omission / no default). explicit = STOP for interactive authorize;
+# automated = ForgeClient runs when handoff.forge is complete (no interactive
+# STOP). `open_draft_pr` is reused for PRD/spec/wave Draft PRs. There is **no**
+# merge Forge action — wave approval and merge remain human-only at
+# `wave-signoff`. Head/ref binding is run context (not pin). Approval labels
+# (*-lgtm) never auto.
 #
 # Human skill id = forge.action with '_' → '-'. Orchestrators never auto-dispatch
 # forge skills (not on workflow outcomes; disable-model-invocation: true).
+# `automated` means pre-authorized ForgeClient / programme executor — not that
+# content skills may mutate GitHub.
 forge:
   commit_workspace:
     enum:
@@ -101,6 +105,13 @@ forge:
       - optional
       - required
     schema_default: disabled
+  external_action:
+    authorization:
+      enum:
+        - explicit
+        - automated
+      required_on: every-external-action-node
+      # No schema_default — pin must set the field; missing is invalid.
   actions:
     enum:
       - commit_workspace

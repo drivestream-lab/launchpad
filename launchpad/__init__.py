@@ -1,6 +1,6 @@
 """Launchpad automation — GitHub factory setup (PAT / GITHUB_TOKEN).
 
-v0.5.25 — remount prayog v0.5.0-rc.2; retire board-seed-gate; reset-harness.
+v0.5.26 — Pass-1 docs: no required /open-draft-pr when pin authorization automated.
 """
 
-__version__ = "0.5.25"
+__version__ = "0.5.26"
