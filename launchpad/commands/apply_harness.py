@@ -460,7 +460,6 @@ def _upgrade_harness_gitignore_patterns(text: str) -> str:
 _DELIVERY_WORKFLOW_TEMPLATES: tuple[str, ...] = (
     "github/workflows/ci.yml",
     "github/workflows/policy-branch-name.yml",
-    "github/workflows/board-seed-gate.yml",
 )
 
 

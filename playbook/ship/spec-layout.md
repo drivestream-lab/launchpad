@@ -56,7 +56,7 @@ Process: [delivery-workflow.md](delivery-workflow.md) · [delivery-model.md](del
 1. PRD in **<client>-meta** `prd/INIT-*.md` — declares `delivery_model` + wave table when `waves`
 2. Eng opens spec PR per repo: `product/INIT-*.md` + feasibility + TDD + plan — **no `src/`**
 3. Spec PR merge to **`develop`**
-4. Dev seeds board: `gh issue create` per wave from plan §9
+4. Dev runs `/create-board-tickets` after spec merge (plan §9 WorkManifest)
 5. Dev implements from **product** + **as-built** — not from meta PRD alone
 
 ### INIT spec (`product/INIT-*.md`) — mandatory sections
@@ -81,12 +81,12 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 
 ## Dev delivery (board issue)
 
-1. `/pre-implement` — read `AGENTS.md`, **product** spec for slice, **as-built**
-2. `/loop-spec` — implement + unit/check; **stop at human live-verify** (Pass-1)
-3. **Same PR:** update `as-built/implementation-status.md` (verification rows; `## Testing harness` if layout changed); update `tests/README.md` feature map
-4. Pass-2 closeout: `/learning-extract` → `/ground-spec` → `wave-signoff`
-5. Optional `/verify` — manual live-verify aid (not on the Pass-1 auto edge)
-6. PR to **`develop`** with template traceability
+1. `/pre-implement` — gate-only checklist (no product code / no branch open)
+2. `/loop-spec` — implement + unit/check on `head_ref`; Forge `/commit-workspace` as required
+3. `wave-pr-action` — `/open-draft-pr` then human **live-verify** on the Draft PR
+4. **Same PR:** update `as-built/implementation-status.md` and `tests/README.md` as needed
+5. Pass-2 closeout: `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge)
+6. Optional `/verify` — manual live-verify aid (not on the Pass-1 auto edge)
 
 Test-quality retro (**INIT-EXAMPLE-001**): board spec path points to `product/INIT-EXAMPLE-001.md` and capability docs (e.g. `05-roles-and-authz.md`), not bootstrap artifacts.
 

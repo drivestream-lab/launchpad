@@ -20,11 +20,14 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 | initiative-feasibility | | | prayog-skills dev |
 | spec-technical-review | | | prayog-skills dev (PE lane) |
 | spec-implementation-plan | | | prayog-skills dev |
-| pre-implement | | | prayog-skills dev |
+| pre-implement | | | prayog-skills dev (gate-only) |
 | loop-spec | | | prayog-skills dev |
+| open-draft-pr | | | forge — wave-pr-action after loop |
 | learning-extract | | | prayog-skills dev (Pass-2 closeout) |
-| ground-spec | | | prayog-skills dev |
+| ground-spec | | | prayog-skills dev (G1–G10) |
 | verify | | | prayog-skills dev (manual; optional) |
+| spec-technical-review | | | T1–T12 when TDD produced |
+| spec-implementation-plan | | | P1–P16 |
 
 ---
 
@@ -38,7 +41,9 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 Slice: one board issue / wave from initiative spec.
 ```
 
-**Pass if:** checklist lists AGENTS.md, relevant `.mdc`, as-built columns; states verify vs unit scope; no code unless asked.
+**Pass if:** checklist lists AGENTS.md, relevant `.mdc`, as-built columns; states
+verify vs unit scope; **no product code** and **no branch open** (gate-only).
+Publish checklist via Forge `/commit-workspace` when the pin requires it.
 
 ---
 
@@ -95,7 +100,7 @@ Initiative: INIT-EXAMPLE-003
 Feasibility report: docs/specification/reports/Feasibility-Report-INIT-EXAMPLE-003.md
 ```
 
-**Pass if:** TDD produced; T1–T10 checks evidenced; draft ADRs for each NEW-ADR finding; PE questions resolved or deferred with defaults; PM questions explicitly routed (not answered by agent).
+**Pass if:** TDD produced; **T1–T12** checks evidenced; draft ADRs for each NEW-ADR finding; PE questions resolved or deferred with defaults; PM questions explicitly routed (not answered by agent).
 
 ---
 
@@ -109,26 +114,44 @@ Feasibility report path: docs/specification/reports/Initiative-Feasibility-Repor
 Technical review path: docs/specification/reports/Technical-Review-INIT-EXAMPLE-003.md (or N/A)
 ```
 
-**Pass if:** §0 PE sign-off referenced; W0–Wn phases with REQ/TASK/FILE; done-when per task; P1–P14 checks; §9 WorkManifest YAML present. Board tickets (`/create-board-tickets`) happen **after** spec merge.
+**Pass if:** §0 PE sign-off referenced; W0–Wn phases with REQ/TASK/FILE; done-when per task;
+**P1–P16** checks (P16 = WorkManifest contract via pin validator); §9 WorkManifest YAML present.
+Board tickets (`/create-board-tickets`) happen **after** spec merge.
 
 ---
 
-## 7. loop-spec (app repo, Pass-1 wave implementation)
+## 7. loop-spec (app repo, Pass-1 — before wave Draft PR)
 
 ```text
 /loop-spec
 
 Implement W1 for INIT-EXAMPLE-003. Run {check_command} and {test_command} after each task.
-Fix failures before moving on. Stop when all tasks green for human live-verify.
-Do not run /learning-extract or /ground-spec in this hop.
+Fix failures before moving on. Stop when all tasks green on head_ref.
+Do not open the Draft PR, commit/push, or run /learning-extract / /ground-spec in this hop.
 ```
 
-**Pass if:** agent implements task-by-task; verifies after each; fixes before proceeding;
-stops at **live-verify** (human prove) — does not self-approve, ground, or extract learning.
+**Pass if:** agent implements task-by-task; records proof locally; does **not** run git/gh
+mutations as skill success; leaves Forge readiness for `/commit-workspace` then
+`wave-pr-action` (`/open-draft-pr`).
 
 ---
 
-## 8. learning-extract (app repo, Pass-2 closeout)
+## 8. open-draft-pr (forge — wave-pr-action)
+
+**When:** After `/loop-spec` + required `/commit-workspace` on the same `head_ref`.
+
+```text
+/open-draft-pr
+```
+
+Requires `title`, `body_path`, `head_ref`, `base_ref` (`draft: true`). Then human **live-verify**
+on that Draft PR.
+
+**Pass if:** Draft wave PR opened; no merge by this skill.
+
+---
+
+## 9. learning-extract (app repo, Pass-2 closeout)
 
 **When:** After human live-verify / tip fixes; park at `wave-awaiting-closeout` cleared.
 
@@ -142,7 +165,7 @@ Wave: W1 of INIT-EXAMPLE-003
 
 ---
 
-## 9. ground-spec (app repo, after learning-extract)
+## 10. ground-spec (app repo, after learning-extract)
 
 ```text
 /ground-spec
@@ -150,12 +173,14 @@ Wave: W1 of INIT-EXAMPLE-003
 Spec: 01  (or wave W1 of INIT-EXAMPLE-003)
 ```
 
-**Pass if:** ground check output included; FR checklist evidenced; §Contracts produced table
-populated; handoff toward `wave-signoff`; PR instructions present.
+**Pass if:** **G1–G10** (`GF-*` findings); ground report local only; handoff toward `wave-signoff`;
+no commit/merge by this skill. Human merges at `wave-signoff`.
 
 ---
 
 ## Exit
 
-- [ ] Dev bundle (§1–3, §4–9) scored **Y** on pilot repo
+- [ ] Dev bundle (§1–3, §4–10) scored **Y** on pilot repo
+- [ ] Technical review audition cites **T1–T12** when TDD is produced
 - [ ] `launchpad status --repo <pilot>` passes after harness migration PR
+- [ ] C2 excluded: feasibility probes, security-gate/T13, `parallel_safe`, auto-merge

@@ -2,7 +2,8 @@
 
 Guidance for **unit vs verify** discipline in Python (or similar) app repos after harness sync.
 
-**Example initiative:** `INIT-EXAMPLE-001` — see [work/INIT-EXAMPLE-001.yaml](../../examples/tenant-meta/work/INIT-EXAMPLE-001.yaml).
+**Example initiative:** `INIT-EXAMPLE-001` — WorkManifest SSOT is plan §9 + pinned
+prayog `references/workmanifest-contract.md` (not Launchpad examples).
 
 **Prerequisite:** `launchpad status --repo <app>` passes.
 

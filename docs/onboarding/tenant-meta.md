@@ -188,7 +188,7 @@ Details: [teams and RBAC](../../playbook/ship/teams-and-rbac.md).
 | Scaffold | ✓ `apply-scaffold` | |
 | Harness + forge | ✓ `apply-harness`, `apply-forge-templates` | |
 | Verify | ✓ `status` | |
-| Wave issues | | `gh issue create` per plan §9 |
+| Wave issues | | `/create-board-tickets` after spec merge |
 
 ---
 

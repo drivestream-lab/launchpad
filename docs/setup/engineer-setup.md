@@ -94,7 +94,8 @@ After a spec PR merges to `develop`:
 
 ```bash
 launchpad --client example board-bind          # programme board from meta governance
-/create-board-tickets INIT-<id>                # EPIC + waves on board (forge; any app stack)
+/create-board-tickets INIT-<id>                # forge; validates plan §9 then projects board
+# Pass-1: /pre-implement → /loop-spec → /open-draft-pr (wave-pr-action) → live-verify
 gh auth refresh -s project                     # once per machine — Project scope
 ```
 

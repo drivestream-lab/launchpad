@@ -82,7 +82,6 @@ When `harness-<org>.yaml` sets `delivery_contract` (e.g. `sdd-delivery/v2`),
 |------|---------|
 | `github/workflows/ci.yml` | Placeholder CI — job name `ci` for required checks |
 | `github/workflows/policy-branch-name.yml` | Branch name validation on PRs to `develop` |
-| `github/workflows/board-seed-gate.yml` | Fail merge when spec PR lacked `spec-lgtm` or plan on `develop` |
 
 Manual-only workflows (not auto-seeded):
 

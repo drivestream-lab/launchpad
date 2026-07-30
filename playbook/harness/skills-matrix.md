@@ -18,9 +18,9 @@ Skills CLI installs to **`.agents/skills/`** (project) or **`~/.agents/skills/`*
 | **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle + forge skills via `apply-harness --meta` |
 | **Developer** | app repo | prayog dev bundle + forge skills — `/spec-draft` through `/verify`, including `/learning-extract`, plus forge |
 
-**Shared forge skills** (meta + app, from `forge_skills` → `skills/forge/`): `/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`. Not workflow graph nodes — human install surface only. Board seeding is **not** a development-lane skill (retired `/board-seed`). Unrelated to kit forge templates (`apply-forge-templates`).
+**Shared forge skills** (meta + app, from `forge_skills` → `skills/forge/`): `/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`. Not workflow graph nodes — human install surface only. Board tickets use `/create-board-tickets` (not a development-lane skill). Unrelated to kit forge templates (`apply-forge-templates`).
 
-**Wave sequencing (pinned workflow):** Pass-1 `/pre-implement` → `/loop-spec` → `live-verify` (park). Pass-2 closeout `/learning-extract` → `/ground-spec` → `wave-signoff`. `/verify` is optional/manual.
+**Wave sequencing (pinned workflow):** Pass-1 `/pre-implement` → `/loop-spec` → `wave-pr-action` (`/open-draft-pr`) → `live-verify`. Pass-2 `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge). `/verify` is optional/manual.
 
 ---
 
