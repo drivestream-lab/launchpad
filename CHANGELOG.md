@@ -11,6 +11,19 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.26] — 2026-07-30
+
+### Changed
+
+- **Pass-1 UX:** playbooks/AGENTS no longer require a human `/open-draft-pr` click
+  for `spec-pr-action` / `wave-pr-action` when the pin sets `authorization: automated`.
+  Sequence stays `/pre-implement` → `/loop-spec` → `wave-pr-action` → `live-verify`.
+  Forge trio remains for walkers; Launchpad still does not parse authorization.
+- Re-vendor pin `workflow.yaml` + `delivery-contract.yaml` (tip of `v0.5.0-rc.2`
+  family); example harness `ref` stays **`v0.5.0-rc.2`**.
+
+---
+
 ## [0.5.25] — 2026-07-30
 
 ### Changed
