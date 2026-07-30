@@ -14,8 +14,9 @@ delivery_roles:
 # To upgrade rules: bump the ref here, then re-run apply-harness.
 #
 # skills[].ref — tenant-owned. Prefer pin drivestream-lab/prayog-skills
-# @ v0.5.0-rc.2 (or later programme tag). delivery_contract stays sdd-delivery/v2
-# on that tag (WorkManifest + wave-pr-action ship without a v3 contract bump).
+# @ v0.5.0-rc.2 (or later programme tag). delivery_contract stays sdd-delivery/v2.
+# Tip workflow: authorization: automated on spec-pr-action / wave-pr-action —
+# playbooks must not require a human /open-draft-pr for those nodes.
 #
 # codeowners_template  — filename in kit templates/ seeded as .github/CODEOWNERS
 # harness_pin_template — filename in kit templates/ seeded as .harness-pin.yaml

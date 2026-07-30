@@ -129,8 +129,9 @@ launchpad apply-harness --repo example-api --apply
 ```
 
 Illustrative pin for current remount: `skills[].ref: v0.5.0-rc.2` with
-`delivery_contract: sdd-delivery/v2` (WorkManifest + `wave-pr-action` on that tip
-without a v3 contract bump).
+`delivery_contract: sdd-delivery/v2`. Tip workflow sets `authorization: automated`
+on `spec-pr-action` / `wave-pr-action` — playbooks must not require a human
+`/open-draft-pr` for those nodes; Launchpad does not parse the authorization knob.
 
 ---
 

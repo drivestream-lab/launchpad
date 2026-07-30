@@ -10,7 +10,7 @@ PRD delivery_model + wave table
   → dev: /spec-implementation-plan §9 WorkManifest YAML   ← on spec branch, before spec merge
   → spec PR merge
   → /create-board-tickets (forge; P16 + pin validator preflight)
-  → /pre-implement → /loop-spec → wave-pr-action (/open-draft-pr) → live-verify
+  → /pre-implement → /loop-spec → wave-pr-action → live-verify
   → Pass-2: /learning-extract → /ground-spec → wave-signoff (human merge)
   → INIT closure when all units + success criteria pass
 ```

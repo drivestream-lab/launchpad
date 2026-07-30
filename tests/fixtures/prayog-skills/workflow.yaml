@@ -1,5 +1,5 @@
-# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 (b3180b3f549f11641ae8f2b3dd0710e3b3a8ec2c).
-# Do not hand-edit — refresh from that tag when remounting.
+# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (355f40378b2eeacc31478ad2306e1f58172c6156).
+# Fixture tracks tip workflow/contract for kit tests; example harness ref stays v0.5.0-rc.2.
 apiVersion: prayog/v1
 kind: SkillWorkflow
 
@@ -122,7 +122,9 @@ nodes:
     type: external-action
     owner: engineering
     provider: github
-    authorization: explicit
+    # Automated: ForgeClient open_draft_pr without interactive STOP when
+    # handoff.forge requires are complete.
+    authorization: automated
     forge:
       action: open_draft_pr
       draft: true
@@ -266,12 +268,13 @@ nodes:
 
   # Wave Draft-PR after checklist + code are on head_ref (reuse open_draft_pr).
   # Placement after loop-spec avoids a mid-Pass-1 STOP before coding.
+  # authorization: automated — ForgeClient opens PR without interactive STOP.
   # Not a merge action — human merge stays at wave-signoff.
   wave-pr-action:
     type: external-action
     owner: engineering
     provider: github
-    authorization: explicit
+    authorization: automated
     forge:
       action: open_draft_pr
       draft: true
