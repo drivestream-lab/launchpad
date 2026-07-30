@@ -11,6 +11,28 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.25] — 2026-07-30
+
+### Changed
+
+- **Remount prayog `v0.5.0-rc.2`** (`b3180b3…`): keep `delivery_contract: sdd-delivery/v2`
+  (WorkManifest + `wave-pr-action` on tip without a v3 contract bump).
+- **Pass-1 docs:** `/pre-implement` → `/loop-spec` → `wave-pr-action` (`/open-draft-pr`)
+  → `live-verify`. Pass-2 unchanged. Content vs Forge wording in AGENTS/playbooks.
+- **Retire board-seed gate:** delete `board-seed-gate.yml` from kit and stop seeding it.
+- **WorkManifest debt:** remove `launchpad/v1` example YAML; point at prayog contract +
+  `tests/fixtures/workmanifest/valid.yaml`; plan §9 SSOT.
+- **Audition:** T1–T12, P1–P16, G1–G10 (`GF-*`); C2 excluded.
+- Vendored pin `workflow.yaml` + `delivery-contract.yaml` into test fixtures.
+
+### Added
+
+- **`launchpad reset-harness`** — clear skill hub/mirrors, `.harness-pin.yaml`, AGENTS
+  harness block; `--include-seeded-workflows` purges allowlisted kit workflows
+  (including legacy `board-seed-gate.yml`).
+
+---
+
 ## [0.5.24] — 2026-07-29
 
 ### Changed

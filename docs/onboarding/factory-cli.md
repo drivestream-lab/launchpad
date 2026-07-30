@@ -126,7 +126,7 @@ Reference: [SCHEMA.md](../SCHEMA.md).
 ## What stays manual
 
 - Add people to teams (GitHub UI)
-- Wave issues: `gh issue create` per plan §9
+- Wave issues: `/create-board-tickets` after spec merge
 - Wiki publish — [wiki setup](../../playbook/wiki/wiki-setup.md)
 
 ---

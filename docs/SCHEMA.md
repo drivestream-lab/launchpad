@@ -116,7 +116,7 @@ profiles:
     skills:
       - repo: prayog-skills
         # illustrative — resolve GitHub releases/latest before pinning
-        ref: v0.4.3
+        ref: v0.5.0-rc.2
     community_skills:
       - source: github/awesome-copilot
         ref: v1.0.0
@@ -132,7 +132,7 @@ profiles:
       ref: v2.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.4.3
+        ref: v0.5.0-rc.2
     skill_runtimes:
       - .agents/skills
       - .claude/skills
@@ -144,7 +144,7 @@ profiles:
       ref: v0.1.5
     skills:
       - repo: prayog-skills
-        ref: v0.4.3
+        ref: v0.5.0-rc.2
 
 repos:
   special-repo: python-backend

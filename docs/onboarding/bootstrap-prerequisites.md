@@ -62,7 +62,7 @@ launchpad status --meta
 
 Day N per app repo: see [tenant-meta.md](tenant-meta.md) and [factory-cli.md](factory-cli.md).
 
-Board seeding (after spec merge): `gh issue create` per wave from plan §9 — see [delivery workflow](../../playbook/ship/delivery-workflow.md).
+Board tickets (after spec merge): `/create-board-tickets` from plan §9 — see [delivery workflow](../../playbook/ship/delivery-workflow.md).
 
 ---
 

@@ -5,6 +5,7 @@ Public commands:
   init-client         Day-1 / Day-N GitHub setup (teams, repos, gitflow, board)
   apply-scaffold      Cookiecutter scaffold from scaffold-<org>.yaml
   apply-harness       Pin constitution + seed agent skills from harness-<org>.yaml
+  reset-harness       Clear local harness materialization before remount
   apply-gates         Provision delivery labels + validate review-role bindings
   board-bind          Resolve programme engineering board from governance config
   apply-forge-templates  Seed issue forms + PR template from kit + governance
@@ -132,6 +133,18 @@ def cmd_apply_harness(args: argparse.Namespace) -> int:
     )
 
 
+def cmd_reset_harness(args: argparse.Namespace) -> int:
+    from launchpad.commands.reset_harness import run_reset_harness
+
+    return run_reset_harness(
+        meta=args.meta,
+        repo_name=args.repo or "",
+        apply=getattr(args, "apply", False),
+        include_seeded_workflows=getattr(args, "include_seeded_workflows", False),
+        config_dir=_config_dir(args),
+    )
+
+
 def cmd_apply_forge_templates(args: argparse.Namespace) -> int:
     from launchpad.commands.apply_forge_templates import run_apply_forge_templates
 
@@ -249,6 +262,24 @@ def build_parser() -> argparse.ArgumentParser:
     _add_apply_flags(p)
     p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
     p.set_defaults(func=cmd_apply_harness)
+
+    # ── reset-harness ─────────────────────────────────────────────────────────
+    p = sub.add_parser(
+        "reset-harness",
+        help="Clear local harness materialization (hub, pin, AGENTS block) before remount",
+    )
+    _add_scope_flags(p)
+    _add_apply_flags(p)
+    p.add_argument(
+        "--include-seeded-workflows",
+        action="store_true",
+        help=(
+            "Also remove kit-seeded workflow files (ci, policy-branch-name, "
+            "and legacy board-seed-gate.yml if present)"
+        ),
+    )
+    p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
+    p.set_defaults(func=cmd_reset_harness)
 
     # ── apply-forge-templates ─────────────────────────────────────────────────
     p = sub.add_parser(

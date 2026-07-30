@@ -116,7 +116,21 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 
 **PM pipeline skills** (`validate-requirements`, `prd-impact-map`, …) install in **`<slug>-meta`** only — not app repos.
 
-**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Board seeding is forge `/create-board-tickets` only (not a development-lane skill). Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
+**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Board tickets use forge `/create-board-tickets` only. Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
+
+**Remount (clean local materialization):**
+
+```bash
+launchpad reset-harness --repo example-api --dry-run
+launchpad reset-harness --repo example-api --apply
+# optional: also purge kit-seeded workflows (incl. legacy board-seed-gate.yml)
+launchpad reset-harness --repo example-api --apply --include-seeded-workflows
+launchpad apply-harness --repo example-api --apply
+```
+
+Illustrative pin for current remount: `skills[].ref: v0.5.0-rc.2` with
+`delivery_contract: sdd-delivery/v2` (WorkManifest + `wave-pr-action` on that tip
+without a v3 contract bump).
 
 ---
 

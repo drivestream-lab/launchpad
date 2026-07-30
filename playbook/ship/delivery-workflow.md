@@ -100,38 +100,36 @@ artifacts:
 - Branch: `feature/INIT-{COMPONENT}-{NUMBER}-w{N}-{slug}`
 - Target: `develop`
 - One issue maps to one wave PR.
-- **Pass-1:** `/pre-implement` → `/loop-spec` → human **`live-verify`** → park at
-  `wave-awaiting-closeout`. Orchestrators must **not** auto-run `/verify`,
-  `/learning-extract`, or `/ground-spec` after loop.
+- **Pass-1:** `/pre-implement` → `/loop-spec` → **`wave-pr-action`** (human
+  `/open-draft-pr`) → human **`live-verify`** → park at `wave-awaiting-closeout`.
+  Checklist then code land on the same `head_ref` via Forge `commit_workspace`
+  readiness + `/commit-workspace`; Draft PR opens **after** `/loop-spec`.
 - **`/verify`** is manual (`dispatch: manual`) — optional aid; not on the Pass-1 edge.
-- **Pass-2 closeout:** `/learning-extract` → `/ground-spec` → human **`wave-signoff`**.
-- Ground Report is committed before human `wave-signoff`.
+- **Pass-2 closeout:** `/learning-extract` → `/ground-spec` → human **`wave-signoff`**
+  (review head, **manual merge**, record merge SHA).
+- Development content skills only change the local workspace and record Forge
+  readiness. Branch/commit/push/PR/issue/label/merge happen only via forge skills.
+  Wave merge is human-only at `wave-signoff`.
 
 ## Board tickets
 
 Board tickets use forge **`/create-board-tickets`** (**stack-agnostic**; not a
-development-lane skill) after spec PR merge. WorkManifest already lives in plan
-§9 — there is no separate content hop. Preconditions:
+development-lane skill) after spec PR merge. WorkManifest SSOT is plan §9 under
+the pinned prayog contract (`references/workmanifest-contract.md`). Validate with
+P16 + `python prayog-skills/scripts/workmanifest_contract.py <plan.md>` — not
+Launchpad kit CI. Preconditions:
 
 1. Merged spec PR head had **`spec-lgtm`**
 2. `Implementation-Plan-{initiative}.md` and valid §9 WorkManifest on `develop`
 3. Programme board resolved from read-only meta governance (`launchpad board-bind`)
-4. Explicit developer authorization before `gh issue create`
+4. Explicit developer authorization before create
 
-Sequencing: **spec merge → `/create-board-tickets` → `/pre-implement`**
-(orchestrators: `board-tickets-action` with `forge.action: create_board_tickets`).
+Sequencing: **spec merge → `/create-board-tickets` → `/pre-implement` → …**
 
-The skill reads plan §9 and governance `project_board`, creates **EPIC + wave
-sub-issues** on the org Project (`--parent`, `--project`), and groups under the
-initiative label. If `gh` is unavailable, it prints exact commands.
+The skill preflights §9 and projects epic/wave/task summaries to the org Project.
 `/pre-implement` remains blocked until the epic tree is complete.
 
 Requires `gh auth refresh -s project` and **Project WRITER** on the programme board.
-
-Optional: enable `github/workflows/board-seed-gate.yml` from the launchpad
-template to fail CI when a spec PR merges without `spec-lgtm` or without a
-plan file on the merge commit (filename is historical; skill is
-`/create-board-tickets`).
 
 ## Q&A routing
 

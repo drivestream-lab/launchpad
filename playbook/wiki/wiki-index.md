@@ -67,7 +67,7 @@ Base URL: `tenant <client>-meta/blob/develop/`
 |------|------|
 | PAT + factory CLI | `docs/onboarding/factory-cli.md` |
 | Setup platform | `README.md` (Factory CLI section) |
-| Work manifests | `work/INIT-*.yaml` (generated); see `prd/` in meta repo |
+| Work manifests | Plan §9 + pinned prayog WorkManifest contract; optional `work/` archive only |
 | Teams / RBAC | `playbook/ship/teams-and-rbac.md` |
 
 ---

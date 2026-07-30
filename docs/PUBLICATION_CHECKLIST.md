@@ -8,7 +8,7 @@ Before pushing public changes to `launchpad`:
 - [ ] Harness examples reference public `drivestream-lab/*-rules` (not tenant-specific placeholders)
 - [ ] No private repo lists — only `example-api`, `example-platform`, etc.
 - [ ] `examples/tenant-meta/config/` uses 5-YAML model
-- [ ] `examples/tenant-meta/` contains structure only + `INIT-EXAMPLE-001.yaml`
+- [ ] `examples/tenant-meta/` contains structure only (no `launchpad/v1` WorkManifest YAML)
 - [ ] README states tenant vs kit separation
 - [ ] [CHANGELOG.md](../CHANGELOG.md) updated for releases
 - [ ] `launchpad --version` and `launchpad --help` work after `pip install .`
