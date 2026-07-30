@@ -362,24 +362,28 @@ Confirm example-api changes do not break EMQX auth, device validation, or Kafka 
 
 ---
 
-## D6 — Wave implementation (Pass-1 → live-verify → Pass-2 closeout)
+## D6 — Wave implementation (Pass-1 → Draft PR → live-verify → Pass-2)
 
-**When:** Board wave issue is In Progress; pre-implement checklist is done.  
-**One wave = one PR.** Pass-1 stops at human live-verify; closeout is separate.
+**When:** Board wave issue is In Progress.  
+**One wave = one Draft PR after code is on `head_ref`.**
 
 ```text
 Initiative: INIT-EXAMPLE-002
 Issue: #42 — [INIT-EXMPL-002 W1] extraction engine
 Repo: example-api (this workspace)
-Branch: feature/INIT-EXMPL-002-w1-extraction (already open from /pre-implement)
+
+/pre-implement
+# gate-only checklist — then /commit-workspace when required
 
 /loop-spec
-
 Implement W1 tasks in order from plan.
 Run {check_command} and {test_command} after each task.
-Fix failures before moving on. Stop when all tasks green for human live-verify.
-Do not run /learning-extract or /ground-spec in this hop.
-Do not implement W2 scope.
+Do not open the Draft PR or run /learning-extract / /ground-spec in this hop.
+# then /commit-workspace when required
+
+/open-draft-pr
+# wave-pr-action — title, body_path, head_ref, base_ref; draft: true
+# then human live-verify on the Draft PR
 ```
 
 After human live-verify / tip fixes (Pass-2 closeout):
@@ -396,8 +400,7 @@ Then:
 /ground-spec
 
 Spec: 01  (or wave W1 of INIT-EXAMPLE-002)
-Commit ground report as last commit on feature/INIT-EXMPL-002-w1-extraction.
-Open PR: "[INIT-EXMPL-002 W1] extraction engine — implementation + ground report"
+# local report only — human merges at wave-signoff
 ```
 
 ---

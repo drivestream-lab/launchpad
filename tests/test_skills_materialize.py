@@ -114,11 +114,23 @@ class TestResolveSkillNames:
 
     def test_gate_resources_are_profile_scoped(self):
         labels, roles = resolve_gate_resources(FIXTURES, "meta-pm")
-        assert [label["name"] for label in labels] == ["impact-map-pending"]
+        assert [label["name"] for label in labels] == [
+            "impact-map-pending",
+            "impact-map-blocked",
+            "impact-map-lgtm",
+            "impact-map-revised",
+            "impact-map-stale",
+        ]
         assert roles == {"prd-impact-acceptance": "engineering-gate"}
 
         app_labels, app_roles = resolve_gate_resources(FIXTURES, "python-backend")
-        assert [label["name"] for label in app_labels] == ["spec-pending", "spec-lgtm"]
+        assert [label["name"] for label in app_labels] == [
+            "spec-pending",
+            "spec-blocked",
+            "spec-lgtm",
+            "spec-revised",
+            "spec-stale",
+        ]
         assert app_roles == {"coding-readiness": "engineering-gate"}
 
     def test_terraform_iac_from_profile_yaml(self):

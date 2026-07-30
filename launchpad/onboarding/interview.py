@@ -145,7 +145,7 @@ org: {org}
 
 # Day 1: meta is PRD-ready. App profiles below are Day N (uncomment when needed).
 # skills[].ref: latest  → apply-harness resolves GitHub releases/latest on each apply.
-# Or pin an explicit tag (e.g. v0.4.3) to freeze.
+# Or pin an explicit tag (e.g. v0.5.0-rc.2) to freeze.
 delivery_contract: sdd-delivery/v2
 delivery_roles:
   engineering-gate: {pe_team}
