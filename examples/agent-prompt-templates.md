@@ -10,8 +10,8 @@ Copy-paste starters for Cursor Agent. **Use the section for your role** — work
 
 | Role | Open in Cursor | Skills | Typical work |
 |------|----------------|--------|--------------|
-| **Product owner / PM** | `<client>-meta` | `/prd`, `/validate-requirements`, `/review-findings`, `/update-documents`, `/prd-impact-map` | PRD writing, impact mapping, product Q&A on PRD PR |
-| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/learning-extract`, `/ground-spec`, `/verify` | Opens spec PR, plan, `/create-board-tickets` after merge; Pass-1 loop → live-verify; Pass-2 `/learning-extract` → `/ground-spec` |
+| **Product owner / PM** | `<client>-meta` | `/prd`, `/validate-requirements`, `/review-findings`, `/update-documents`, `/prd-impact-map`, `/purge-initiative-artifacts-meta` | PRD writing, impact mapping, product Q&A; closure meta purge |
+| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/learning-extract`, `/ground-spec`, `/verify`, `/purge-initiative-artifacts-app` | Spec PR, plan, board tickets; Pass-1/2; closure app purge |
 
 **Board:** cite **GitHub issue #** and **full title** — not manifest ids (`Q1`, `T2`) in conversation.
 
@@ -404,6 +404,30 @@ Then:
 
 Spec: 01  (or wave W1 of INIT-EXAMPLE-002)
 # local report only — human merges at wave-signoff
+```
+
+---
+
+## D6b — Initiative closure (after all waves)
+
+**When:** Every wave is Done. **Once** per initiative — not per wave.  
+**App workspace** then **meta workspace**.
+
+```text
+# In app repo (example-api)
+/purge-initiative-artifacts-app
+
+Initiative: INIT-EXAMPLE-002
+# KEEP/PURGE from pin artifact-write-contract — Launchpad does not delete
+```
+
+```text
+# In <client>-meta
+/purge-initiative-artifacts-meta
+
+Initiative: INIT-EXAMPLE-002
+# then initiative-closure-pr-action (no required /open-draft-pr when pin automated)
+# human merges at initiative-closure-signoff
 ```
 
 ---

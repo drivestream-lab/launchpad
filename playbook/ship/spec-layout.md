@@ -89,6 +89,10 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 4. **Same PR:** update `as-built/implementation-status.md` and `tests/README.md` as needed
 5. Pass-2 closeout: `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge)
 6. Optional `/verify` — manual live-verify aid (not on the Pass-1 auto edge)
+7. **Closure (all waves done, once):** `initiative-closure` →
+   `/purge-initiative-artifacts-app` (app) → `/purge-initiative-artifacts-meta`
+   (meta) → `initiative-closure-pr-action` → `initiative-closure-signoff`.
+   Not per-wave. Launchpad does not delete files.
 
 Test-quality retro (**INIT-EXAMPLE-001**): board spec path points to `product/INIT-EXAMPLE-001.md` and capability docs (e.g. `05-roles-and-authz.md`), not bootstrap artifacts.
 

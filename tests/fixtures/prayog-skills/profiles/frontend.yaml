@@ -1,7 +1,7 @@
-# Terraform IaC SDD harness — layout defaults for development skills.
-# launchpad apply-harness copies this to .harness/profile.yaml in consumer infra repos.
+# Next.js BFF portal SDD harness — layout defaults for development skills.
+# launchpad sync-harness copies this to .harness/profile.yaml in consumer app repos.
 
-profile: terraform-iac
+profile: frontend
 
 layout:
   constitution: AGENTS.md
@@ -13,10 +13,10 @@ layout:
   reports_dir: docs/specification/reports
   tests_readme: tests/README.md
   source_roots:
-    - bootstrap/
-    - envs/
-    - modules/
-    - scripts/
+    - app/
+    - lib/
+    - components/
+    - hooks/
   unit_tests_dir: tests/unit
   live_verify_dir: tests/verify
   debug_tests_dir: tests/debug

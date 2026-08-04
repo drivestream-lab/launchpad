@@ -1,4 +1,4 @@
-# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (355f40378b2eeacc31478ad2306e1f58172c6156).
+# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (bb8b1dbeae9315ab47475053f52015d472ce3838).
 # Fixture tracks tip workflow/contract for kit tests; example harness ref stays v0.5.0-rc.2.
 apiVersion: prayog/v1
 kind: DeliveryContract
@@ -200,3 +200,6 @@ github:
     coding-readiness:
       role: engineering-gate
       profiles: [app]
+    initiative-closure-signoff:
+      role: engineering-gate
+      profiles: [app, meta-pm]

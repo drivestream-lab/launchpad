@@ -32,6 +32,8 @@ pinned workflow.
 | `prd-impact-acceptance` | PE / tech lead | Engineering handoff readiness (`review_roles` key; labels `impact-map-*`) |
 | `coding-readiness` | PE / engineering gate | Coding readiness (`review_roles` key; labels `spec-*`) |
 | `wave-signoff` | Peer/tech lead | Grounded implementation evidence after Pass-2 closeout |
+| `initiative-closure` | Eng / PE | Human judgment that all waves are done (start purge lane) |
+| `initiative-closure-signoff` | Peer/tech lead | Human merge of closure Draft PR(s) (`review_roles` key; app + meta) |
 
 PM owns product decisions and PRD artifacts. Developers own app specs and code.
 PE owns engineering decisions; PE does not choose product behavior.
@@ -105,14 +107,35 @@ artifacts:
   Checklist then code land on the same `head_ref` via Forge `commit_workspace`
   readiness + `/commit-workspace`; Draft PR opens **after** `/loop-spec` (no
   mid-coding Draft PR). When the pin sets `authorization: automated` on
-  `wave-pr-action` / `spec-pr-action`, do **not** require a human
-  `/open-draft-pr` click — walkers may still use that forge skill.
+  `wave-pr-action` / `spec-pr-action` / `initiative-closure-pr-action`, do
+  **not** require a human `/open-draft-pr` click — walkers may still use that
+  forge skill.
 - **`/verify`** is manual (`dispatch: manual`) — optional aid; not on the Pass-1 edge.
 - **Pass-2 closeout:** `/learning-extract` → `/ground-spec` → human **`wave-signoff`**
   (review head, **manual merge**, record merge SHA).
 - Development content skills only change the local workspace and record Forge
   readiness. Branch/commit/push/PR/issue/label/merge happen only via forge skills.
   Wave merge is human-only at `wave-signoff`.
+
+### Initiative closure (after all waves)
+
+Purge **once** when every wave is done — **not** after each `wave-signoff`.
+
+```text
+initiative-closure (human judgment)
+  → /purge-initiative-artifacts-app     # app workspace
+  → /purge-initiative-artifacts-meta    # meta workspace
+  → initiative-closure-pr-action        # pin authorization: automated
+  → initiative-closure-signoff          # human merge to develop
+```
+
+- App and meta are **two checkouts**: run the matching purge skill in each.
+- KEEP/PURGE semantics live in pin `references/artifact-write-contract.md` —
+  Launchpad does **not** delete files or implement the allowlist.
+- No merge Forge skill — closure merge is human-only at `initiative-closure-signoff`.
+- Walkers may still run `/purge-initiative-artifacts-*` and `/open-draft-pr`.
+- After board seed, the programme board is the long-term WorkManifest home; the
+  plan file may be purged at closure.
 
 ## Board tickets
 

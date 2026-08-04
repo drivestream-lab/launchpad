@@ -15,12 +15,14 @@ Skills CLI installs to **`.agents/skills/`** (project) or **`~/.agents/skills/`*
 
 | Who | Open in Cursor | Skills |
 |-----|----------------|--------|
-| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle + forge skills via `apply-harness --meta` |
-| **Developer** | app repo | prayog dev bundle + forge skills — `/spec-draft` through `/verify`, including `/learning-extract`, plus forge |
+| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle (incl. `/purge-initiative-artifacts-meta`) + forge skills via `apply-harness --meta` |
+| **Developer** | app repo | prayog dev bundle + forge — `/spec-draft` through `/verify`, `/learning-extract`, `/purge-initiative-artifacts-app`, plus forge |
 
 **Shared forge skills** (meta + app, from `forge_skills` → `skills/forge/`): `/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`. Not workflow graph nodes — human install surface only (walkers). Board tickets use `/create-board-tickets` (not a development-lane skill). Unrelated to kit forge templates (`apply-forge-templates`).
 
 **Wave sequencing (pinned workflow):** Pass-1 `/pre-implement` → `/loop-spec` → `wave-pr-action` → `live-verify`. Do not require a human `/open-draft-pr` when the pin sets `authorization: automated` on that node. Pass-2 `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge). `/verify` is optional/manual.
+
+**Closure (all waves done, once):** `initiative-closure` → `/purge-initiative-artifacts-app` (app) → `/purge-initiative-artifacts-meta` (meta) → `initiative-closure-pr-action` → `initiative-closure-signoff` (human merge). Same automated-PR rule for `initiative-closure-pr-action`. No per-wave purge; Launchpad does not implement deletes.
 
 ---
 

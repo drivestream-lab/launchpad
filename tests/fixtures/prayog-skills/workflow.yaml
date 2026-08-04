@@ -1,4 +1,4 @@
-# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (355f40378b2eeacc31478ad2306e1f58172c6156).
+# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (bb8b1dbeae9315ab47475053f52015d472ce3838).
 # Fixture tracks tip workflow/contract for kit tests; example harness ref stays v0.5.0-rc.2.
 apiVersion: prayog/v1
 kind: SkillWorkflow
@@ -108,7 +108,7 @@ nodes:
   spec-draft:
     type: skill
     profile: development
-    dispatch: manual
+    dispatch: orchestrated
     forge:
       commit_workspace: required
     outcomes:
@@ -142,11 +142,12 @@ nodes:
   initiative-feasibility:
     type: skill
     profile: development
-    dispatch: manual
+    dispatch: orchestrated
     forge:
       commit_workspace: required
     outcomes:
-      pass: spec-implementation-plan
+      # Always enter PE technical review before plan (pass and findings).
+      pass: spec-technical-review
       findings: spec-technical-review
       needs-input: spec-human-decision
       blocked: spec-human-decision
@@ -156,7 +157,7 @@ nodes:
   spec-technical-review:
     type: skill
     profile: development
-    dispatch: manual
+    dispatch: orchestrated
     forge:
       commit_workspace: required
     outcomes:
@@ -362,8 +363,61 @@ nodes:
     type: human-checkpoint
     purpose: initiative-closure
     outcomes:
-      pass: workflow-complete
+      pass: purge-initiative-artifacts-app
       findings: wave-signoff
+
+  # Initiative-closure lane: purge allowlisted working papers on develop-based
+  # heads (app then meta), open closure Draft PR(s), human merge. No
+  # authorize-before-delete — allowlist + refuse KEEP. No merge Forge action.
+  purge-initiative-artifacts-app:
+    type: skill
+    profile: development
+    dispatch: orchestrated
+    forge:
+      commit_workspace: required
+    outcomes:
+      pass: purge-initiative-artifacts-meta
+      needs-input: initiative-closure
+      blocked: initiative-closure
+      failed: initiative-closure
+
+  purge-initiative-artifacts-meta:
+    type: skill
+    profile: meta-pm
+    dispatch: orchestrated
+    forge:
+      commit_workspace: required
+    outcomes:
+      pass: initiative-closure-pr-action
+      needs-input: initiative-closure
+      blocked: initiative-closure
+      failed: initiative-closure
+
+  initiative-closure-pr-action:
+    type: external-action
+    owner: product
+    provider: github
+    authorization: automated
+    forge:
+      action: open_draft_pr
+      draft: true
+      apply_labels: []
+      remove_labels: []
+      requires:
+        - title
+        - body_path
+    outcomes:
+      pass: initiative-closure-signoff
+      blocked: initiative-closure
+      failed: workflow-stop
+
+  initiative-closure-signoff:
+    type: human-checkpoint
+    purpose: initiative-closure-signoff
+    outcomes:
+      pass: workflow-complete
+      findings: initiative-closure
+      blocked: workflow-stop
 
   workflow-complete:
     type: terminal
