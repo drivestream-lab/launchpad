@@ -96,6 +96,8 @@ After a spec PR merges to `develop`:
 launchpad --client example board-bind          # programme board from meta governance
 /create-board-tickets INIT-<id>                # forge; validates plan §9 then projects board
 # Pass-1: /pre-implement → /loop-spec → wave-pr-action → live-verify
+# Pass-2: /learning-extract → /ground-spec → wave-signoff
+# Closure (all waves): initiative-closure → purge-app → purge-meta → closure-pr → signoff
 # (/open-draft-pr remains for walkers; not required when pin authorization: automated)
 gh auth refresh -s project                     # once per machine — Project scope
 ```

@@ -12,13 +12,17 @@ PRD delivery_model + wave table
   → /create-board-tickets (forge; P16 + pin validator preflight)
   → /pre-implement → /loop-spec → wave-pr-action → live-verify
   → Pass-2: /learning-extract → /ground-spec → wave-signoff (human merge)
-  → INIT closure when all units + success criteria pass
+  → Closure (all waves done): initiative-closure
+      → /purge-initiative-artifacts-app → /purge-initiative-artifacts-meta
+      → initiative-closure-pr-action → initiative-closure-signoff (human merge)
 ```
 
 **Work manifest rule:** SSOT is plan §9 under pinned prayog
-`references/workmanifest-contract.md` (`apiVersion: prayog/v1`). PM never
-hand-writes Launchpad-owned WorkManifest YAML. Optional meta `work/` copies are
-audit-only. See [delivery-workflow.md](delivery-workflow.md).
+`references/workmanifest-contract.md` (`apiVersion: prayog/v1`). After board
+seed, the programme board is the long-term WorkManifest home; the plan file may
+be purged at initiative closure. PM never hand-writes Launchpad-owned
+WorkManifest YAML. Optional meta `work/` copies are audit-only. See
+[delivery-workflow.md](delivery-workflow.md).
 
 Related: [delivery-workflow.md](delivery-workflow.md) · [spec-layout.md](spec-layout.md) · [pm-workflow.md](../../docs/setup/pm-setup.md)
 
