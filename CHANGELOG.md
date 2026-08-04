@@ -11,7 +11,7 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
-## [Unreleased]
+## [0.5.30] — 2026-08-04
 
 ### Changed
 
