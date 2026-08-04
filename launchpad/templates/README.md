@@ -49,7 +49,8 @@ Use `--force` to overwrite after governance repo list changes.
 |------|-------|
 | `CODEOWNERS.python-backend` | `python-backend` |
 | `CODEOWNERS.nextjs-frontend` | `nextjs-frontend` |
-| `CODEOWNERS.data-platform` | `data-platform` |
+| `CODEOWNERS.flink` | `flink` |
+| `CODEOWNERS.edge-agent` | `edge-agent` |
 | `CODEOWNERS.terraform-iac` | `terraform-iac` (Azure/AWS foundations) |
 | `CODEOWNERS.meta-pm` | `meta-pm` (meta repo) |
 
@@ -61,9 +62,12 @@ Use `--force` to overwrite after governance repo list changes.
 |------|-------|
 | `harness-pin.python-backend.yaml` | `python-backend` |
 | `harness-pin.nextjs-frontend.yaml` | `nextjs-frontend` |
-| `harness-pin.data-platform.yaml` | `data-platform` |
+| `harness-pin.flink.yaml` | `flink` |
+| `harness-pin.edge-agent.yaml` | `edge-agent` |
 | `harness-pin.terraform-iac.yaml` | `terraform-iac` |
 | `harness-pin.meta.yaml` | `meta-pm` (meta repo) |
+
+There is **no** `data-platform` stack kit (domain/team only).
 
 ---
 

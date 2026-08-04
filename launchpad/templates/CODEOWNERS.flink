@@ -1,6 +1,7 @@
-# Data platform profile — copy to .github/CODEOWNERS in each data platform repo
+# Flink streaming profile — copy to .github/CODEOWNERS in each Flink monorepo
 # Replace @example-org/... with actual GitHub org/team names.
 #
+# Domain team: data-platform-devs (owns stack flink; future spark/batch).
 # Branch protection required:
 #   Settings → Branches → develop → "Require review from Code Owners" ON
 #
@@ -19,9 +20,20 @@
 /docs/specification/adr/                             @example-org/pe-team
 /docs/specification/as-built/                        @example-org/data-platform-devs
 
-# ── Source ────────────────────────────────────────────────────────────────────
+# ── Constitution and skills ───────────────────────────────────────────────────
 
-/src/                                                @example-org/data-platform-devs
+.cursor/rules/                                       @example-org/pe-team
+.agents/skills/                                      @example-org/data-platform-devs
+
+# ── Maven / Flink layout ──────────────────────────────────────────────────────
+
+/platform/                                           @example-org/data-platform-devs
+/streaming-jobs/                                     @example-org/data-platform-devs
+/batch-jobs/                                         @example-org/data-platform-devs
+/shared-schemas/                                     @example-org/data-platform-devs
+/pom.xml                                             @example-org/data-platform-devs
+/tests/                                              @example-org/data-platform-devs
+/scripts/                                            @example-org/data-platform-devs
 
 # ── Default ───────────────────────────────────────────────────────────────────
 

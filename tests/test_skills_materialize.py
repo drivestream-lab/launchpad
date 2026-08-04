@@ -71,9 +71,29 @@ def _terraform_profile() -> HarnessProfile:
     )
 
 
-def _frontend_profile() -> HarnessProfile:
+def _nextjs_profile() -> HarnessProfile:
     return HarnessProfile(
-        "frontend",
+        "nextjs-frontend",
+        {
+            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skill_runtimes": RUNTIMES,
+        },
+    )
+
+
+def _flink_profile() -> HarnessProfile:
+    return HarnessProfile(
+        "flink",
+        {
+            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skill_runtimes": RUNTIMES,
+        },
+    )
+
+
+def _edge_agent_profile() -> HarnessProfile:
+    return HarnessProfile(
+        "edge-agent",
         {
             "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
             "skill_runtimes": RUNTIMES,
@@ -163,15 +183,29 @@ class TestResolveSkillNames:
             *_FORGE_SKILLS,
         ]
 
-    def test_frontend_from_profile_yaml(self):
-        names = resolve_skill_names(FIXTURES, _frontend_profile(), "frontend")
+    def test_nextjs_frontend_from_profile_yaml(self):
+        names = resolve_skill_names(FIXTURES, _nextjs_profile(), "nextjs-frontend")
         assert names == [
             *_APP_DEV_SKILLS,
             *_FORGE_SKILLS,
         ]
 
-    def test_missing_profile_suggests_prayog_profile(self, tmp_path: Path):
-        with pytest.raises(HarnessResolveError, match="prayog_profile"):
+    def test_flink_from_profile_yaml(self):
+        names = resolve_skill_names(FIXTURES, _flink_profile(), "flink")
+        assert names == [
+            *_APP_DEV_SKILLS,
+            *_FORGE_SKILLS,
+        ]
+
+    def test_edge_agent_from_profile_yaml(self):
+        names = resolve_skill_names(FIXTURES, _edge_agent_profile(), "edge-agent")
+        assert names == [
+            *_APP_DEV_SKILLS,
+            *_FORGE_SKILLS,
+        ]
+
+    def test_missing_profile_hints_identity_equality(self, tmp_path: Path):
+        with pytest.raises(HarnessResolveError, match="no aliases"):
             resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
 
     def test_missing_profile_raises(self, tmp_path: Path):

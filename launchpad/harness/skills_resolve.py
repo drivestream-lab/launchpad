@@ -142,18 +142,18 @@ def resolve_skill_names(
     profile: HarnessProfile,
     harness_profile_name: str,
 ) -> list[str]:
-    """Return lane + forge skill directory names from prayog profiles/{prayog_profile}.yaml.
+    """Return lane + forge skill directory names from prayog profiles/{name}.yaml.
 
     Order is stable: lane skills first, then forge_skills (deduped, first wins).
     ``forge_skills`` must be present and non-empty at the pinned ref.
+    Identity equality: harness profile name == profiles/{name}.yaml.
     """
-    profile_file = profile.prayog_profile
+    profile_file = harness_profile_name
     profile_path = submodule_root / "profiles" / f"{profile_file}.yaml"
     if not profile_path.is_file():
         hint = (
-            f"Add profiles/{profile_file}.yaml in prayog-skills and bump skills[].ref, "
-            f"or set prayog_profile: <existing-profile> in harness YAML "
-            f"(e.g. python-backend for IaC until terraform-iac ships)."
+            f"Add profiles/{profile_file}.yaml in prayog-skills and bump skills[].ref "
+            f"(stack key must equal the profile filename — no aliases)."
         )
         raise HarnessResolveError(
             f"prayog profile not found: profiles/{profile_file}.yaml "
@@ -212,7 +212,7 @@ def copy_harness_profile(
     if harness_profile_name == PM_HARNESS_PROFILE:
         return False
 
-    profile_file = profile.prayog_profile
+    profile_file = harness_profile_name
     src = submodule_root / "profiles" / f"{profile_file}.yaml"
     if not src.is_file():
         return False
