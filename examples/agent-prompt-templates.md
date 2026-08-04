@@ -432,23 +432,6 @@ Initiative: INIT-EXAMPLE-002
 
 ---
 
-## D7 — Harness / platform chore (bootstrap — reference)
-
-**When:** BOOTSTRAP-001-style harness work in app repo (historical).
-
-```text
-Initiative: BOOTSTRAP-001
-Repo: example-api
-Task: Harness only — no product features.
-
-/pre-implement
-
-Deliverables: AGENTS.md links to <client>-meta playbook; .agents/skills; PR template; as-built columns.
-Verify: make check
-```
-
----
-
 ## PR traceability (both roles)
 
 Every PR description should match board fields:
