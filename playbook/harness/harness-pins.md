@@ -68,7 +68,8 @@ agent_skills:
 | Compatibility | When harness sets `delivery_contract`, the pinned tag must ship matching `delivery-contract.yaml` (`{id}/v{version}`) |
 | `status --meta` | May note when declared ref differs from GitHub latest (informational only) |
 
-Launchpad does not select a prayog-skills version. Programmes pin whatever tag they choose; bumping is a tenant decision.
+Launchpad does not select a prayog-skills version. Programmes pin whatever tag
+they choose (supported floor **≥ v0.4.3**); bumping is a tenant decision.
 
 When `delivery_contract` is set, confirm the chosen tag includes a matching
 `delivery-contract.yaml` before merging the harness PR. Omit `delivery_contract`
@@ -94,8 +95,8 @@ Stack key == harness profile == prayog `profiles/{stack_key}.yaml` == pin
 3. Remove leftover **`.cursor/skills`** submodule if present
 4. Pin **prayog-skills** submodule @ declared ref → `prayog-skills/`
 5. Resolve skill names from prayog `profiles/{stack_key}.yaml` at the pinned ref
-   (`requirements_skills` for `meta-pm`, `development_skills` for app profiles, plus
-   required `forge_skills` → `skills/forge/` — human forge surface, not workflow graph nodes)
+   (`requirements_skills` for `meta-pm`, `development_skills` for app profiles;
+   `forge_skills` → `skills/forge/` when the profile declares them)
 6. Materialize **hub** symlinks → `.harness/skills/<skill-name>/` (names from that profile only)
 7. Mirror hub into each path in `skill_runtimes` (default: `.agents/skills`, `.claude/skills`)
 8. Remove any leftover full-pack link under runtime roots (`…/prayog-skills`) so agents
@@ -110,7 +111,10 @@ Stack key == harness profile == prayog `profiles/{stack_key}.yaml` == pin
 
 **PM pipeline skills** (`validate-requirements`, `prd-impact-map`, …) install in **`<slug>-meta`** only — not app repos.
 
-**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Board tickets use forge `/create-board-tickets` only. Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
+**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install when the
+pinned profile lists `forge_skills` (omitted on older pins such as v0.4.3). They are not
+workflow graph nodes. Board tickets use forge `/create-board-tickets` only. Distinct from
+kit **forge templates** (`apply-forge-templates` / issue forms).
 
 `reset-harness` clears local skill hubs/mirrors, `.harness-pin.yaml`,
 `.harness/profile.yaml`, and the managed AGENTS harness block (not product code
