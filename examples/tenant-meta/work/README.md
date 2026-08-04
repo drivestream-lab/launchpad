@@ -18,4 +18,7 @@ After spec merge, humans run forge **`/create-board-tickets`** (preflight + proj
 
 ## Optional meta archive
 
-A copy under `work/INIT-*.yaml` may exist for human audit. It is **not** a second schema and must not drift from plan §9. Prefer plan §9 only.
+A copy under `work/INIT-*.yaml` may exist for human audit. It is **not** a second
+schema and must not drift from plan §9. Prefer plan §9 only. After board seed,
+the programme board is the long-term WorkManifest home; plan / working papers may
+be purged at **initiative closure** (prayog purge skills — not Launchpad).

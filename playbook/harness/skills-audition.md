@@ -26,6 +26,8 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 | learning-extract | | | prayog-skills dev (Pass-2 closeout) |
 | ground-spec | | | prayog-skills dev (G1–G10) |
 | verify | | | prayog-skills dev (manual; optional) |
+| purge-initiative-artifacts-app | | | prayog-skills dev (closure; app) |
+| purge-initiative-artifacts-meta | | | prayog-skills requirements (closure; meta) |
 | spec-technical-review | | | T1–T12 when TDD produced |
 | spec-implementation-plan | | | P1–P16 |
 
@@ -180,9 +182,40 @@ no commit/merge by this skill. Human merges at `wave-signoff`.
 
 ---
 
+## 11. purge-initiative-artifacts-app (app repo — initiative closure)
+
+**When:** All waves done; human `initiative-closure` judgment. **Not** after each wave.
+
+```text
+/purge-initiative-artifacts-app
+
+Initiative: INIT-EXAMPLE-003
+```
+
+**Pass if:** allowlisted app working papers processed in app workspace; no KEEP deleted;
+handoff toward meta purge. Launchpad does not perform deletes — skill owns semantics.
+
+---
+
+## 12. purge-initiative-artifacts-meta (meta repo — initiative closure)
+
+**When:** After app purge in the closure lane.
+
+```text
+/purge-initiative-artifacts-meta
+
+Initiative: INIT-EXAMPLE-003
+```
+
+**Pass if:** allowlisted meta working papers processed in meta workspace; handoff toward
+`initiative-closure-pr-action`. No required human `/open-draft-pr` when pin
+`authorization: automated` on that node; human merges at `initiative-closure-signoff`.
+
+---
+
 ## Exit
 
-- [ ] Dev bundle (§1–3, §4–10) scored **Y** on pilot repo
+- [ ] Dev bundle (§1–3, §4–12) scored **Y** on pilot repo
 - [ ] Technical review audition cites **T1–T12** when TDD is produced
 - [ ] `launchpad status --repo <pilot>` passes after harness migration PR
 - [ ] C2 excluded: feasibility probes, security-gate/T13, `parallel_safe`, auto-merge

@@ -71,6 +71,30 @@ def _terraform_profile() -> HarnessProfile:
     )
 
 
+def _frontend_profile() -> HarnessProfile:
+    return HarnessProfile(
+        "frontend",
+        {
+            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skill_runtimes": RUNTIMES,
+        },
+    )
+
+
+_APP_DEV_SKILLS = [
+    "spec-draft",
+    "initiative-feasibility",
+    "spec-technical-review",
+    "spec-implementation-plan",
+    "pre-implement",
+    "loop-spec",
+    "learning-extract",
+    "ground-spec",
+    "verify",
+    "purge-initiative-artifacts-app",
+]
+
+
 class TestResolveSkillNames:
     def test_meta_pm_from_profile_yaml(self):
         names = resolve_skill_names(FIXTURES, _meta_profile(), "meta-pm")
@@ -79,21 +103,14 @@ class TestResolveSkillNames:
             "review-findings",
             "update-documents",
             "prd-impact-map",
+            "purge-initiative-artifacts-meta",
             *_FORGE_SKILLS,
         ]
 
     def test_python_backend_from_profile_yaml(self):
         names = resolve_skill_names(FIXTURES, _python_profile(), "python-backend")
         assert names == [
-            "spec-draft",
-            "initiative-feasibility",
-            "spec-technical-review",
-            "spec-implementation-plan",
-            "pre-implement",
-            "loop-spec",
-            "learning-extract",
-            "ground-spec",
-            "verify",
+            *_APP_DEV_SKILLS,
             *_FORGE_SKILLS,
         ]
 
@@ -121,7 +138,10 @@ class TestResolveSkillNames:
             "impact-map-revised",
             "impact-map-stale",
         ]
-        assert roles == {"prd-impact-acceptance": "engineering-gate"}
+        assert roles == {
+            "prd-impact-acceptance": "engineering-gate",
+            "initiative-closure-signoff": "engineering-gate",
+        }
 
         app_labels, app_roles = resolve_gate_resources(FIXTURES, "python-backend")
         assert [label["name"] for label in app_labels] == [
@@ -131,20 +151,22 @@ class TestResolveSkillNames:
             "spec-revised",
             "spec-stale",
         ]
-        assert app_roles == {"coding-readiness": "engineering-gate"}
+        assert app_roles == {
+            "coding-readiness": "engineering-gate",
+            "initiative-closure-signoff": "engineering-gate",
+        }
 
     def test_terraform_iac_from_profile_yaml(self):
         names = resolve_skill_names(FIXTURES, _terraform_profile(), "terraform-iac")
         assert names == [
-            "spec-draft",
-            "initiative-feasibility",
-            "spec-technical-review",
-            "spec-implementation-plan",
-            "pre-implement",
-            "loop-spec",
-            "learning-extract",
-            "ground-spec",
-            "verify",
+            *_APP_DEV_SKILLS,
+            *_FORGE_SKILLS,
+        ]
+
+    def test_frontend_from_profile_yaml(self):
+        names = resolve_skill_names(FIXTURES, _frontend_profile(), "frontend")
+        assert names == [
+            *_APP_DEV_SKILLS,
             *_FORGE_SKILLS,
         ]
 

@@ -27,7 +27,8 @@ readiness. Branch/commit/push/PR/issue/label/merge happen only via forge skills
 opens at `wave-pr-action` **after** `/loop-spec` (no mid-coding Draft PR). Do
 not require a human `/open-draft-pr` when the pin sets `authorization: automated`
 on that node — walkers may still run `/open-draft-pr`. Wave merge is human-only
-at `wave-signoff`.
+at `wave-signoff`. Initiative-closure merge is human-only at
+`initiative-closure-signoff`.
 
 **PRs:** use `.github/pull_request_template.md` — Initiative, Spec path, Verify command.
 
@@ -40,6 +41,10 @@ Engineering work is tracked on **[{{BOARD_NAME}}]({{BOARD_URL}})** (org Project)
 - After spec merge: `/create-board-tickets INIT-<id>` (forge; validates plan §9)
 - Pass-1: `/pre-implement` → `/loop-spec` → `wave-pr-action` → `live-verify`
 - Pass-2: `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge)
+- Closure (all waves done, once): `initiative-closure` → `/purge-initiative-artifacts-app`
+  (app) → `/purge-initiative-artifacts-meta` (meta) → `initiative-closure-pr-action`
+  → `initiative-closure-signoff` (human merge). No required `/open-draft-pr` when
+  pin `authorization: automated` on the closure PR node.
 <!-- launchpad:harness-end -->
 
 ## Product (what to build)

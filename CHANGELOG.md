@@ -11,6 +11,25 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.27] — 2026-08-04
+
+### Changed
+
+- **Remount tip `v0.5.0-rc.2` @ `bb8b1db`:** initiative-closure purge lane fixtures
+  and playbooks. Pass-1/Pass-2 unchanged; add closure once after all waves.
+- Profiles: `purge-initiative-artifacts-app` (app) /
+  `purge-initiative-artifacts-meta` (meta); fixture `frontend.yaml` added.
+- `review_roles`: `initiative-closure-signoff` (app + meta-pm).
+- Playbooks/AGENTS: no per-wave purge; no required `/open-draft-pr` on
+  `initiative-closure-pr-action` when pin `authorization: automated`; Launchpad
+  still does not delete files or own WorkManifest.
+
+### Added
+
+- Fixture stubs for both purge skills (`SKILL.md` only).
+
+---
+
 ## [0.5.26] — 2026-07-30
 
 ### Changed
