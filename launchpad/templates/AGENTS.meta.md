@@ -25,8 +25,17 @@ When asked “what next?”, read the latest persistent handoff and the pinned
 workflow, then explain the current stage, blockers, and next candidate. Do not
 perform file or GitHub mutations unless the user explicitly authorizes them.
 
-Development content skills only change the local workspace and record Forge
-readiness. Branch/commit/push/PR/issue/label/merge happen only via forge skills.
+PM content skills only change the local workspace and record Forge readiness.
+Branch/commit/push/PR/issue/label/merge happen only via forge skills
+(`/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`).
+
+**Closure (all waves done, once — not per wave):** after app
+`/purge-initiative-artifacts-app`, run `/purge-initiative-artifacts-meta` **in
+this meta workspace**. Then `initiative-closure-pr-action` →
+`initiative-closure-signoff` (human merge). Do not require a human
+`/open-draft-pr` when the pin sets `authorization: automated` on that PR node —
+walkers may still run it. Launchpad does not delete files (KEEP/PURGE is pin
+semantics).
 <!-- launchpad:harness-end -->
 
 ## Repository truth
