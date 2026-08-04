@@ -11,6 +11,17 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.28] — 2026-08-04
+
+### Changed
+
+- **`AGENTS.meta.md`:** add initiative-closure narrative for the meta workspace
+  (`/purge-initiative-artifacts-meta` after app purge; automated closure PR;
+  human `initiative-closure-signoff`). Slash list was already seeded from the
+  profile; this closes the app/meta AGENTS asymmetry from v0.5.27.
+
+---
+
 ## [0.5.27] — 2026-08-04
 
 ### Changed
