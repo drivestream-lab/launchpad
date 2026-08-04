@@ -99,7 +99,8 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 2. Pin **rules** submodule @ declared ref → `.cursor/rules/`
 3. Remove legacy **`.cursor/skills`** submodule if present
 4. Pin **prayog-skills** submodule @ declared ref → `prayog-skills/`
-5. Resolve skill names from prayog `profiles/{prayog_profile}.yaml` at the pinned ref
+5. Resolve skill names from prayog `profiles/{stack_key}.yaml` at the pinned ref
+   (identity equality — no aliases)
    (`requirements_skills` for `meta-pm`, `development_skills` for app profiles, plus
    required `forge_skills` → `skills/forge/` — human forge surface, not workflow graph nodes)
 6. Materialize **hub** symlinks → `.harness/skills/<skill-name>/` (names from that profile only)
@@ -120,7 +121,11 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 
 **Remount (clean local materialization):**
 
+Full operator checklist: [harness-remount.md](../../docs/onboarding/harness-remount.md).
+
 ```bash
+# 1) Fix meta YAML first (identity equality; skills[].ref: v0.5.0-rc.2)
+# 2) Clear local harness surfaces, then reseed:
 launchpad reset-harness --repo example-api --dry-run
 launchpad reset-harness --repo example-api --apply
 # optional: also purge kit-seeded workflows (incl. legacy board-seed-gate.yml)
@@ -128,13 +133,15 @@ launchpad reset-harness --repo example-api --apply --include-seeded-workflows
 launchpad apply-harness --repo example-api --apply
 ```
 
-Illustrative pin for current remount: `skills[].ref: v0.5.0-rc.2` (tip
-`bb8b1db…`) with `delivery_contract: sdd-delivery/v2`. Tip adds purge skills and
-`initiative-closure-signoff`; sets `authorization: automated` on
-`spec-pr-action` / `wave-pr-action` / `initiative-closure-pr-action` — playbooks
-must not require a human `/open-draft-pr` for those nodes; Launchpad does not
-parse the authorization knob. Remount meta **and** every app profile so both
-purge packages materialize.
+`reset-harness` clears skill hub/mirrors, `.harness-pin.yaml`,
+`.harness/profile.yaml`, and the managed AGENTS harness block. It does **not**
+delete product code or submodule gitlinks. Then `apply-harness` reseeds pin,
+CODEOWNERS, skills, and rules submodule from meta config.
+
+Illustrative pin: `skills[].ref: v0.5.0-rc.2` (retagged tip with
+`nextjs-frontend` / `flink` / `edge-agent` profiles) +
+`delivery_contract: sdd-delivery/v2`. No `prayog_profile` aliases; no
+`data-platform` **stack**.
 
 ---
 

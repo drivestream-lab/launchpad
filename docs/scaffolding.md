@@ -116,8 +116,11 @@ Stack name in `governance-<org>.yaml` drives harness profile; scaffold `template
 | Stack | Typical foundation |
 |-------|-------------------|
 | `python-backend` | `python-fastapi-foundation` |
-| `meta-pm` | `tenant-meta-foundation` |
+| `nextjs-frontend` | `nextjs-bff-foundation` |
 | `terraform-iac` | `terraform-azure-foundation` (when published) |
+| `edge-agent` | `edge-agent-triton-foundation` (`v0.1.0`) |
+| `flink` | **None yet** — brownfield / `apply-harness` only |
+| `meta-pm` | `tenant-meta-foundation` |
 
 ---
 

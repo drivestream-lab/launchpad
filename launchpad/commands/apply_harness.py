@@ -127,13 +127,12 @@ def _seed_harness_pin(
     content = content.replace("{{DELIVERY_CONTRACT}}", delivery_contract)
     if con:
         content = content.replace("{{RULES_REF}}", con.ref)
-        for rules_repo in (
-            "python-services-rules",
-            "nextjs-bff-rules",
-            "terraform-infra-rules",
-            "data-platform-rules",
-        ):
-            content = content.replace(f"repo: drivestream-lab/{rules_repo}", f"repo: {con.org}/{con.repo}")
+        content = re.sub(
+            r"(?m)^(rules:\n(?:[ \t]+.*\n)*?[ \t]+repo:\s*)\S+",
+            rf"\g<1>{con.org}/{con.repo}",
+            content,
+            count=1,
+        )
 
     if skill:
         pin_ref = agent_skills_ref or skill.ref or "HEAD"
@@ -577,7 +576,7 @@ def _preview_or_resolve_skills(
 ) -> list[str] | None:
     if not prayog_submodule.is_dir():
         print(
-            f"    [dry-run] prayog skills: resolve from profiles/{profile.prayog_profile}.yaml "
+            f"    [dry-run] prayog skills: resolve from profiles/{profile_name}.yaml "
             f"after submodule pin"
         )
         return None

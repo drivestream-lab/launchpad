@@ -66,3 +66,19 @@ repos: {}
   #     environments: dev,stage,prod
   #     ci_platform: github
   #     github_org: example-org
+  #
+  # example-edge-agent:
+  #   enabled: true
+  #   engine: cookiecutter
+  #   template: gh:drivestream-lab/edge-agent-triton-foundation
+  #   ref: v0.1.0
+  #   context:
+  #     agent_name: example-edge-agent
+  #     agent_description: Edge Agent for Jetson + Triton + EMQX
+  #     default_mqtt_port: "1883"
+  #
+  # Flink: brownfield / apply-harness only until a foundation cookiecutter exists.
+  # example-streaming:
+  #   enabled: false
+  #   engine: cookiecutter
+  #   # template: TBD — flink foundation

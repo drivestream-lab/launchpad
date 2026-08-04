@@ -19,19 +19,31 @@ stack_profiles:
   # python-backend: Python / FastAPI microservice
   # nextjs-frontend: Next.js frontend or BFF
   # terraform-iac: Terraform infrastructure-as-code
+  # flink: Flink streaming monorepo (domain team: data-platform-devs)
+  # edge-agent: Edge agent services
+  # platform-tooling: Kit/SSOT brownfield (optional)
 
 teams:
   - name: platform-devs
-    description: Platform engineering
+    description: Platform engineering + Terraform IaC
     privacy: closed
   - name: backend-devs
     description: Backend developers
     privacy: closed
   - name: frontend-devs
-    description: Frontend developers
+    description: Frontend / BFF developers
+    privacy: closed
+  - name: data-platform-devs
+    description: Data platform domain (owns flink; spark later)
+    privacy: closed
+  - name: edge-agent-devs
+    description: Edge agent runtime
     privacy: closed
   - name: pm-team
     description: Programme management
+    privacy: closed
+  - name: pe-team
+    description: Platform engineering (ADR / technical review)
     privacy: closed
 
 repos:
@@ -60,6 +72,18 @@ repos:
   #   teams: [platform-devs]
   #   visibility: private
   #   description: Terraform infrastructure modules
+
+  # example-streaming:
+  #   stack: flink
+  #   teams: [data-platform-devs]
+  #   visibility: private
+  #   description: Flink streaming monorepo
+
+  # example-edge-agent:
+  #   stack: edge-agent
+  #   teams: [edge-agent-devs]
+  #   visibility: private
+  #   description: Edge agent service
 
 policy:
   default_branch: main

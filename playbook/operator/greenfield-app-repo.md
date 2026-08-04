@@ -276,8 +276,10 @@ cp .env.example .env && make setup && make check && make test
 | Stack | Foundation template | Status |
 |-------|---------------------|--------|
 | `python-backend` | `python-fastapi-foundation` | Implemented |
-| `nextjs-frontend` | `nextjs-bff-foundation` (planned) | Stub |
-| `terraform-iac` | `terraform-azure-foundation` or `terraform-aws-foundation` (when published) | IaC repos |
+| `nextjs-frontend` | `nextjs-bff-foundation` | Implemented |
+| `terraform-iac` | `terraform-azure-foundation` or `terraform-aws-foundation` | IaC repos |
+| `flink` | TBD | Brownfield / apply-harness only |
+| `edge-agent` | `edge-agent-triton-foundation` | `v0.1.0` |
 | `meta-pm` | `tenant-meta-foundation` | Meta repos only |
 
 ---

@@ -11,6 +11,36 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.29] — 2026-08-04
+
+### Breaking
+
+- **Stack identity equality:** remove `prayog_profile` aliases (schema rejects the
+  field). Harness profile name == prayog `profiles/{name}.yaml` == pin profiles.
+- **Remove `data-platform` stack kit** (`harness-pin` / `CODEOWNERS`). Domain/team
+  remains `data-platform-devs` owning stack **`flink`**.
+- Fix `harness-pin.nextjs-frontend.yaml` to use `nextjs-frontend` (was `frontend`).
+
+### Added
+
+- Stacks **`flink`** and **`edge-agent`**: pin + CODEOWNERS templates, example
+  YAML, interview comments, fixtures/tests.
+- Docs: stack/team laws (`stacks.md`, `teams-and-rbac.md`); remount guide
+  [`docs/onboarding/harness-remount.md`](docs/onboarding/harness-remount.md).
+- Generalized constitution `rules.repo` rewrite in `apply-harness` (no allowlist).
+
+### Remount
+
+1. Meta: drop `prayog_profile:`; rename `data-platform` stack → `flink`; bump
+   `skills[].ref` to **`v0.5.0-rc.2`** (retagged prayog tip).
+2. Per clone: `launchpad reset-harness --apply` then `apply-harness --apply`.
+3. Commit pin, AGENTS, CODEOWNERS, submodule SHAs.
+
+Pairs with prayog-skills tip under the **same** tag `v0.5.0-rc.2`
+(`nextjs-frontend`, `flink`, `edge-agent` profiles).
+
+---
+
 ## [0.5.28] — 2026-08-04
 
 ### Changed

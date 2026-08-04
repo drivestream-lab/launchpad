@@ -1,7 +1,7 @@
-# Next.js BFF portal SDD harness — layout defaults for development skills.
-# launchpad sync-harness copies this to .harness/profile.yaml in consumer app repos.
+# Edge agent SDD harness — layout defaults for development skills.
+# launchpad apply-harness copies this to .harness/profile.yaml in consumer app repos.
 
-profile: frontend
+profile: edge-agent
 
 layout:
   constitution: AGENTS.md
@@ -13,10 +13,7 @@ layout:
   reports_dir: docs/specification/reports
   tests_readme: tests/README.md
   source_roots:
-    - app/
-    - lib/
-    - components/
-    - hooks/
+    - src/
   unit_tests_dir: tests/unit
   live_verify_dir: tests/verify
   debug_tests_dir: tests/debug
