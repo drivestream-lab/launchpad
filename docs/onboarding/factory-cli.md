@@ -92,6 +92,7 @@ All apply commands default to **`--dry-run`**. Pass **`--apply`** to execute.
 | `init-client` | Teams, repo, gitflow, project board | `--meta` or `--repo <name>` |
 | `apply-scaffold` | Cookiecutter from scaffold YAML | `--meta` or `--repo <name>` |
 | `apply-harness` | Pin rules + prayog submodules, AGENTS.md, symlinks | `--meta` or `--repo <name>` |
+| `reset-harness` | Clear local harness materialization (hubs, pin, AGENTS block) | `--meta` or `--repo <name>` |
 | `apply-forge-templates` | Issue forms + PR template | `--meta` or `--repo <name>` |
 | `status` | Readiness checklist + NEXT | `--meta` or `--repo <name>` |
 | `doctor` | Token, config, version pin | — |

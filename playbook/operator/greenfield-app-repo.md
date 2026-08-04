@@ -1,4 +1,4 @@
-# Greenfield app repo onboarding (v0.5.10)
+# Greenfield app repo onboarding
 
 Repeatable sequence for adding a **new application repository** to an existing programme:
 GitHub repo → scaffold → harness envelope → SDD handoff → wave PRs.

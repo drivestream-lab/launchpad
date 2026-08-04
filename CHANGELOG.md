@@ -25,8 +25,8 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 - Stacks **`flink`** and **`edge-agent`**: pin + CODEOWNERS templates, example
   YAML, interview comments, fixtures/tests.
-- Docs: stack/team laws (`stacks.md`, `teams-and-rbac.md`); remount guide
-  [`docs/onboarding/harness-remount.md`](docs/onboarding/harness-remount.md).
+- Docs: stack/team laws (`stacks.md`, `teams-and-rbac.md`); `reset-harness`
+  documented with harness apply flow.
 - Generalized constitution `rules.repo` rewrite in `apply-harness` (no allowlist).
 
 ### Remount

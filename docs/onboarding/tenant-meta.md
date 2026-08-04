@@ -163,7 +163,7 @@ One-time configuration for your org (e.g. **example-org**).
 | `release-managers` | `main` only |
 | `platform-devs` | Factory / Terraform IaC / platform-tooling |
 | `frontend-devs` | BFF repos (`nextjs-frontend`) |
-| `data-platform-devs` | Data platform **domain** — owns stack `flink` (not a stack named data-platform) |
+| `data-platform-devs` | Data platform domain — owns stack `flink` |
 | `edge-agent-devs` | Edge agent repos |
 | `qa-team` | QA manifests and deploy verification |
 | `pe-team` | Technical review, ADR, harness/rules (CODEOWNERS) |
