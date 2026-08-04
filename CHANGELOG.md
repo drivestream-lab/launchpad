@@ -11,6 +11,17 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.30] — 2026-08-04
+
+### Changed
+
+- **Compat / prayog floor v0.4.3:** `apply-harness` accepts profiles that omit
+  or leave empty `forge_skills` (lane skills only). Newer pins that declare
+  `forge_skills` still materialize forge. Tenant chooses `skills[].ref`; Launchpad
+  does not require a tip bump to rematerialize.
+
+---
+
 ## [0.5.29] — 2026-08-04
 
 ### Breaking
@@ -25,8 +36,8 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 - Stacks **`flink`** and **`edge-agent`**: pin + CODEOWNERS templates, example
   YAML, interview comments, fixtures/tests.
-- Docs: stack/team laws (`stacks.md`, `teams-and-rbac.md`); remount guide
-  [`docs/onboarding/harness-remount.md`](docs/onboarding/harness-remount.md).
+- Docs: stack/team laws (`stacks.md`, `teams-and-rbac.md`); `reset-harness`
+  documented with harness apply flow.
 - Generalized constitution `rules.repo` rewrite in `apply-harness` (no allowlist).
 
 ### Remount

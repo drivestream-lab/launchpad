@@ -16,13 +16,6 @@ _SKILL_LIST_KEYS = {
 
 FORGE_SKILLS_KEY = "forge_skills"
 
-_FORGE_SKILL_NAMES = (
-    "commit-workspace",
-    "open-draft-pr",
-    "create-board-tickets",
-)
-
-
 class HarnessResolveError(Exception):
     """Prayog profile or skill list could not be resolved at the pinned ref."""
 
@@ -142,18 +135,18 @@ def resolve_skill_names(
     profile: HarnessProfile,
     harness_profile_name: str,
 ) -> list[str]:
-    """Return lane + forge skill directory names from prayog profiles/{name}.yaml.
+    """Return lane + optional forge skill names from prayog profiles/{name}.yaml.
 
-    Order is stable: lane skills first, then forge_skills (deduped, first wins).
-    ``forge_skills`` must be present and non-empty at the pinned ref.
+    Order is stable: lane skills first, then forge_skills when declared (deduped).
+    Missing or empty ``forge_skills`` is allowed (prayog floor v0.4.3 — lane only).
     Identity equality: harness profile name == profiles/{name}.yaml.
     """
     profile_file = harness_profile_name
     profile_path = submodule_root / "profiles" / f"{profile_file}.yaml"
     if not profile_path.is_file():
         hint = (
-            f"Add profiles/{profile_file}.yaml in prayog-skills and bump skills[].ref "
-            f"(stack key must equal the profile filename — no aliases)."
+            f"Stack key must equal profiles/{profile_file}.yaml at the pinned "
+            f"skills ref (no aliases)."
         )
         raise HarnessResolveError(
             f"prayog profile not found: profiles/{profile_file}.yaml "
@@ -165,17 +158,10 @@ def resolve_skill_names(
     lane_names = _parse_skill_list_block(text, key)
     if not lane_names:
         raise HarnessResolveError(
-            f"profiles/{profile_file}.yaml has no {key} list at the pinned prayog ref. "
-            f"Update prayog-skills or bump the harness skills ref."
+            f"profiles/{profile_file}.yaml has no {key} list at the pinned prayog ref."
         )
 
     forge_names = _parse_skill_list_block(text, FORGE_SKILLS_KEY)
-    if not forge_names:
-        raise HarnessResolveError(
-            f"profiles/{profile_file}.yaml has no {FORGE_SKILLS_KEY} list at the pinned "
-            f"prayog ref. Add a non-empty {FORGE_SKILLS_KEY} block "
-            f"(e.g. {', '.join(_FORGE_SKILL_NAMES)}) and bump the harness skills ref."
-        )
 
     seen: set[str] = set()
     names: list[str] = []

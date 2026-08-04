@@ -40,8 +40,6 @@ Config: [`governance-example-org.yaml`](../../examples/tenant-meta/config/govern
 App stacks keep `pe-team` / `pm-team` on report/spec paths (existing pattern).  
 Kit placeholders: `@example-org/{team}`.
 
-**There is no stack named `data-platform`.** That name is domain/team only.
-
 ## Access matrix (example-org v0)
 
 | Repo | `pm-team` | Dev teams | `develop` merge |

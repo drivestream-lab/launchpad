@@ -67,8 +67,6 @@ Use `--force` to overwrite after governance repo list changes.
 | `harness-pin.terraform-iac.yaml` | `terraform-iac` |
 | `harness-pin.meta.yaml` | `meta-pm` (meta repo) |
 
-There is **no** `data-platform` stack kit (domain/team only).
-
 ---
 
 ## Reference copies (manual deploy when no delivery_contract)

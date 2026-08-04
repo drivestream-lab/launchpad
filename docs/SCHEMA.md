@@ -115,7 +115,7 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        # illustrative — resolve GitHub releases/latest before pinning
+        # illustrative — tenant chooses the tag
         ref: v0.5.0-rc.2
     community_skills:
       - source: github/awesome-copilot
@@ -146,7 +146,7 @@ profiles:
 
   flink:
     constitution:
-      repo: data-platform-rules   # Flink constitution slug until rules rename
+      repo: data-platform-rules   # Flink constitution repo
       ref: v0.3.1
     skills:
       - repo: prayog-skills
@@ -164,15 +164,15 @@ repos:
   special-repo: python-backend
 ```
 
-`skills[].ref` is **tenant-owned**. Prefer GitHub `releases/latest` on
-`drivestream-lab/prayog-skills` when adopting or bumping; `apply-harness` pins
-the declared ref only (does not auto-float). When `delivery_contract` is set,
-the pin must ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
+`skills[].ref` is **tenant-owned**. Launchpad pins the declared ref only; it does
+not choose a prayog-skills version. When `delivery_contract` is set, the pin must
+ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
 
 **Identity equality:** skill names resolve from prayog `profiles/{stack_key}.yaml`
-(same string as the harness profile name). `prayog_profile` aliases are
-**rejected**. Lane lists (`requirements_skills` for `meta-pm`,
-`development_skills` for app profiles) plus required `forge_skills`.
+(same string as the harness profile name). Profile aliases are **rejected**.
+Lane lists (`requirements_skills` for `meta-pm`, `development_skills` for app
+profiles) are required; `forge_skills` is applied when the pinned profile lists
+it (optional on floor pins such as v0.4.3).
 
 **Resolution order:** `repos.<name>` → `repo.stack` from governance → no harness.
 

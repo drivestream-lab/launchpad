@@ -13,10 +13,8 @@ delivery_roles:
 # constitution.ref — must be a pinned tag (never a branch).
 # To upgrade rules: bump the ref here, then re-run apply-harness.
 #
-# skills[].ref — tenant-owned. Prefer pin drivestream-lab/prayog-skills
-# @ v0.5.0-rc.2 (retagged tip with nextjs-frontend / flink / edge-agent).
-# delivery_contract stays sdd-delivery/v2. No prayog_profile aliases; no
-# data-platform stack (domain team data-platform-devs owns flink).
+# skills[].ref — tenant-owned tag. Launchpad applies whatever you declare.
+# Stack key == harness profile == prayog profiles/{stack_key}.yaml.
 #
 # codeowners_template  — filename in kit templates/ seeded as .github/CODEOWNERS
 # harness_pin_template — filename in kit templates/ seeded as .harness-pin.yaml
@@ -66,7 +64,7 @@ profiles:
   # ─── Flink streaming (domain team: data-platform-devs) ───────────────────
   # flink:
   #   constitution:
-  #     repo: data-platform-rules   # Flink constitution slug until rules rename
+  #     repo: data-platform-rules   # Flink constitution repo
   #     ref: v0.3.1
   #   skills:
   #     - repo: prayog-skills

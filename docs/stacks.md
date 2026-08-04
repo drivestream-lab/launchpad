@@ -16,7 +16,7 @@ prayog profile + pin/CODEOWNERS). Scaffold is separate — opt-in per repo in
 **Laws**
 
 1. Domain ≠ stack.  
-2. **Identity equality** — one string everywhere (no `prayog_profile` aliases).  
+2. **Identity equality** — one string everywhere (stack key == profile == pin).  
 3. One team may own many stacks.  
 4. New engine ⇒ new stack; same team allowed.  
 5. Foundation variant ≠ new stack (unless rules/layout diverge).  
@@ -32,7 +32,7 @@ stack_key
   == templates/CODEOWNERS.{stack_key}
 ```
 
-**Forbidden as stack keys:** `data-platform`, `frontend`, umbrella “analytics”.
+Stack keys name the **technology profile**, not the domain/team.
 
 ---
 
@@ -61,16 +61,12 @@ your meta repo:
 | `python-backend` | FastAPI / Python services | python-services-rules | python-fastapi-foundation |
 | `nextjs-frontend` | Next.js BFF | nextjs-bff-rules | nextjs-bff-foundation |
 | `terraform-iac` | Terraform IaC | terraform-infra-rules | terraform-*-foundation |
-| `flink` | Flink streaming monorepo | current Flink rules repo slug* | TBD (brownfield until built) |
+| `flink` | Flink streaming monorepo | data-platform-rules | TBD (brownfield until built) |
 | `edge-agent` | Edge agent | edge-agent-rules | edge-agent-triton-foundation |
 | `platform-tooling` | Kit/SSOT brownfield | none | none |
 
-\*Until a rules-rename workstream lands, Flink pins may still reference today’s
-constitution repo name (e.g. `data-platform-rules`); **Launchpad stack key is
-`flink`**. Team ownership is `data-platform-devs` (domain), not a stack named
-`data-platform`.
-
-**Add later:** `spark`, `edge-triton-client`, …
+Constitution **repo slug** may differ from stack key; ownership team is domain
+(`data-platform-devs` owns `flink`).
 
 ---
 
@@ -107,20 +103,6 @@ When you run `apply-harness --repo <name>`:
 2. Check `harness-<org>.yaml` for a `repos.<name>` override  
 3. Fall back to the stack name as the profile name  
 4. If no profile found → hint and exit cleanly  
-
----
-
-## Remount (Breaking greenfield)
-
-See [harness-pins.md](../playbook/harness/harness-pins.md#remount-clean-local-materialization)
-and [harness-remount.md](onboarding/harness-remount.md).
-
-```text
-1. Fix meta YAML (identity equality; bump skills[].ref to v0.5.0-rc.2 tip)
-2. launchpad reset-harness --repo|--meta --apply
-3. launchpad apply-harness --repo|--meta --apply
-4. Commit pin, AGENTS, CODEOWNERS, submodule SHAs
-```
 
 ---
 

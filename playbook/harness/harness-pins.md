@@ -42,7 +42,7 @@ rules:
 
 agent_skills:
   repo: drivestream-lab/prayog-skills
-  ref: v0.4.3   # example only — resolve GitHub releases/latest before pinning
+  ref: v0.4.3   # example only — tenant chooses the tag
   profile: python-backend
   skills:
     - spec-draft
@@ -64,32 +64,27 @@ agent_skills:
 | Surface | Owner |
 |---------|--------|
 | `skills[].ref` in `config/harness-<org>.yaml` | **Tenant** (PM / programme) — explicit tag, never floating |
-| Discover candidate tag | GitHub `releases/latest` on `drivestream-lab/prayog-skills` |
-| Compatibility | Pin must ship `delivery-contract.yaml` when harness sets `delivery_contract`; string must match `{id}/v{version}` from that file |
-| `apply-harness` | Pins the **declared** ref only (does not auto-float to latest) |
-| `status --meta` | Advises when declared ref is behind GitHub latest |
+| `apply-harness` | Pins the **declared** ref only (does not choose or float a tag) |
+| Compatibility | When harness sets `delivery_contract`, the pinned tag must ship matching `delivery-contract.yaml` (`{id}/v{version}`) |
+| `status --meta` | May note when declared ref differs from GitHub latest (informational only) |
 
-```bash
-gh release view --repo drivestream-lab/prayog-skills --json tagName,publishedAt
-```
+Launchpad does not select a prayog-skills version. Programmes pin whatever tag
+they choose (supported floor **≥ v0.4.3**); bumping is a tenant decision.
 
-When `delivery_contract` is set, confirm the chosen tag includes `delivery-contract.yaml` before merging the harness PR. Omit `delivery_contract` only for a deliberate legacy pin (`apply-gates` skips).
+When `delivery_contract` is set, confirm the chosen tag includes a matching
+`delivery-contract.yaml` before merging the harness PR. Omit `delivery_contract`
+only when you intentionally skip contract-gated apply paths (`apply-gates` skips).
 
 ---
 
-## Rules + skills pairs (tenant-owned)
+## Rules + skills refs
 
-Document your org's `rules` + `agent_skills` ref pairs in tenant `config/harness-<org>.yaml`. The kit does **not** maintain a frozen “approved pair” table — those go stale. Use GitHub latest for skills when adopting SDD delivery, and bump via harness PR when the programme chooses.
+Pin `rules` + `agent_skills` refs in tenant `config/harness-<org>.yaml`. Keep
+**every** profile on the **same** prayog-skills `ref` within a programme so
+`delivery_contract` stays consistent.
 
-Example (illustrative refs — re-query before use):
-
-| rules | agent_skills | Notes |
-|-------|--------------|-------|
-| v2.1.0 | *(GitHub latest that ships your `delivery_contract`)* | python-services-rules (python-backend) |
-| v0.3.0 | same skills tag across profiles | data-platform-rules |
-| v0.1.6 | same skills tag across profiles | nextjs-bff-rules |
-
-Keep **every** harness profile on the **same** prayog-skills `ref` within a programme so `delivery_contract` stays consistent.
+Stack key == harness profile == prayog `profiles/{stack_key}.yaml` == pin
+`profile` / `agent_skills.profile`. See [stacks.md](../../docs/stacks.md).
 
 ---
 
@@ -97,12 +92,11 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 
 1. Write `.harness-pin.yaml` and `AGENTS.md`
 2. Pin **rules** submodule @ declared ref → `.cursor/rules/`
-3. Remove legacy **`.cursor/skills`** submodule if present
+3. Remove leftover **`.cursor/skills`** submodule if present
 4. Pin **prayog-skills** submodule @ declared ref → `prayog-skills/`
 5. Resolve skill names from prayog `profiles/{stack_key}.yaml` at the pinned ref
-   (identity equality — no aliases)
-   (`requirements_skills` for `meta-pm`, `development_skills` for app profiles, plus
-   required `forge_skills` → `skills/forge/` — human forge surface, not workflow graph nodes)
+   (`requirements_skills` for `meta-pm`, `development_skills` for app profiles;
+   `forge_skills` → `skills/forge/` when the profile declares them)
 6. Materialize **hub** symlinks → `.harness/skills/<skill-name>/` (names from that profile only)
 7. Mirror hub into each path in `skill_runtimes` (default: `.agents/skills`, `.claude/skills`)
 8. Remove any leftover full-pack link under runtime roots (`…/prayog-skills`) so agents
@@ -117,31 +111,14 @@ Keep **every** harness profile on the **same** prayog-skills `ref` within a prog
 
 **PM pipeline skills** (`validate-requirements`, `prd-impact-map`, …) install in **`<slug>-meta`** only — not app repos.
 
-**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install for **meta and app** from `forge_skills` / `skills/forge/`. They are not workflow graph nodes. Board tickets use forge `/create-board-tickets` only. Distinct from kit **forge templates** (`apply-forge-templates` / issue forms).
+**Forge skills** (`commit-workspace`, `open-draft-pr`, `create-board-tickets`) install when the
+pinned profile lists `forge_skills` (omitted on older pins such as v0.4.3). They are not
+workflow graph nodes. Board tickets use forge `/create-board-tickets` only. Distinct from
+kit **forge templates** (`apply-forge-templates` / issue forms).
 
-**Remount (clean local materialization):**
-
-Full operator checklist: [harness-remount.md](../../docs/onboarding/harness-remount.md).
-
-```bash
-# 1) Fix meta YAML first (identity equality; skills[].ref: v0.5.0-rc.2)
-# 2) Clear local harness surfaces, then reseed:
-launchpad reset-harness --repo example-api --dry-run
-launchpad reset-harness --repo example-api --apply
-# optional: also purge kit-seeded workflows (incl. legacy board-seed-gate.yml)
-launchpad reset-harness --repo example-api --apply --include-seeded-workflows
-launchpad apply-harness --repo example-api --apply
-```
-
-`reset-harness` clears skill hub/mirrors, `.harness-pin.yaml`,
-`.harness/profile.yaml`, and the managed AGENTS harness block. It does **not**
-delete product code or submodule gitlinks. Then `apply-harness` reseeds pin,
-CODEOWNERS, skills, and rules submodule from meta config.
-
-Illustrative pin: `skills[].ref: v0.5.0-rc.2` (retagged tip with
-`nextjs-frontend` / `flink` / `edge-agent` profiles) +
-`delivery_contract: sdd-delivery/v2`. No `prayog_profile` aliases; no
-`data-platform` **stack**.
+`reset-harness` clears local skill hubs/mirrors, `.harness-pin.yaml`,
+`.harness/profile.yaml`, and the managed AGENTS harness block (not product code
+or submodule gitlinks). Re-run `apply-harness` afterward to reseed from meta.
 
 ---
 
@@ -154,6 +131,7 @@ From the `<slug>-meta` config directory:
 ```bash
 launchpad apply-harness --repo example-api --dry-run
 launchpad apply-harness --repo example-api --apply
+launchpad reset-harness --repo example-api --apply   # optional clear, then apply again
 launchpad status --repo example-api
 ```
 
