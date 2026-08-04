@@ -171,7 +171,8 @@ ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
 **Identity equality:** skill names resolve from prayog `profiles/{stack_key}.yaml`
 (same string as the harness profile name). Profile aliases are **rejected**.
 Lane lists (`requirements_skills` for `meta-pm`, `development_skills` for app
-profiles) plus required `forge_skills`.
+profiles) are required; `forge_skills` is applied when the pinned profile lists
+it (optional on floor pins such as v0.4.3).
 
 **Resolution order:** `repos.<name>` → `repo.stack` from governance → no harness.
 

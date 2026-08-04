@@ -18,7 +18,6 @@ from launchpad.harness.skills_materialize import (
     runtime_skill_present,
 )
 from launchpad.harness.skills_resolve import (
-    FORGE_SKILLS_KEY,
     HarnessResolveError,
     find_skill_source_dir,
     resolve_delivery_contract,
@@ -212,17 +211,18 @@ class TestResolveSkillNames:
         with pytest.raises(HarnessResolveError, match="profiles/meta-pm.yaml"):
             resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
 
-    def test_missing_forge_skills_raises(self, tmp_path: Path):
+    def test_missing_forge_skills_lane_only(self, tmp_path: Path):
         profiles = tmp_path / "profiles"
         profiles.mkdir()
         (profiles / "meta-pm.yaml").write_text(
             "profile: meta-pm\n\nrequirements_skills:\n  - validate-requirements\n",
             encoding="utf-8",
         )
-        with pytest.raises(HarnessResolveError, match=FORGE_SKILLS_KEY):
-            resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
+        assert resolve_skill_names(tmp_path, _meta_profile(), "meta-pm") == [
+            "validate-requirements"
+        ]
 
-    def test_empty_forge_skills_raises(self, tmp_path: Path):
+    def test_empty_forge_skills_lane_only(self, tmp_path: Path):
         profiles = tmp_path / "profiles"
         profiles.mkdir()
         (profiles / "meta-pm.yaml").write_text(
@@ -230,8 +230,27 @@ class TestResolveSkillNames:
             "forge_skills:\n",
             encoding="utf-8",
         )
-        with pytest.raises(HarnessResolveError, match=FORGE_SKILLS_KEY):
-            resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
+        assert resolve_skill_names(tmp_path, _meta_profile(), "meta-pm") == [
+            "validate-requirements"
+        ]
+
+    def test_v043_shaped_app_profile_lane_only(self, tmp_path: Path):
+        """prayog v0.4.3 profiles omit forge_skills; lane list still resolves."""
+        profiles = tmp_path / "profiles"
+        profiles.mkdir()
+        (profiles / "python-backend.yaml").write_text(
+            "profile: python-backend\n\n"
+            "development_skills:\n"
+            "  - board-seed\n"
+            "  - pre-implement\n"
+            "  - verify\n",
+            encoding="utf-8",
+        )
+        assert resolve_skill_names(tmp_path, _python_profile(), "python-backend") == [
+            "board-seed",
+            "pre-implement",
+            "verify",
+        ]
 
 
 class TestFindSkillSourceDir:

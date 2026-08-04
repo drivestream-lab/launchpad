@@ -11,6 +11,17 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.30] — 2026-08-04
+
+### Changed
+
+- **Compat / prayog floor v0.4.3:** `apply-harness` accepts profiles that omit
+  or leave empty `forge_skills` (lane skills only). Newer pins that declare
+  `forge_skills` still materialize forge. Tenant chooses `skills[].ref`; Launchpad
+  does not require a tip bump to rematerialize.
+
+---
+
 ## [0.5.29] — 2026-08-04
 
 ### Breaking
