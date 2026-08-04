@@ -250,13 +250,13 @@ class TestHarnessSchema:
         }
         h = HarnessSchema(raw)
         prof = h.profiles["meta-pm"]
-        assert prof.prayog_profile == "meta-pm"
+        assert prof.name == "meta-pm"
         assert len(prof.community_skills) == 1
         assert prof.community_skills[0].source == "github/awesome-copilot"
         assert prof.community_skills[0].ref == "v1.0.0"
         assert prof.skill_runtimes == [".agents/skills", ".claude/skills"]
 
-    def test_prayog_profile_alias(self):
+    def test_prayog_profile_alias_rejected(self):
         raw = {
             "org": "acme",
             "profiles": {
@@ -266,8 +266,8 @@ class TestHarnessSchema:
                 }
             },
         }
-        h = HarnessSchema(raw)
-        assert h.profiles["nextjs-frontend"].prayog_profile == "frontend"
+        with pytest.raises(SchemaError, match="prayog_profile is not supported"):
+            HarnessSchema(raw)
 
     def test_community_skill_missing_ref_raises(self):
         raw = {

@@ -126,7 +126,6 @@ profiles:
       - .claude/skills
 
   python-backend:
-    prayog_profile: python-backend    # optional when name matches harness profile
     constitution:
       repo: python-services-rules
       ref: v2.1.0
@@ -138,10 +137,25 @@ profiles:
       - .claude/skills
 
   nextjs-frontend:
-    prayog_profile: frontend           # prayog file is profiles/frontend.yaml
     constitution:
       repo: nextjs-bff-rules
       ref: v0.1.5
+    skills:
+      - repo: prayog-skills
+        ref: v0.5.0-rc.2
+
+  flink:
+    constitution:
+      repo: data-platform-rules   # Flink constitution slug until rules rename
+      ref: v0.3.1
+    skills:
+      - repo: prayog-skills
+        ref: v0.5.0-rc.2
+
+  edge-agent:
+    constitution:
+      repo: edge-agent-rules
+      ref: v0.1.0
     skills:
       - repo: prayog-skills
         ref: v0.5.0-rc.2
@@ -155,9 +169,10 @@ repos:
 the declared ref only (does not auto-float). When `delivery_contract` is set,
 the pin must ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
 
-Skill **names** resolve from prayog `profiles/{prayog_profile}.yaml` at the pinned
-`skills[].ref`: lane lists (`requirements_skills` for `meta-pm`, `development_skills`
-for app profiles) plus required `forge_skills` (sources under `skills/forge/`).
+**Identity equality:** skill names resolve from prayog `profiles/{stack_key}.yaml`
+(same string as the harness profile name). `prayog_profile` aliases are
+**rejected**. Lane lists (`requirements_skills` for `meta-pm`,
+`development_skills` for app profiles) plus required `forge_skills`.
 
 **Resolution order:** `repos.<name>` → `repo.stack` from governance → no harness.
 

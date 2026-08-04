@@ -108,7 +108,9 @@ stack_profiles:
   # python-backend: Python / FastAPI microservice
   # nextjs-frontend: Next.js frontend or BFF
   # terraform-iac: Terraform infrastructure-as-code
-  # go-backend: Go microservice
+  # flink: Flink streaming monorepo (team: data-platform-devs)
+  # edge-agent: Edge agent services
+  # platform-tooling: Kit/SSOT brownfield
 
 teams:
   - name: {pm_team}
@@ -196,6 +198,26 @@ profiles:
   #       ref: latest
   #   codeowners_template: CODEOWNERS.terraform-iac
   #   harness_pin_template: harness-pin.terraform-iac.yaml
+
+  # flink:
+  #   constitution:
+  #     repo: data-platform-rules
+  #     ref: v0.3.1
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   codeowners_template: CODEOWNERS.flink
+  #   harness_pin_template: harness-pin.flink.yaml
+
+  # edge-agent:
+  #   constitution:
+  #     repo: edge-agent-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   codeowners_template: CODEOWNERS.edge-agent
+  #   harness_pin_template: harness-pin.edge-agent.yaml
 
 repos: {{}}
 """

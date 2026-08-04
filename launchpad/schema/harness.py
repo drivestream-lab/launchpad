@@ -24,8 +24,6 @@ profiles        Map of stack name → HarnessProfile.
     repo        Skill repo slug.
     org         Optional override org.
     ref         Git ref.
-  prayog_profile      Optional. Prayog profiles/{name}.yaml filename when it differs
-                      from the harness profile name (e.g. nextjs-frontend → frontend).
   community_skills    Optional. External skill repos (e.g. awesome-copilot /prd on meta).
     source      GitHub org/repo slug.
     ref         Pinned tag or branch.
@@ -38,6 +36,9 @@ profiles        Map of stack name → HarnessProfile.
                         Defaults to "harness-pin.<profile-name>.yaml" (convention).
 repos           Map of repo slug → harness_profile (stack override per-repo).
                 If absent, harness_profile defaults to repo.stack from governance.
+
+Identity equality: harness profile name == prayog profiles/{name}.yaml ==
+pin profile / agent_skills.profile. No prayog_profile aliases.
 """
 
 from __future__ import annotations
@@ -168,7 +169,13 @@ class HarnessProfile:
             SkillRef(s, profile=name, idx=i, path=path) for i, s in enumerate(skills_raw)
         ]
 
-        self.prayog_profile: str = str(raw.get("prayog_profile") or "").strip() or name
+        if "prayog_profile" in raw:
+            raise SchemaError(
+                f"profiles.{name!r}: prayog_profile is not supported — "
+                f"use identity equality (profiles/{name}.yaml)",
+                path=path,
+                hint="Remove prayog_profile and rename the prayog file to match the stack key",
+            )
 
         community_raw = raw.get("community_skills") or []
         if not isinstance(community_raw, list):
