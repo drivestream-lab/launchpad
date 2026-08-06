@@ -18,8 +18,8 @@ Fixed order — **7 columns, not optional:**
 | 2 | Spec/CR | Spec gap, CR draft, cross-service review |
 | 3 | Ready | Approved to start; all required fields set |
 | 4 | In progress | `feature/INIT-{COMPONENT}-{NUMBER}-w{N}-*` (see branching-policy.md) or `chore/…` branch active |
-| 5 | Verify | Live verify run |
-| 6 | In review | PR open to `develop` |
+| 5 | Wave acceptance | Tip smoke under `tests/verify` (or P15 N/A); PR label **`wave-accepted`** |
+| 6 | In review | PR open to `develop` (post-accept closeout / merge prep) |
 | 7 | Done | Merged to `develop` or closed |
 
 ---
@@ -32,13 +32,17 @@ Fixed order — **7 columns, not optional:**
 | CR | Text | `CR-001` or `N/A` |
 | Codebase | Single select | `example-api` or `<client>-meta` |
 | Spec path | Text | `docs/specification/product/02-api-contract.md` |
-| Verify command | Text | `make check` |
+| Smoke command | Text | `tests/verify/…` script, repo `verify_command`, or `N/A` (P15) |
 | As-built | Single select | `yes` / `no` / `N/A` |
 | QA manifest | Text | `N/A` (or path when QA manifests exist) |
 
 Fill **Initiative, CR, Codebase, Spec path** before leaving **Ready**.  
-Fill **Verify command** before leaving **Verify**.  
+Fill **Smoke command** before leaving **Wave acceptance** (or set `N/A` when P15 applies).  
 Set **As-built** before **In review**.
+
+Tip human approval is the Draft PR label **`wave-accepted`** (provision with
+`launchpad apply-gates --repo <name> --apply`; humans apply the label). That is
+not a merge signal — merge stays at `wave-signoff`.
 
 ---
 
@@ -51,7 +55,7 @@ Set **As-built** before **In review**.
 | `cr` | Cross-service CR |
 | `repo:example-api` / `repo:meta` | Matches **Codebase** field |
 | `spec` | Spec/CR column work |
-| `verify` | Verify column work |
+| `wave-accepted` | Draft PR tip approved at `wave-acceptance` (not merge) |
 
 ---
 

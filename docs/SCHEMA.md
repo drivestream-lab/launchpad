@@ -116,7 +116,7 @@ profiles:
     skills:
       - repo: prayog-skills
         # illustrative — tenant chooses the tag
-        ref: v0.5.0-rc.2
+        ref: d3bd94e
     community_skills:
       - source: github/awesome-copilot
         ref: v1.0.0
@@ -131,7 +131,7 @@ profiles:
       ref: v2.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.5.0-rc.2
+        ref: d3bd94e
     skill_runtimes:
       - .agents/skills
       - .claude/skills
@@ -142,7 +142,7 @@ profiles:
       ref: v0.1.5
     skills:
       - repo: prayog-skills
-        ref: v0.5.0-rc.2
+        ref: d3bd94e
 
   flink:
     constitution:
@@ -150,7 +150,7 @@ profiles:
       ref: v0.3.1
     skills:
       - repo: prayog-skills
-        ref: v0.5.0-rc.2
+        ref: d3bd94e
 
   edge-agent:
     constitution:
@@ -158,7 +158,7 @@ profiles:
       ref: v0.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.5.0-rc.2
+        ref: d3bd94e
 
 repos:
   special-repo: python-backend
@@ -171,8 +171,7 @@ ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
 **Identity equality:** skill names resolve from prayog `profiles/{stack_key}.yaml`
 (same string as the harness profile name). Profile aliases are **rejected**.
 Lane lists (`requirements_skills` for `meta-pm`, `development_skills` for app
-profiles) are required; `forge_skills` is applied when the pinned profile lists
-it (optional on floor pins such as v0.4.3).
+profiles) plus required `forge_skills`.
 
 **Resolution order:** `repos.<name>` → `repo.stack` from governance → no harness.
 
