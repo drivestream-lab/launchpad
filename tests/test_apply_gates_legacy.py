@@ -38,7 +38,7 @@ def _write_min_configs(config_dir: Path, *, delivery_contract: str = "") -> None
         "org": "example-org",
         "profiles": {
             "meta-pm": {
-                "skills": [{"repo": "prayog-skills", "ref": "v0.4.3"}],
+                "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             }
         },
     }
@@ -97,7 +97,7 @@ def test_apply_gates_requires_contract_file_when_declared(
 def test_print_skills_drift_uses_root_submodule(tmp_path: Path) -> None:
     profile = HarnessProfile(
         "meta-pm",
-        {"skills": [{"repo": "prayog-skills", "ref": "v0.4.3"}]},
+        {"skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}]},
     )
     with patch(
         "launchpad.commands.status._print_submodule_drift",

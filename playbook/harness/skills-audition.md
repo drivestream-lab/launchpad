@@ -24,7 +24,6 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 | open-draft-pr | | | forge walker — optional at wave-pr-action |
 | learning-extract | | | prayog-skills dev (Pass-2 closeout) |
 | ground-spec | | | prayog-skills dev (G1–G10) |
-| verify | | | prayog-skills dev (manual; optional) |
 | purge-initiative-artifacts-app | | | prayog-skills dev (closure; app) |
 | purge-initiative-artifacts-meta | | | prayog-skills requirements (closure; meta) |
 | spec-technical-review | | | T1–T12 when TDD produced |
@@ -43,28 +42,12 @@ Slice: one board issue / wave from initiative spec.
 ```
 
 **Pass if:** checklist lists AGENTS.md, relevant `.mdc`, as-built columns; states
-verify vs unit scope; **no product code** and **no branch open** (gate-only).
+smoke (`tests/verify`) vs unit scope; **no product code** and **no branch open** (gate-only).
 Publish checklist via Forge `/commit-workspace` when the pin requires it.
 
 ---
 
-## 2. verify (app repo — optional / manual)
-
-**Workspace:** app repo — server running, `tests/config.yaml` configured  
-**Note:** Not on the Pass-1 auto edge after `/loop-spec`. Human live-verify is the
-checkpoint; `/verify` may aid that stop or an optional path toward closeout.
-
-```text
-/verify
-
-Run verify for one feature area per tests/README.md.
-```
-
-**Pass if:** agent cites `tests/README.md`, uses documented verify command, notes env prerequisites.
-
----
-
-## 3. Board tickets (forge skill — after spec merge)
+## 2. Board tickets (forge skill — after spec merge)
 
 ```text
 /create-board-tickets INIT-<id>
@@ -147,16 +130,16 @@ mutations as skill success; leaves Forge readiness for `/commit-workspace` then
 /open-draft-pr
 ```
 
-Requires `title`, `body_path`, `head_ref`, `base_ref` (`draft: true`). Then human **live-verify**
-on that Draft PR.
+Requires `title`, `body_path`, `head_ref`, `base_ref` (`draft: true`). Then human
+**`wave-acceptance`** (smoke under `tests/verify` or P15 N/A; label **`wave-accepted`**).
 
-**Pass if:** Draft wave PR opened; no merge by this skill.
+**Pass if:** Draft wave PR opened; no merge by this skill; no label applied by this skill.
 
 ---
 
 ## 9. learning-extract (app repo, Pass-2 closeout)
 
-**When:** After human live-verify / tip fixes; park at `wave-awaiting-closeout` cleared.
+**When:** After human `wave-acceptance` / tip fixes; park at `wave-awaiting-closeout` cleared.
 
 ```text
 /learning-extract
@@ -176,8 +159,9 @@ Wave: W1 of INIT-EXAMPLE-003
 Spec: 01  (or wave W1 of INIT-EXAMPLE-003)
 ```
 
-**Pass if:** **G1–G10** (`GF-*` findings); ground report local only; handoff toward `wave-signoff`;
-no commit/merge by this skill. Human merges at `wave-signoff`.
+**Pass if:** **G1–G10** (`GF-*` findings); ground report local only; handoff toward
+pin `wave-done-action` then `wave-signoff`; no commit/merge by this skill. Human
+merges at `wave-signoff` (publish only).
 
 ---
 
@@ -192,13 +176,13 @@ Initiative: INIT-EXAMPLE-003
 ```
 
 **Pass if:** allowlisted app working papers processed in app workspace; no KEEP deleted;
-handoff toward meta purge. Launchpad does not perform deletes — skill owns semantics.
+handoff toward `initiative-closure-pr-action-app`. Launchpad does not perform deletes — skill owns semantics.
 
 ---
 
 ## 12. purge-initiative-artifacts-meta (meta repo — initiative closure)
 
-**When:** After app purge in the closure lane.
+**When:** After app closure signoff in the dual-loop closure lane.
 
 ```text
 /purge-initiative-artifacts-meta
@@ -207,8 +191,9 @@ Initiative: INIT-EXAMPLE-003
 ```
 
 **Pass if:** allowlisted meta working papers processed in meta workspace; handoff toward
-`initiative-closure-pr-action`. No required human `/open-draft-pr` when pin
-`authorization: automated` on that node; human merges at `initiative-closure-signoff`.
+`initiative-closure-pr-action-meta`. No required human `/open-draft-pr` when pin
+`authorization: automated` on that node; human merges at
+`initiative-closure-signoff-meta`.
 
 ---
 

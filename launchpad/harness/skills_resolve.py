@@ -135,10 +135,10 @@ def resolve_skill_names(
     profile: HarnessProfile,
     harness_profile_name: str,
 ) -> list[str]:
-    """Return lane + optional forge skill names from prayog profiles/{name}.yaml.
+    """Return lane + forge skill directory names from prayog profiles/{name}.yaml.
 
-    Order is stable: lane skills first, then forge_skills when declared (deduped).
-    Missing or empty ``forge_skills`` is allowed (prayog floor v0.4.3 — lane only).
+    Order is stable: lane skills first, then forge_skills (deduped, first wins).
+    ``forge_skills`` must be present and non-empty at the pinned ref.
     Identity equality: harness profile name == profiles/{name}.yaml.
     """
     profile_file = harness_profile_name
@@ -162,6 +162,12 @@ def resolve_skill_names(
         )
 
     forge_names = _parse_skill_list_block(text, FORGE_SKILLS_KEY)
+    if not forge_names:
+        raise HarnessResolveError(
+            f"profiles/{profile_file}.yaml has no {FORGE_SKILLS_KEY} list at the pinned "
+            f"prayog ref. Add a non-empty {FORGE_SKILLS_KEY} block "
+            f"(e.g. commit-workspace, open-draft-pr, create-board-tickets)."
+        )
 
     seen: set[str] = set()
     names: list[str] = []

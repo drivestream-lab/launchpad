@@ -47,7 +47,7 @@ def test_constitution_rewrite_is_generalized(tmp_path: Path) -> None:
                 "org": "acme-org",
                 "ref": "v0.1.0",
             },
-            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
         },
     )
     _seed_harness_pin(
@@ -55,11 +55,13 @@ def test_constitution_rewrite_is_generalized(tmp_path: Path) -> None:
         "harness-pin.edge-agent.yaml",
         profile,
         "edge-agent",
-        ["verify"],
+        ["ground-spec"],
         "sdd-delivery/v2",
         apply=True,
-        agent_skills_ref="v0.5.0-rc.2",
+        agent_skills_ref="d3bd94e",
     )
     pin = (tmp_path / ".harness-pin.yaml").read_text(encoding="utf-8")
     assert "repo: acme-org/edge-agent-rules" in pin
     assert "profile: edge-agent" in pin
+    assert "- ground-spec" in pin
+    assert "- verify" not in pin

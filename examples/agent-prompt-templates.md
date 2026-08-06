@@ -11,7 +11,7 @@ Copy-paste starters for Cursor Agent. **Use the section for your role** — work
 | Role | Open in Cursor | Skills | Typical work |
 |------|----------------|--------|--------------|
 | **Product owner / PM** | `<client>-meta` | `/prd`, `/validate-requirements`, `/review-findings`, `/update-documents`, `/prd-impact-map`, `/purge-initiative-artifacts-meta` | PRD writing, impact mapping, product Q&A; closure meta purge |
-| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/learning-extract`, `/ground-spec`, `/verify`, `/purge-initiative-artifacts-app` | Spec PR, plan, board tickets; Pass-1/2; closure app purge |
+| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/learning-extract`, `/ground-spec`, `/purge-initiative-artifacts-app` | Spec PR, plan, board tickets; Pass-1/2; closure app purge |
 
 **Board:** cite **GitHub issue #** and **full title** — not manifest ids (`Q1`, `T2`) in conversation.
 
@@ -316,35 +316,7 @@ Includes §WorkManifest YAML. Merge spec PR, then `/create-board-tickets`.
 
 ---
 
-## D4 — Verify only (optional / manual)
-
-**When:** Human wants a live-verify aid; **not** required on the Pass-1 edge after `/loop-spec`.
-
-```text
-/verify
-
-Initiative: INIT-EXAMPLE-001
-Issue: #<n>
-Verify command: make test
-
-Run the command; report pass/fail and any fixes needed.
-```
-
-Live stack example:
-
-```text
-/verify
-
-Initiative: INIT-EXAMPLE-002
-Issue: #42
-Verify command: make check && poetry run python -m tests.verify.verify_all
-
-conda activate example-api required for verify_all.
-```
-
----
-
-## D5 — Cross-service check
+## D4 — Cross-service check
 
 **When:** Issue touches HTTP routes, JWT claims, or peer integrations.
 
@@ -362,7 +334,7 @@ Confirm example-api changes do not break EMQX auth, device validation, or Kafka 
 
 ---
 
-## D6 — Wave implementation (Pass-1 → Draft PR → live-verify → Pass-2)
+## D5 — Wave implementation (Pass-1 → wave-acceptance → Pass-2)
 
 **When:** Board wave issue is In Progress.  
 **One wave = one Draft PR after code is on `head_ref`.**
@@ -386,10 +358,12 @@ Do not open the Draft PR or run /learning-extract / /ground-spec in this hop.
 # Walker fallback:
 /open-draft-pr
 # title, body_path, head_ref, base_ref; draft: true
-# then human live-verify on the Draft PR
+# Human wave-acceptance: smoke under tests/verify (or P15 N/A),
+# then apply label wave-accepted on the Draft PR tip.
+# Content skills must not apply the label.
 ```
 
-After human live-verify / tip fixes (Pass-2 closeout):
+After human `wave-acceptance` / tip fixes (Pass-2 closeout):
 
 ```text
 /learning-extract
@@ -403,12 +377,13 @@ Then:
 /ground-spec
 
 Spec: 01  (or wave W1 of INIT-EXAMPLE-002)
-# local report only — human merges at wave-signoff
+# local report only — pin may wave-done-action (board Done);
+# human merges at wave-signoff (publish only)
 ```
 
 ---
 
-## D6b — Initiative closure (after all waves)
+## D5b — Initiative closure (after all waves)
 
 **When:** Every wave is Done. **Once** per initiative — not per wave.  
 **App workspace** then **meta workspace**.
@@ -419,6 +394,7 @@ Spec: 01  (or wave W1 of INIT-EXAMPLE-002)
 
 Initiative: INIT-EXAMPLE-002
 # KEEP/PURGE from pin artifact-write-contract — Launchpad does not delete
+# then initiative-closure-pr-action-app → initiative-closure-signoff-app
 ```
 
 ```text
@@ -426,8 +402,7 @@ Initiative: INIT-EXAMPLE-002
 /purge-initiative-artifacts-meta
 
 Initiative: INIT-EXAMPLE-002
-# then initiative-closure-pr-action (no required /open-draft-pr when pin automated)
-# human merges at initiative-closure-signoff
+# then initiative-closure-pr-action-meta → initiative-closure-signoff-meta
 ```
 
 ---

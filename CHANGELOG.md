@@ -11,6 +11,29 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.31] — 2026-08-06
+
+### Breaking
+
+- **Wave-acceptance alignment:** playbooks, AGENTS, examples, and fixtures track
+  prayog tip **`d3bd94e`** (`wave-acceptance`; label **`wave-accepted`**; no
+  `/verify` skill; no `live-verify` checkpoint). Pass-2: closeout → pin
+  `wave-done-action` (board Done) → `wave-signoff` (merge only).
+- **Dual initiative-closure signoffs:** consume
+  `initiative-closure-signoff-app` / `initiative-closure-signoff-meta` (drop
+  single `initiative-closure-signoff`).
+- **Drop prayog v0.4.3 floor:** `forge_skills` required again at the pinned
+  profile. Remount programmes onto tip `d3bd94e` (or a later retag) before
+  following delivery playbooks: fix meta `skills[].ref`, then
+  `reset-harness` → `apply-harness`.
+
+### Changed
+
+- Fixtures vendored from `d3bd94e` (scrubbed orch product names from comments).
+- Deleted fixture `skills/development/verify/` stub.
+
+---
+
 ## [0.5.30] — 2026-08-04
 
 ### Changed

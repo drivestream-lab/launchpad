@@ -1,5 +1,5 @@
-# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (bb8b1dbeae9315ab47475053f52015d472ce3838).
-# Fixture tracks tip workflow/contract for kit tests; example harness ref stays v0.5.0-rc.2.
+# Vendored from drivestream-lab/prayog-skills@d3bd94e038f7c8fe95517ab2f29373661d76f800 (wave-acceptance; no /verify).
+# Scrubbed: no Orchestrator/orch product names in comments for Launchpad fixtures.
 apiVersion: prayog/v1
 kind: SkillWorkflow
 
@@ -236,6 +236,23 @@ nodes:
       # file scope, exit proof, live-verification completeness). Plan P16.
       - workmanifest-contract-pass
     outcomes:
+      pass: wave-in-progress-action
+      blocked: board-tickets-action
+      failed: workflow-stop
+
+  # Orch process hop (pin SSOT): move wave ticket → In Progress before coding.
+  # No human forge skill — ForgeClient only. Humans may move the card by habit.
+  wave-in-progress-action:
+    type: external-action
+    owner: engineering
+    provider: github
+    authorization: automated
+    forge:
+      action: update_board_status
+      status: in_progress
+      requires:
+        - ticket
+    outcomes:
       pass: pre-implement
       blocked: board-tickets-action
       failed: workflow-stop
@@ -270,7 +287,7 @@ nodes:
   # Wave Draft-PR after checklist + code are on head_ref (reuse open_draft_pr).
   # Placement after loop-spec avoids a mid-Pass-1 STOP before coding.
   # authorization: automated — ForgeClient opens PR without interactive STOP.
-  # Not a merge action — human merge stays at wave-signoff.
+  # Not a merge action — human merge stays at wave-signoff (publish only).
   wave-pr-action:
     type: external-action
     owner: engineering
@@ -287,13 +304,18 @@ nodes:
         - head_ref
         - base_ref
     outcomes:
-      pass: live-verify
+      pass: wave-acceptance
       blocked: wave-signoff
       failed: workflow-stop
 
-  live-verify:
+  # Human prove on Draft PR tip (smoke under live_verify_dir, or P15 N/A).
+  # pass = human approved for this wave tip — only approval signal.
+  # Ingress: GitHub label wave-accepted (phase-1) or programme Accept (later).
+  # Not a content skill; skills must not apply the label or mutate GitHub.
+  # pass parks; Pass-2 Enter-at learning-extract closes the wave.
+  wave-acceptance:
     type: human-checkpoint
-    purpose: live-verify
+    purpose: wave-acceptance
     outcomes:
       pass: wave-awaiting-closeout
       findings: loop-spec
@@ -301,19 +323,6 @@ nodes:
 
   wave-awaiting-closeout:
     type: terminal
-
-  verify:
-    type: skill
-    profile: development
-    dispatch: manual
-    forge:
-      commit_workspace: optional
-    outcomes:
-      pass: learning-extract
-      skipped: learning-extract
-      findings: loop-spec
-      blocked: wave-signoff
-      failed: loop-spec
 
   learning-extract:
     type: skill
@@ -335,16 +344,33 @@ nodes:
     forge:
       commit_workspace: required
     outcomes:
-      pass: wave-signoff
+      pass: wave-done-action
       findings: loop-spec
       needs-input: wave-signoff
       blocked: wave-signoff
       failed: loop-spec
 
-  # Human-only exact-head approval + merge. Gateflow/Forge must not merge.
-  # pass is legal only after the human confirms the reviewed PR head SHA,
-  # merges manually, and records the resulting merge commit SHA in checkpoint
-  # evidence (not via handoff.forge authorization or approval labels).
+  # Orch process hop (pin SSOT): move wave ticket → Done, then human merges.
+  # No human forge skill — ForgeClient only. Merge stays at wave-signoff.
+  wave-done-action:
+    type: external-action
+    owner: engineering
+    provider: github
+    authorization: automated
+    forge:
+      action: update_board_status
+      status: done
+      requires:
+        - ticket
+    outcomes:
+      pass: wave-signoff
+      blocked: wave-signoff
+      failed: workflow-stop
+
+  # Human merge/publish only — not a second approval.
+  # Human approved was wave-acceptance; closeout already closed the wave.
+  # Orchestrators/Forge must not merge. pass records merge commit SHA on the
+  # accepted tip (not via handoff.forge or approval labels).
   wave-signoff:
     type: human-checkpoint
     purpose: wave-signoff
@@ -366,9 +392,9 @@ nodes:
       pass: purge-initiative-artifacts-app
       findings: wave-signoff
 
-  # Initiative-closure lane: purge allowlisted working papers on develop-based
-  # heads (app then meta), open closure Draft PR(s), human merge. No
-  # authorize-before-delete — allowlist + refuse KEEP. No merge Forge action.
+  # Eng closure loop (independent): purge → commit → automated Draft PR → human merge.
+  # Then PM closure loop (independent): same shape on meta. Skills do not couple.
+  # Handoff-only success (no Purge-*.md). No authorize-before-delete. No merge Forge.
   purge-initiative-artifacts-app:
     type: skill
     profile: development
@@ -376,24 +402,12 @@ nodes:
     forge:
       commit_workspace: required
     outcomes:
-      pass: purge-initiative-artifacts-meta
+      pass: initiative-closure-pr-action-app
       needs-input: initiative-closure
       blocked: initiative-closure
       failed: initiative-closure
 
-  purge-initiative-artifacts-meta:
-    type: skill
-    profile: meta-pm
-    dispatch: orchestrated
-    forge:
-      commit_workspace: required
-    outcomes:
-      pass: initiative-closure-pr-action
-      needs-input: initiative-closure
-      blocked: initiative-closure
-      failed: initiative-closure
-
-  initiative-closure-pr-action:
+  initiative-closure-pr-action-app:
     type: external-action
     owner: product
     provider: github
@@ -407,13 +421,51 @@ nodes:
         - title
         - body_path
     outcomes:
-      pass: initiative-closure-signoff
+      pass: initiative-closure-signoff-app
       blocked: initiative-closure
       failed: workflow-stop
 
-  initiative-closure-signoff:
+  initiative-closure-signoff-app:
     type: human-checkpoint
-    purpose: initiative-closure-signoff
+    purpose: initiative-closure-signoff-app
+    outcomes:
+      pass: purge-initiative-artifacts-meta
+      findings: initiative-closure
+      blocked: workflow-stop
+
+  purge-initiative-artifacts-meta:
+    type: skill
+    profile: meta-pm
+    dispatch: orchestrated
+    forge:
+      commit_workspace: required
+    outcomes:
+      pass: initiative-closure-pr-action-meta
+      needs-input: initiative-closure
+      blocked: initiative-closure
+      failed: initiative-closure
+
+  initiative-closure-pr-action-meta:
+    type: external-action
+    owner: product
+    provider: github
+    authorization: automated
+    forge:
+      action: open_draft_pr
+      draft: true
+      apply_labels: []
+      remove_labels: []
+      requires:
+        - title
+        - body_path
+    outcomes:
+      pass: initiative-closure-signoff-meta
+      blocked: initiative-closure
+      failed: workflow-stop
+
+  initiative-closure-signoff-meta:
+    type: human-checkpoint
+    purpose: initiative-closure-signoff-meta
     outcomes:
       pass: workflow-complete
       findings: initiative-closure

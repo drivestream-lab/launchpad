@@ -26,9 +26,12 @@ readiness. Branch/commit/push/PR/issue/label/merge happen only via forge skills
 (`/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`). Wave Draft PR
 opens at `wave-pr-action` **after** `/loop-spec` (no mid-coding Draft PR). Do
 not require a human `/open-draft-pr` when the pin sets `authorization: automated`
-on that node — walkers may still run `/open-draft-pr`. Wave merge is human-only
-at `wave-signoff`. Initiative-closure merge is human-only at
-`initiative-closure-signoff`.
+on that node — walkers may still run `/open-draft-pr`. Content skills must not
+apply labels (including `wave-accepted`), commit, push, open/merge PRs, or update
+boards — forge skills / human GitHub only. Wave tip approval is human-only at
+`wave-acceptance` (label `wave-accepted`). Wave merge is human-only at
+`wave-signoff` (publish only — not a second approve). Initiative-closure merges
+are human-only at `initiative-closure-signoff-app` / `initiative-closure-signoff-meta`.
 
 **PRs:** use `.github/pull_request_template.md` — Initiative, Spec path, Verify command.
 
@@ -39,12 +42,16 @@ Engineering work is tracked on **[{{BOARD_NAME}}]({{BOARD_URL}})** (org Project)
 - SSOT: `{{META_REPO}}/config/governance-*.yaml` → `project_board` (read-only meta clone)
 - Resolve binding: `launchpad board-bind --client <id>`
 - After spec merge: `/create-board-tickets INIT-<id>` (forge; validates plan §9)
-- Pass-1: `/pre-implement` → `/loop-spec` → `wave-pr-action` → `live-verify`
-- Pass-2: `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge)
-- Closure (all waves done, once): `initiative-closure` → `/purge-initiative-artifacts-app`
-  (app) → `/purge-initiative-artifacts-meta` (meta) → `initiative-closure-pr-action`
-  → `initiative-closure-signoff` (human merge). No required `/open-draft-pr` when
-  pin `authorization: automated` on the closure PR node.
+- Pass-1: `/pre-implement` → `/loop-spec` → `wave-pr-action` → `wave-acceptance`
+  (smoke under `tests/verify` / `verify_command`, or P15 N/A; signal with label
+  **`wave-accepted`** on the Draft PR tip)
+- Pass-2: `/learning-extract` → `/ground-spec` → pin may `wave-done-action`
+  (board → Done; not a slash skill) → `wave-signoff` (human merge only)
+- Closure (all waves done, once): `initiative-closure` →
+  `/purge-initiative-artifacts-app` → `initiative-closure-pr-action-app` →
+  `initiative-closure-signoff-app` → `/purge-initiative-artifacts-meta` →
+  `initiative-closure-pr-action-meta` → `initiative-closure-signoff-meta`.
+  No required `/open-draft-pr` when pin `authorization: automated` on those PR nodes.
 <!-- launchpad:harness-end -->
 
 ## Product (what to build)
