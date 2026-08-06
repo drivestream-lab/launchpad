@@ -72,7 +72,7 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 | Wave PR gate | Same-PR checklist (tests, feature map, as-built, overlap) |
 | Appendix | Optional verify → wave → unit → canon (eng validates) |
 | Dev read order | Spec → canon → as-built → tests README → AGENTS (once) |
-| Verify commands | CI (`make check`, `make test`) vs live verify (closure) |
+| Smoke commands | CI (`make check`, `make test`) vs live scripts under `tests/verify/` (wave-acceptance) |
 | Constraints | No initiative blocks in `AGENTS.md`; no `src/` in spec PR |
 
 **Wave parity gate:** spec wave table IDs = PRD §4.0 / §4.5 wave IDs (PRE* allowed; scope may refine after `/initiative-feasibility`).
@@ -85,14 +85,18 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 2. `/loop-spec` — implement + unit/check on `head_ref`; Forge `/commit-workspace` as required
 3. `wave-pr-action` — Draft PR after `/loop-spec` (no required human
    `/open-draft-pr` when pin `authorization: automated`; walkers may still run
-   it) → human **live-verify** on the Draft PR
+   it) → human **`wave-acceptance`** (smoke under `tests/verify` or P15 N/A;
+   label **`wave-accepted`**)
 4. **Same PR:** update `as-built/implementation-status.md` and `tests/README.md` as needed
-5. Pass-2 closeout: `/learning-extract` → `/ground-spec` → `wave-signoff` (human merge)
-6. Optional `/verify` — manual live-verify aid (not on the Pass-1 auto edge)
-7. **Closure (all waves done, once):** `initiative-closure` →
-   `/purge-initiative-artifacts-app` (app) → `/purge-initiative-artifacts-meta`
-   (meta) → `initiative-closure-pr-action` → `initiative-closure-signoff`.
+5. Pass-2 closeout: `/learning-extract` → `/ground-spec` → pin may `wave-done-action`
+   → `wave-signoff` (human merge only)
+6. **Closure (all waves done, once):** `initiative-closure` →
+   `/purge-initiative-artifacts-app` → `initiative-closure-pr-action-app` →
+   `initiative-closure-signoff-app` → `/purge-initiative-artifacts-meta` →
+   `initiative-closure-pr-action-meta` → `initiative-closure-signoff-meta`.
    Not per-wave. Launchpad does not delete files.
+
+`tests/verify/` holds smoke **scripts** (not a skill package).
 
 Test-quality retro (**INIT-EXAMPLE-001**): board spec path points to `product/INIT-EXAMPLE-001.md` and capability docs (e.g. `05-roles-and-authz.md`), not bootstrap artifacts.
 

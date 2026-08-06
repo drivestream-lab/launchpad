@@ -10,12 +10,12 @@ from launchpad.harness.paths import HARNESS_PROFILE_REL, HARNESS_SKILLS_HUB_REL
 
 
 def test_reset_harness_clears_default_surfaces(tmp_path: Path) -> None:
-    hub = tmp_path / HARNESS_SKILLS_HUB_REL / "verify"
+    hub = tmp_path / HARNESS_SKILLS_HUB_REL / "pre-implement"
     hub.mkdir(parents=True)
-    (hub / "SKILL.md").write_text("# verify", encoding="utf-8")
-    runtime = tmp_path / ".agents" / "skills" / "verify"
+    (hub / "SKILL.md").write_text("# pre-implement", encoding="utf-8")
+    runtime = tmp_path / ".agents" / "skills" / "pre-implement"
     runtime.mkdir(parents=True)
-    (runtime / "SKILL.md").write_text("# verify", encoding="utf-8")
+    (runtime / "SKILL.md").write_text("# pre-implement", encoding="utf-8")
     (tmp_path / ".harness-pin.yaml").write_text("profile: python-backend\n", encoding="utf-8")
     profile = tmp_path / HARNESS_PROFILE_REL
     profile.parent.mkdir(parents=True, exist_ok=True)

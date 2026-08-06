@@ -81,7 +81,7 @@ Base URL: `tenant <client>-meta/blob/develop/`
 | Skills matrix | `playbook/harness/skills-matrix.md` |
 | Skills audition | `playbook/harness/skills-audition.md` |
 | Pre-implement (example-api) | `example-org/example-api` → `.agents/skills/pre-implement/SKILL.md` |
-| Verify skill (example-api) | `example-org/example-api` → `.agents/skills/verify/SKILL.md` |
+| Ground-spec (example-api) | `example-org/example-api` → `.agents/skills/ground-spec/SKILL.md` |
 
 ---
 

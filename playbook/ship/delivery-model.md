@@ -10,11 +10,15 @@ PRD delivery_model + wave table
   → dev: /spec-implementation-plan §9 WorkManifest YAML   ← on spec branch, before spec merge
   → spec PR merge
   → /create-board-tickets (forge; P16 + pin validator preflight)
-  → /pre-implement → /loop-spec → wave-pr-action → live-verify
-  → Pass-2: /learning-extract → /ground-spec → wave-signoff (human merge)
+  → /pre-implement → /loop-spec → wave-pr-action → wave-acceptance
+      (smoke / P15 N/A; label wave-accepted)
+  → Pass-2: /learning-extract → /ground-spec → wave-done-action (board Done)
+      → wave-signoff (human merge only)
   → Closure (all waves done): initiative-closure
-      → /purge-initiative-artifacts-app → /purge-initiative-artifacts-meta
-      → initiative-closure-pr-action → initiative-closure-signoff (human merge)
+      → /purge-initiative-artifacts-app → initiative-closure-pr-action-app
+      → initiative-closure-signoff-app
+      → /purge-initiative-artifacts-meta → initiative-closure-pr-action-meta
+      → initiative-closure-signoff-meta
 ```
 
 **Work manifest rule:** SSOT is plan §9 under pinned prayog

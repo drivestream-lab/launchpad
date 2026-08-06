@@ -1,5 +1,5 @@
-# Vendored from drivestream-lab/prayog-skills@v0.5.0-rc.2 tip (bb8b1dbeae9315ab47475053f52015d472ce3838).
-# Fixture tracks tip workflow/contract for kit tests; example harness ref stays v0.5.0-rc.2.
+# Vendored from drivestream-lab/prayog-skills@d3bd94e038f7c8fe95517ab2f29373661d76f800 (wave-acceptance; no /verify).
+# Scrubbed: no Orchestrator/orch product names in comments for Launchpad fixtures.
 apiVersion: prayog/v1
 kind: DeliveryContract
 
@@ -15,7 +15,7 @@ workmanifest_spec: references/workmanifest-contract.md
 # WorkManifest — immutable approved execution intent (epic/waves/tasks/deps/
 # files/exit proof/wave verification). Board status and runtime evidence live
 # in owning systems/artifacts, not in the approved manifest. Walker-neutral:
-# human or Gateflow. Launchpad materializes the pin only.
+# human or programme runner. Launchpad materializes the pin only.
 workmanifest:
   identity:
     apiVersion: prayog/v1
@@ -51,7 +51,7 @@ principles:
 #
 # Human-checkpoint nodes require `purpose` (intent slug). Mechanism is always
 # `type: human-checkpoint` — do not invent `type: gate`. Prefer node id ≡ purpose
-# (e.g. prd-impact-acceptance, coding-readiness, live-verify, wave-signoff).
+# (e.g. prd-impact-acceptance, coding-readiness, wave-acceptance, wave-signoff).
 # GitHub projection labels stay lane-named (impact-map-*, spec-*); they are not
 # renamed when checkpoint ids change.
 #
@@ -89,15 +89,19 @@ dispatch:
 # Every external-action MUST set authorization: explicit | automated (required;
 # no omission / no default). explicit = STOP for interactive authorize;
 # automated = ForgeClient runs when handoff.forge is complete (no interactive
-# STOP). `open_draft_pr` is reused for PRD/spec/wave Draft PRs. There is **no**
-# merge Forge action — wave approval and merge remain human-only at
-# `wave-signoff`. Head/ref binding is run context (not pin). Approval labels
-# (*-lgtm) never auto.
+# STOP). `open_draft_pr` is reused for PRD/spec/wave Draft PRs.
+# `update_board_status` is pin-declared (wave In Progress / Done); orch
+# ForgeClient only — **no** human forge skill package (keep AGENTS thin).
+# There is **no** merge Forge action — merge remains human-only at
+# `wave-signoff` (publish). Human approved is `wave-acceptance` (label
+# `wave-accepted` phase-1 ingress). Head/ref binding is run context (not pin).
+# Approval labels (*-lgtm, wave-accepted) never auto from content skills.
 #
-# Human skill id = forge.action with '_' → '-'. Orchestrators never auto-dispatch
-# forge skills (not on workflow outcomes; disable-model-invocation: true).
-# `automated` means pre-authorized ForgeClient / programme executor — not that
-# content skills may mutate GitHub.
+# Human skill id = forge.action with '_' → '-' **when** a skills/forge package
+# exists. Orchestrators never auto-dispatch forge skills (not on workflow
+# outcomes; disable-model-invocation: true). `automated` means pre-authorized
+# ForgeClient / programme executor — not that content skills may mutate GitHub.
+# Orch process hops are declared only in workflow.yaml (no off-graph side effects).
 forge:
   commit_workspace:
     enum:
@@ -117,11 +121,12 @@ forge:
       - commit_workspace
       - open_draft_pr
       - create_board_tickets
+      - update_board_status
     reserved_future:
       - link_pr_to_ticket
-      - update_board_status
       - post_forge_comment
   human_skill_id: action_with_underscores_to_hyphens
+  # update_board_status: orch ForgeClient only — omit from human_forge_skills
   forbid_auto_labels_suffix: "-lgtm"
   policy_fixture: tests/fixtures/workflow_forge_policy.json
   contract: references/forge-side-effects.md
@@ -129,7 +134,7 @@ forge:
 # Prompt packages (skill invocation briefs) — orthogonal to dispatch.
 # Coverage = skills/requirements/* ∪ skills/development/* ∪ skills/forge/*
 # (see inventory). Automated consumers fail closed; humans may freeform.
-# Runtime bind/render/outcome persistence is Gateflow BOUNDINPUT (later).
+# Runtime bind/render/outcome persistence is programme-runner BOUNDINPUT (later).
 prompts:
   layout: skills/<area>/<skill-id>/prompts/
   areas:
@@ -193,6 +198,12 @@ github:
       color: E99695
       description: Upstream meta or PRD approval is stale
       profiles: [app]
+    - name: wave-accepted
+      color: 0E8A16
+      description: >-
+        Wave tip human-approved at wave-acceptance (smoke or P15 N/A);
+        not a merge signal
+      profiles: [app]
   review_roles:
     prd-impact-acceptance:
       role: engineering-gate
@@ -200,6 +211,15 @@ github:
     coding-readiness:
       role: engineering-gate
       profiles: [app]
-    initiative-closure-signoff:
+    wave-acceptance:
       role: engineering-gate
-      profiles: [app, meta-pm]
+      profiles: [app]
+    wave-signoff:
+      role: engineering-gate
+      profiles: [app]
+    initiative-closure-signoff-app:
+      role: engineering-gate
+      profiles: [app]
+    initiative-closure-signoff-meta:
+      role: engineering-gate
+      profiles: [meta-pm]

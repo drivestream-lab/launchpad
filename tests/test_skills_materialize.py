@@ -18,6 +18,7 @@ from launchpad.harness.skills_materialize import (
     runtime_skill_present,
 )
 from launchpad.harness.skills_resolve import (
+    FORGE_SKILLS_KEY,
     HarnessResolveError,
     find_skill_source_dir,
     resolve_delivery_contract,
@@ -41,7 +42,7 @@ def _meta_profile() -> HarnessProfile:
     return HarnessProfile(
         "meta-pm",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.4.2"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "community_skills": [
                 {"source": "github/awesome-copilot", "ref": "v1.0.0", "skill": "prd"}
             ],
@@ -54,7 +55,7 @@ def _python_profile() -> HarnessProfile:
     return HarnessProfile(
         "python-backend",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.4.2"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "skill_runtimes": RUNTIMES,
         },
     )
@@ -64,7 +65,7 @@ def _terraform_profile() -> HarnessProfile:
     return HarnessProfile(
         "terraform-iac",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.4.3"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "skill_runtimes": RUNTIMES,
         },
     )
@@ -74,7 +75,7 @@ def _nextjs_profile() -> HarnessProfile:
     return HarnessProfile(
         "nextjs-frontend",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "skill_runtimes": RUNTIMES,
         },
     )
@@ -84,7 +85,7 @@ def _flink_profile() -> HarnessProfile:
     return HarnessProfile(
         "flink",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "skill_runtimes": RUNTIMES,
         },
     )
@@ -94,7 +95,7 @@ def _edge_agent_profile() -> HarnessProfile:
     return HarnessProfile(
         "edge-agent",
         {
-            "skills": [{"repo": "prayog-skills", "ref": "v0.5.0-rc.2"}],
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "skill_runtimes": RUNTIMES,
         },
     )
@@ -109,7 +110,6 @@ _APP_DEV_SKILLS = [
     "loop-spec",
     "learning-extract",
     "ground-spec",
-    "verify",
     "purge-initiative-artifacts-app",
 ]
 
@@ -159,7 +159,7 @@ class TestResolveSkillNames:
         ]
         assert roles == {
             "prd-impact-acceptance": "engineering-gate",
-            "initiative-closure-signoff": "engineering-gate",
+            "initiative-closure-signoff-meta": "engineering-gate",
         }
 
         app_labels, app_roles = resolve_gate_resources(FIXTURES, "python-backend")
@@ -169,10 +169,13 @@ class TestResolveSkillNames:
             "spec-lgtm",
             "spec-revised",
             "spec-stale",
+            "wave-accepted",
         ]
         assert app_roles == {
             "coding-readiness": "engineering-gate",
-            "initiative-closure-signoff": "engineering-gate",
+            "wave-acceptance": "engineering-gate",
+            "wave-signoff": "engineering-gate",
+            "initiative-closure-signoff-app": "engineering-gate",
         }
 
     def test_terraform_iac_from_profile_yaml(self):
@@ -211,18 +214,17 @@ class TestResolveSkillNames:
         with pytest.raises(HarnessResolveError, match="profiles/meta-pm.yaml"):
             resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
 
-    def test_missing_forge_skills_lane_only(self, tmp_path: Path):
+    def test_missing_forge_skills_raises(self, tmp_path: Path):
         profiles = tmp_path / "profiles"
         profiles.mkdir()
         (profiles / "meta-pm.yaml").write_text(
             "profile: meta-pm\n\nrequirements_skills:\n  - validate-requirements\n",
             encoding="utf-8",
         )
-        assert resolve_skill_names(tmp_path, _meta_profile(), "meta-pm") == [
-            "validate-requirements"
-        ]
+        with pytest.raises(HarnessResolveError, match=FORGE_SKILLS_KEY):
+            resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
 
-    def test_empty_forge_skills_lane_only(self, tmp_path: Path):
+    def test_empty_forge_skills_raises(self, tmp_path: Path):
         profiles = tmp_path / "profiles"
         profiles.mkdir()
         (profiles / "meta-pm.yaml").write_text(
@@ -230,27 +232,8 @@ class TestResolveSkillNames:
             "forge_skills:\n",
             encoding="utf-8",
         )
-        assert resolve_skill_names(tmp_path, _meta_profile(), "meta-pm") == [
-            "validate-requirements"
-        ]
-
-    def test_v043_shaped_app_profile_lane_only(self, tmp_path: Path):
-        """prayog v0.4.3 profiles omit forge_skills; lane list still resolves."""
-        profiles = tmp_path / "profiles"
-        profiles.mkdir()
-        (profiles / "python-backend.yaml").write_text(
-            "profile: python-backend\n\n"
-            "development_skills:\n"
-            "  - board-seed\n"
-            "  - pre-implement\n"
-            "  - verify\n",
-            encoding="utf-8",
-        )
-        assert resolve_skill_names(tmp_path, _python_profile(), "python-backend") == [
-            "board-seed",
-            "pre-implement",
-            "verify",
-        ]
+        with pytest.raises(HarnessResolveError, match=FORGE_SKILLS_KEY):
+            resolve_skill_names(tmp_path, _meta_profile(), "meta-pm")
 
 
 class TestFindSkillSourceDir:
@@ -415,4 +398,6 @@ class TestCommunitySkillTree:
 
 class TestSlashList:
     def test_formats_slash_commands(self):
-        assert slash_list(["verify", "pre-implement"]) == "`/verify`, `/pre-implement`"
+        assert slash_list(["ground-spec", "pre-implement"]) == (
+            "`/ground-spec`, `/pre-implement`"
+        )

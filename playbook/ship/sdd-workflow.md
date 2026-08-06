@@ -9,7 +9,7 @@ How agents and engineers use the **truth hierarchy** in Launchpad repos. Constit
 | Priority | Location | Answers |
 |----------|----------|---------|
 | 1 | `.cursor/rules/*.mdc` (submodule) | **How** to build |
-| 2 | `AGENTS.md` | Router — rules boundary, verify commands |
+| 2 | `AGENTS.md` | Router — rules boundary, smoke / verify_command |
 | 3 | `docs/specification/product/` | **What** to build |
 | 4 | `docs/specification/adr/` | **Why** (accepted decisions) |
 | 5 | `docs/specification/as-built/` | **What is live today** — `implementation-status.md`  |
@@ -21,7 +21,7 @@ How agents and engineers use the **truth hierarchy** in Launchpad repos. Constit
 | Layer | Location | Role |
 |-------|----------|------|
 | `.cursor/rules/*.mdc` | Rules submodule | **Constitution** — how to build (never list prayog skills here) |
-| `AGENTS.md` | App or meta repo root | **Router** — pins, verify commands, skill names |
+| `AGENTS.md` | App or meta repo root | **Router** — pins, smoke / verify_command, skill names |
 | `.harness/skills/<skill>/` | Hub + mirrors (gitignored symlinks) | **Procedures** — prayog slash-command workflows |
 | `prayog-skills/` | Git submodule (root) | Skill **source** tree @ pinned ref |
 
@@ -40,8 +40,8 @@ When code changes, update together:
 
 - product spec (if contract or capability changes)
 - **unit tests** — logic and edges (see repo `tests/README.md` for layout)
-- **verify** (`tests/verify/`) — live E2E per product feature
-- **as-built** — distinguish implemented / unit-tested / live-verified
+- **smoke scripts** (`tests/verify/`) — live happy path per product feature (not a skill package)
+- **as-built** — distinguish implemented / unit-tested / tip-accepted (wave-accepted)
 
 ## PR traceability (required)
 
@@ -50,7 +50,7 @@ Every PR uses the template block:
 - Initiative (e.g. `BOOTSTRAP-001`, later `INIT-…`)
 - Issue #
 - Spec paths touched
-- Verify command run
+- Smoke command / tip evidence (`tests/verify` script, `verify_command`, or N/A)
 
 ## Example reading order (backend app)
 
