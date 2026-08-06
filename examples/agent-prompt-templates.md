@@ -204,13 +204,13 @@ Read:
 - docs/specification/as-built/implementation-status.md
 
 Execute one slice:
-1. Implement code + tests (unit vs verify — no overlap)
+1. Implement code + tests (unit vs smoke scripts — no overlap)
 2. Update product spec status if behavior ships
 3. Update as-built/implementation-status.md in same PR
-4. Run board Verify command
+4. Run board Smoke command (or N/A for P15)
 
 Branch: feature/INIT-EXMPL-002-w{N}-{slug}  ← see branching-policy.md
-Verify: (paste from board — e.g. make check && poetry run python -m tests.verify.verify_all)
+Smoke: (paste from board — e.g. tests/verify/… or N/A)
 
 Do not edit .cursor/rules/ submodule.
 ```
@@ -235,23 +235,23 @@ Read:
 - docs/specification/as-built/implementation-status.md (## Testing harness)
 - tests/README.md
 
-Deliver per overlap rules: unit and/or verify trim; update feature map + as-built.
+Deliver per overlap rules: unit and/or smoke-script trim; update feature map + as-built.
 
 Branch: chore/INIT-EXAMPLE-001-<slug>
-Verify: make test (or board Verify command)
+Smoke: board Smoke command, or tests/verify/…, or N/A
 
 Do not edit .cursor/rules/ submodule. No new product features unless scoped.
 ```
 
 ### Historical wave reference (complete — do not re-implement)
 
-| Wave | Product spec | Verify |
-|------|--------------|--------|
+| Wave | Product spec | Smoke |
+|------|--------------|-------|
 | W1 auth | `05-roles-and-authz.md` | `make test` |
 | W2 onboarding | `03-tenant-and-user-lifecycle.md` | `make test` |
 | W3 device/OTP | `06-device-traffic-and-mqtt.md` | `make test` |
 | W4 bridge | `06-device-traffic-and-mqtt.md` | `make test` |
-| W5 close-out | `tests/README.md` | `make check && poetry run python -m tests.verify.verify_all` |
+| W5 close-out | `tests/README.md` | `tests/verify` / repo verify_command |
 
 ---
 
@@ -416,6 +416,6 @@ Every PR description should match board fields:
 | Initiative | `INIT-EXAMPLE-001` or `INIT-EXAMPLE-002` |
 | Issue | `#<n>` |
 | Spec path | `docs/specification/product/INIT-EXAMPLE-001.md` |
-| Verify command | `make test` |
+| Smoke command | `tests/verify/…`, repo `verify_command`, or `N/A` |
 
 Template: app repo `.github/pull_request_template.md`

@@ -33,7 +33,7 @@ boards — forge skills / human GitHub only. Wave tip approval is human-only at
 `wave-signoff` (publish only — not a second approve). Initiative-closure merges
 are human-only at `initiative-closure-signoff-app` / `initiative-closure-signoff-meta`.
 
-**PRs:** use `.github/pull_request_template.md` — Initiative, Spec path, Verify command.
+**PRs:** use `.github/pull_request_template.md` — Initiative, Spec path, Smoke command.
 
 ### Programme board
 

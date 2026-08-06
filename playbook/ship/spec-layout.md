@@ -72,7 +72,7 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 | Wave PR gate | Same-PR checklist (tests, feature map, as-built, overlap) |
 | Appendix | Optional verify → wave → unit → canon (eng validates) |
 | Dev read order | Spec → canon → as-built → tests README → AGENTS (once) |
-| Verify commands | CI (`make check`, `make test`) vs live verify (closure) |
+| Smoke commands | CI (`make check`, `make test`) vs live scripts under `tests/verify/` (wave-acceptance) |
 | Constraints | No initiative blocks in `AGENTS.md`; no `src/` in spec PR |
 
 **Wave parity gate:** spec wave table IDs = PRD §4.0 / §4.5 wave IDs (PRE* allowed; scope may refine after `/initiative-feasibility`).
