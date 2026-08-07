@@ -12,8 +12,7 @@ Two views depending on flag:
   --repo <name>   (Engineer / Repo-owner view)
     Kit version check
     Repo phase checklist: governance, clone, scaffold, harness
-    Constitution: declared ref vs locally pinned ref (drift check)
-    Skills: declared ref vs locally pinned ref (drift check)
+    Constitution / skills: local HEAD vs origin tip for declared ref (SSOT)
     Exit code 1 if drift detected — safe for CI pipelines
 
 check-harness is removed — status --repo covers its functionality.
@@ -48,6 +47,7 @@ from launchpad.clients import resolve_programme_workspace
 from launchpad.programme.board_binding import resolve_board_binding
 from launchpad.harness.paths import HARNESS_PROFILE_REL, PM_HARNESS_PROFILE, PRAYOG_SKILLS_SUBMODULE_REL
 from launchpad.harness.skills_materialize import all_runtime_skills_present, hub_skill_present, runtime_skill_present
+from launchpad.harness.submodules import compare_local_to_origin
 from launchpad.harness.skills_resolve import (
     HarnessResolveError,
     resolve_delivery_contract,
@@ -315,7 +315,7 @@ def _print_submodule_drift(
     submodule_rel: str,
     repo_path: Path,
 ) -> bool:
-    """Print declared vs local submodule state. Returns True if drift detected."""
+    """Print local HEAD vs origin tip for declared ref. Returns True if drift."""
     _section(section)
     print(f"  [→] declared:  {repo_label} @ {declared_ref}")
 
@@ -325,13 +325,27 @@ def _print_submodule_drift(
         return True
 
     sub_path = repo_path / submodule_rel
-    head_result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=sub_path,
-        capture_output=True,
-        text=True,
-    )
-    local_sha = head_result.stdout.strip()
+    tip = compare_local_to_origin(sub_path, declared_ref)
+    local_disp = local_ref
+    local_short = (tip.local_sha or "")[:7] or "?"
+    origin_short = (tip.origin_sha or "")[:7] or "?"
+
+    if not tip.unavailable and tip.origin_sha:
+        if tip.in_sync:
+            print(
+                f"  [✔] local:     {repo_label} @ {local_disp}  "
+                f"(in sync with origin tip {origin_short})"
+            )
+            return False
+        print(
+            f"  [!] origin tip moved: local {local_short} → origin {origin_short}  "
+            f"(ref {declared_ref})"
+        )
+        print(f"  [!] local:     {repo_label} @ {local_disp}  ← behind origin tip")
+        return True
+
+    # Origin unreachable — do not claim remote-current; fall back to local objects.
+    print("  [?] origin:    tip check unavailable")
     declared_sha = ""
     for candidate in (f"origin/{declared_ref}", declared_ref):
         result = subprocess.run(
@@ -344,11 +358,14 @@ def _print_submodule_drift(
             declared_sha = result.stdout.strip()
             break
 
-    if local_ref == declared_ref or (local_sha and local_sha == declared_sha):
-        print(f"  [✔] local:     {repo_label} @ {local_ref}  (in sync)")
+    if local_ref == declared_ref or (tip.local_sha and tip.local_sha == declared_sha):
+        print(
+            f"  [✔] local:     {repo_label} @ {local_disp}  "
+            f"(local objects match declared; origin not verified)"
+        )
         return False
 
-    print(f"  [!] local:     {repo_label} @ {local_ref}  ← behind declared {declared_ref}")
+    print(f"  [!] local:     {repo_label} @ {local_disp}  ← behind declared {declared_ref}")
     return True
 
 
