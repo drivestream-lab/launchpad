@@ -118,6 +118,7 @@ See [setup/multi-laptop.md](../setup/multi-laptop.md).
 - [ ] `pyproject.toml` + `launchpad/__init__.py` version bumped
 - [ ] [CHANGELOG.md](../../CHANGELOG.md) updated
 - [ ] No customer names in diff — [PUBLICATION_CHECKLIST.md](../PUBLICATION_CHECKLIST.md)
+- [ ] If kit tip / prayog pin moved: re-vendor `tests/fixtures/prayog-skills/` from that tip; update the `# Vendored from …@<sha>` header; align `examples/` harness refs; optionally run `scripts/check-fixture-pin.sh`
 - [ ] Tag pushed: `v0.x.y`
 - [ ] GitHub Release published
 - [ ] Tenant operators notified: version + any re-run commands

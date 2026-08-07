@@ -1,6 +1,6 @@
 """Launchpad automation — GitHub factory setup (PAT / GITHUB_TOKEN).
 
-v0.5.31 — wave-acceptance alignment; tip d3bd94e; no /verify; dual closure.
+v0.5.32 — origin tip SSOT for harness pins; fixture tip checklist.
 """
 
-__version__ = "0.5.31"
+__version__ = "0.5.32"

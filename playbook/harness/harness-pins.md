@@ -73,6 +73,17 @@ ref; current kit delivery docs/fixtures track tip **`d3bd94e`** (wave-acceptance
 required `forge_skills`; no `/verify`). Remount programmes onto that tip (or a
 later retag) before following playbooks.
 
+### Origin tip is SSOT
+
+For a declared tip (tag, branch, or SHA), **origin** is the source of truth:
+
+| Command | Behaviour |
+|---------|-----------|
+| `apply-harness` | Resolves the tip on origin, force-updates local tag refs when retargeted, checkouts that SHA. Prints `tip moved: <local> → <origin>` when they differ. |
+| `status --repo` | Compares local submodule `HEAD` to origin tip for the declared ref. Drift if they differ; `[?]` if origin is unreachable (does **not** claim remote-current). |
+
+`git describe --tags --exact-match` (display only) reads the **local** tag cache. After `apply-harness` it matches origin; if the checkout was updated by other means, the display name can lag even when `HEAD` content is current.
+
 When `delivery_contract` is set, confirm the chosen tag includes a matching
 `delivery-contract.yaml` before merging the harness PR. Omit `delivery_contract`
 only when you intentionally skip contract-gated apply paths (`apply-gates` skips).
