@@ -11,6 +11,18 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.32] — 2026-08-07
+
+### Fixed
+
+- **Origin tip SSOT for harness pins:** `apply-harness` force-updates retargeted
+  tip tags and reports `tip moved` when local HEAD ≠ origin tip.
+  `status --repo` compares local submodule HEAD to origin tip (same helper);
+  prints `[?]` when origin is unreachable instead of false-green remote sync.
+- Maintainer fixture tip checklist + optional `scripts/check-fixture-pin.sh`.
+
+---
+
 ## [0.5.31] — 2026-08-06
 
 ### Breaking
