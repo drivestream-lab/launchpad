@@ -11,6 +11,18 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.33] — 2026-08-10
+
+### Fixed
+
+- **`--client` workspace resolution:** `reset-harness` no longer treats
+  `workspace=""` as an override of cwd. Blank overrides are ignored;
+  `clients.yaml` workspace (via `--client` / `LAUNCHPAD_CLIENT`) is used from
+  any working directory. CLI now passes `client_id` explicitly into harness /
+  status / scaffold / init / gates / forge-template commands.
+
+---
+
 ## [0.5.32] — 2026-08-07
 
 ### Fixed

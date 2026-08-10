@@ -142,15 +142,34 @@ def workspace_from_config_dir(config_dir: Path) -> Path:
     return Path(config_dir).expanduser().resolve().parent.parent
 
 
+def _effective_workspace_override(override: Path | str | None) -> Path | None:
+    """Return a real override path, or None when unset / blank.
+
+    Callers historically passed ``workspace=""``. That is not ``None``, so
+    ``Path("").resolve()`` became cwd and skipped clients.yaml — treat blank
+    the same as unset.
+    """
+    if override is None:
+        return None
+    raw = str(override).strip()
+    if not raw:
+        return None
+    return Path(raw).expanduser()
+
+
 def resolve_programme_workspace(
     *,
     client_id: str | None = None,
     config_dir: Path | None = None,
-    override: Path | None = None,
+    override: Path | str | None = None,
 ) -> Path:
-    """Resolve clone workspace — clients.yaml only (never programme.yaml)."""
-    if override is not None:
-        return Path(override).expanduser().resolve()
+    """Resolve clone workspace — clients.yaml only (never programme.yaml).
+
+    Priority: non-blank override → client_id / LAUNCHPAD_CLIENT → config_dir layout.
+    """
+    effective = _effective_workspace_override(override)
+    if effective is not None:
+        return effective.resolve()
     cid = (client_id or os.environ.get("LAUNCHPAD_CLIENT", "")).strip()
     if cid:
         return resolve_workspace(cid)
