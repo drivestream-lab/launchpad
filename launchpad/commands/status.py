@@ -595,6 +595,7 @@ def run_status(
     repo_name: str = "",
     config_dir: Path | None = None,  # None only in tests — main() always resolves via clients.yaml
     workspace: Path | None = None,
+    client_id: str | None = None,
 ) -> int:
     if not meta and not repo_name:
         print("ERROR: pass --meta or --repo <name>", file=sys.stderr)
@@ -642,7 +643,11 @@ def run_status(
             pass
 
     try:
-        ws = resolve_programme_workspace(config_dir=cdir, override=workspace)
+        ws = resolve_programme_workspace(
+            client_id=client_id,
+            config_dir=cdir,
+            override=workspace,
+        )
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

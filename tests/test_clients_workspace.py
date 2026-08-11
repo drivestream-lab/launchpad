@@ -73,6 +73,38 @@ def test_resolve_programme_workspace_override(tmp_path: Path) -> None:
     assert resolve_programme_workspace(override=tmp_path) == tmp_path.resolve()
 
 
+def test_resolve_programme_workspace_blank_override_uses_client(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Empty-string override must not resolve to cwd (reset-harness trap)."""
+    meta = tmp_path / "example-meta"
+    meta.mkdir()
+    ws = tmp_path / "programme-ws"
+    ws.mkdir()
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    clients_file = tmp_path / "clients.yaml"
+    clients_file.write_text(
+        yaml.safe_dump(
+            {
+                "clients": [
+                    {
+                        "id": "example",
+                        "path": str(meta),
+                        "workspace": str(ws),
+                        "forge": "github",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(clients_mod, "CLIENTS_FILE", clients_file)
+    monkeypatch.chdir(elsewhere)
+    assert resolve_programme_workspace(client_id="example", override="") == ws.resolve()
+    assert resolve_programme_workspace(client_id="example", override=None) == ws.resolve()
+
+
 def test_resolve_programme_workspace_from_config_dir(tmp_path: Path) -> None:
     meta = tmp_path / "kola-meta"
     config = meta / "config"

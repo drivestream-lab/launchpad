@@ -1,6 +1,6 @@
 """Launchpad automation — GitHub factory setup (PAT / GITHUB_TOKEN).
 
-v0.5.32 — origin tip SSOT for harness pins; fixture tip checklist.
+v0.5.33 — fix --client workspace resolution for reset-harness.
 """
 
-__version__ = "0.5.32"
+__version__ = "0.5.33"

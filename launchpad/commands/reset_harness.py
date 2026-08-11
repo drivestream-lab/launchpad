@@ -123,7 +123,8 @@ def run_reset_harness(
     apply: bool,
     include_seeded_workflows: bool,
     config_dir: Path,
-    workspace: str = "",
+    workspace: Path | str | None = None,
+    client_id: str | None = None,
 ) -> int:
     cdir = config_dir
     harness_path = _find_config(cdir, "harness-*.yaml")
@@ -156,7 +157,11 @@ def run_reset_harness(
         return 1
 
     try:
-        ws = resolve_programme_workspace(config_dir=cdir, override=workspace)
+        ws = resolve_programme_workspace(
+            client_id=client_id,
+            config_dir=cdir,
+            override=workspace,
+        )
     except ClientRegistryError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

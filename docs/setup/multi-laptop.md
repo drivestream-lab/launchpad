@@ -50,6 +50,10 @@ clients:
     forge: github
 ```
 
+With `--client <id>`, factory commands resolve sibling repo clones from this
+`workspace` (cwd-independent). You do not need to `cd` to the workspace root
+before `reset-harness` / `apply-harness` / `status`.
+
 ### Secrets file (operators / PM only)
 
 Engineers do **not** need `env.d` — see [engineer-setup.md](engineer-setup.md).

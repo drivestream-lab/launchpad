@@ -216,6 +216,7 @@ def run_init_client(
     apply: bool = False,
     dry_run: bool = True,
     config_dir: Path | None = None,  # None only in tests — main() always resolves via clients.yaml
+    client_id: str | None = None,
 ) -> int:
     if not meta and not repo_name:
         print("ERROR: pass --meta or --repo <name>", file=sys.stderr)
@@ -235,7 +236,7 @@ def run_init_client(
     org = prog.org
     slug = prog.programme_slug
     dr = dry_run or not apply
-    ws = resolve_programme_workspace(config_dir=cdir)
+    ws = resolve_programme_workspace(client_id=client_id, config_dir=cdir)
 
     from launchpad.forge.providers.github import GitHubForgeProvider
 
