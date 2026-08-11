@@ -120,6 +120,8 @@ Stack key == harness profile == prayog `profiles/{stack_key}.yaml` == pin
 
 **Gitignored (local only):** `.harness/skills/<skill>/` hub symlinks and mirrors under `skill_runtimes` (e.g. `.agents/skills/<skill>/`). The **prayog-skills** submodule at repo root is tracked. Re-run `apply-harness --apply` on every machine after clone.
 
+**cwd:** With `--client <id>`, `apply-harness` / `reset-harness` / `status` resolve the clone root from `clients.yaml` `workspace` (or `path` parent). You do **not** need to `cd` to the programme workspace root first.
+
 **Tracked submodules:** `.cursor/rules/` (constitution), `prayog-skills/` (root), and any **community** repos under `.harness/community/`.
 
 **PM pipeline skills** (`validate-requirements`, `prd-impact-map`, …) install in **`<slug>-meta`** only — not app repos.

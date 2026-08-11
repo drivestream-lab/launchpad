@@ -55,6 +55,11 @@ def _dry_run_from_args(args: argparse.Namespace) -> bool:
     return not getattr(args, "apply", False)
 
 
+def _active_client_id() -> str | None:
+    cid = os.environ.get("LAUNCHPAD_CLIENT", "").strip()
+    return cid or None
+
+
 def _config_dir(args: argparse.Namespace) -> Path:
     """Resolve config/ directory — always derived from clients.yaml.
 
@@ -107,6 +112,7 @@ def cmd_init_client(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         dry_run=_dry_run_from_args(args),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -119,6 +125,7 @@ def cmd_apply_scaffold(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         force=getattr(args, "force", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -130,6 +137,7 @@ def cmd_apply_harness(args: argparse.Namespace) -> int:
         repo_name=args.repo or "",
         apply=getattr(args, "apply", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -142,6 +150,7 @@ def cmd_reset_harness(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         include_seeded_workflows=getattr(args, "include_seeded_workflows", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -154,6 +163,7 @@ def cmd_apply_forge_templates(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         force=getattr(args, "force", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -165,6 +175,7 @@ def cmd_apply_gates(args: argparse.Namespace) -> int:
         repo_name=args.repo or "",
         apply=getattr(args, "apply", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -186,6 +197,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         meta=args.meta,
         repo_name=args.repo or "",
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
