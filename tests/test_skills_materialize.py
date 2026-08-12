@@ -10,6 +10,8 @@ import pytest
 from launchpad.commands.apply_harness import _verify_delivery_contract
 from launchpad.harness.paths import HARNESS_SKILLS_HUB_REL, PRAYOG_SKILLS_SUBMODULE_REL
 from launchpad.harness.skills_materialize import (
+    PRAYOG_REFERENCES_REL,
+    _copy_prayog_references,
     all_runtime_skills_present,
     hub_skill_present,
     materialize_community_skill_tree,
@@ -220,6 +222,66 @@ class TestCommunitySkillTree:
         assert hub_skill_present(repo, "prd")
         assert runtime_skill_present(repo, "prd", ".agents/skills")
         assert (repo / HARNESS_SKILLS_HUB_REL / "prd").is_symlink()
+
+
+class TestCopyPrayogReferences:
+    def test_copies_references_to_project_root(self, tmp_path: Path):
+        repo = tmp_path / "demo"
+        repo.mkdir()
+        submodule = repo / PRAYOG_SKILLS_SUBMODULE_REL
+        submodule.mkdir()
+        (submodule / "references").mkdir()
+        (submodule / "references" / "id-conventions.md").write_text("REQ-*", encoding="utf-8")
+        (submodule / "references" / "checks.md").write_text("D1..D12", encoding="utf-8")
+
+        result = _copy_prayog_references(repo, submodule, apply=True)
+        assert result is True
+        dest = repo / PRAYOG_REFERENCES_REL
+        assert dest.is_dir()
+        assert (dest / "id-conventions.md").read_text() == "REQ-*"
+        assert (dest / "checks.md").read_text() == "D1..D12"
+
+    def test_skips_when_source_missing(self, tmp_path: Path):
+        repo = tmp_path / "demo"
+        repo.mkdir()
+        submodule = repo / PRAYOG_SKILLS_SUBMODULE_REL
+        submodule.mkdir()
+
+        result = _copy_prayog_references(repo, submodule, apply=True)
+        assert result is False
+        assert not (repo / PRAYOG_REFERENCES_REL).exists()
+
+    def test_skips_when_dest_up_to_date(self, tmp_path: Path):
+        repo = tmp_path / "demo"
+        repo.mkdir()
+        submodule = repo / PRAYOG_SKILLS_SUBMODULE_REL
+        submodule.mkdir()
+        (submodule / "references").mkdir()
+        (submodule / "references" / "a.md").write_text("A", encoding="utf-8")
+        (submodule / "references" / "b.md").write_text("B", encoding="utf-8")
+
+        # First copy
+        _copy_prayog_references(repo, submodule, apply=True)
+        dest = repo / PRAYOG_REFERENCES_REL
+        assert dest.is_dir()
+
+        # Second copy — should detect up-to-date
+        result = _copy_prayog_references(repo, submodule, apply=True)
+        assert result is True
+        assert dest.is_dir()
+
+    def test_dry_run_reports_correctly(self, tmp_path: Path):
+        repo = tmp_path / "demo"
+        repo.mkdir()
+        submodule = repo / PRAYOG_SKILLS_SUBMODULE_REL
+        submodule.mkdir()
+        (submodule / "references").mkdir()
+        (submodule / "references" / "x.md").write_text("X", encoding="utf-8")
+
+        # Without apply — should not create anything
+        result = _copy_prayog_references(repo, submodule, apply=False)
+        assert result is True
+        assert not (repo / PRAYOG_REFERENCES_REL).exists()
 
 
 class TestSlashList:

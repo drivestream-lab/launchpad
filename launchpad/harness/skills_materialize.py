@@ -14,6 +14,52 @@ from launchpad.harness.paths import (
 from launchpad.harness.skills_resolve import find_skill_source_dir, skill_list_key
 
 _PRAYOG_SUBMODULE_NAME = "prayog-skills"
+PRAYOG_REFERENCES_REL = "references"
+
+
+def _copy_prayog_references(
+    repo: Path,
+    submodule_root: Path,
+    *,
+    apply: bool,
+) -> bool:
+    """Copy prayog-skills/references/ → project-root/references/.
+
+    SKILL.md files deployed through .harness/skills/ use
+    ``../../../references/`` which resolves to the project root.
+    The source (prayog-skills/) has ``references/`` at its own root,
+    but that path is unreachable once deployed under .harness/skills/.
+    Copying the shared references to the project root bridges the gap.
+    """
+    src = submodule_root / PRAYOG_REFERENCES_REL
+    dest = repo / PRAYOG_REFERENCES_REL
+
+    if not src.is_dir():
+        print(
+            f"  –  prayog-skills has no references/ — skipping (safe)",
+            file=sys.stderr,
+        )
+        return False
+
+    if not apply:
+        if dest.is_dir():
+            print(f"    [dry-run] references  (exists — no update needed)")
+        else:
+            print(f"    [dry-run] references  ← prayog-skills/references/")
+        return True
+
+    if dest.is_dir():
+        # Check if content matches — skip if identical
+        existing_files = set(f.name for f in dest.iterdir() if f.is_file())
+        source_files = set(f.name for f in src.iterdir() if f.is_file())
+        if existing_files == source_files:
+            print(f"  ✔  references  (up to date)")
+            return True
+
+    shutil.rmtree(dest, ignore_errors=True)
+    shutil.copytree(src, dest)
+    print(f"  ✔  references  ← prayog-skills/references/")
+    return True
 
 
 def _remove_skill_entry(path: Path) -> None:
@@ -62,6 +108,9 @@ def materialize_skill_tree(
     # prayog-skills at root has no nested submodule_root path
     if prayog_submodule_rel.endswith("/prayog-skills"):
         submodule_root = repo
+
+    # Copy shared references to project root so ../../../references/ resolves
+    _copy_prayog_references(repo, submodule_root, apply=apply)
 
     if not apply:
         for name in skill_names:
