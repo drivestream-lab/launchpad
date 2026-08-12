@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
 import sys
@@ -14,6 +15,75 @@ from launchpad.harness.paths import (
 from launchpad.harness.skills_resolve import find_skill_source_dir, skill_list_key
 
 _PRAYOG_SUBMODULE_NAME = "prayog-skills"
+_PRAYOG_REFERENCES_REL = "references"
+
+
+def _file_hash(path: Path) -> str:
+    """Return SHA-256 hex digest for a file."""
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _copy_prayog_references(
+    repo: Path,
+    submodule_root: Path,
+    *,
+    apply: bool,
+) -> bool:
+    """Copy prayog-skills/references/ to project-root/references/.
+
+    SKILL.md files deployed through .harness/skills/ use
+    ``../../../references/`` which resolves to the project root.
+    The source (prayog-skills/) has ``references/`` at its own root,
+    but that path is unreachable once deployed under .harness/skills/.
+    Copying the shared references to the project root bridges the gap.
+
+    Uses content-hash comparison: always replaces when any file differs,
+    so retagged updates with identical filenames are never silently skipped.
+    """
+    src = submodule_root / _PRAYOG_REFERENCES_REL
+    dest = repo / _PRAYOG_REFERENCES_REL
+
+    if not src.is_dir():
+        print(
+            f"  -  prayog-skills has no references/ — skipping (safe)",
+            file=sys.stderr,
+        )
+        return False
+
+    if not apply:
+        if dest.is_dir():
+            # dry-run: check whether content differs
+            needs_update = _references_content_differs(src, dest)
+            if needs_update:
+                print(f"    [dry-run] references  ← prayog-skills/references/  (content differs)")
+            else:
+                print(f"    [dry-run] references  (up to date)")
+        else:
+            print(f"    [dry-run] references  ← prayog-skills/references/")
+        return True
+
+    # Always replace: remove stale, copy fresh
+    if dest.is_dir():
+        shutil.rmtree(dest, ignore_errors=True)
+    shutil.copytree(src, dest)
+    print(f"  ✔  references  ← prayog-skills/references/")
+    return True
+
+
+def _references_content_differs(src: Path, dest: Path) -> bool:
+    """Return True when source and dest file sets or contents differ."""
+    source_files = {f.name: _file_hash(f) for f in src.iterdir() if f.is_file()}
+    if not source_files:
+        return False
+    dest_files = {f.name: _file_hash(f) for f in dest.iterdir() if f.is_file()}
+    if set(source_files) != set(dest_files):
+        return True
+    return any(source_files[name] != dest_files[name] for name in source_files)
+
 
 
 def _remove_skill_entry(path: Path) -> None:
@@ -62,6 +132,10 @@ def materialize_skill_tree(
     # prayog-skills at root has no nested submodule_root path
     if prayog_submodule_rel.endswith("/prayog-skills"):
         submodule_root = repo
+
+    # Copy shared references to project root so ../../../references/ resolves
+    # from both source (prayog-skills/skills/) and deployed (.harness/skills/)
+    _copy_prayog_references(repo, submodule_root, apply=apply)
 
     if not apply:
         for name in skill_names:

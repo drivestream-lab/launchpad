@@ -11,6 +11,8 @@ import pytest
 from launchpad.commands.apply_harness import _verify_delivery_contract
 from launchpad.harness.paths import HARNESS_SKILLS_HUB_REL, PRAYOG_SKILLS_SUBMODULE_REL
 from launchpad.harness.skills_materialize import (
+    _copy_prayog_references,
+    _references_content_differs,
     all_runtime_skills_present,
     hub_skill_present,
     materialize_community_skill_tree,
@@ -401,3 +403,92 @@ class TestSlashList:
         assert slash_list(["ground-spec", "pre-implement"]) == (
             "`/ground-spec`, `/pre-implement`"
         )
+
+
+class TestCopyPrayogReferences:
+    @pytest.fixture
+    def repo(self, tmp_path: Path) -> Path:
+        repo_path = tmp_path / "demo-repo"
+        repo_path.mkdir()
+        subprocess.run(["git", "init"], cwd=repo_path, check=True, capture_output=True)
+        submodule_root = repo_path / "prayog-skills"
+        submodule_root.mkdir()
+        (submodule_root / "delivery-contract.yaml").write_text(
+            "id: sdd-delivery\nversion: 2\nworkflow: workflow.yaml\n",
+            encoding="utf-8",
+        )
+        refs = submodule_root / "references"
+        refs.mkdir()
+        (refs / "checks.md").write_text("# checks", encoding="utf-8")
+        (refs / "output-template.md").write_text("# template", encoding="utf-8")
+        return repo_path
+
+    def test_skips_when_no_references_dir(self, tmp_path: Path):
+        repo = tmp_path / "no-refs"
+        repo.mkdir()
+        submodule_root = repo / "prayog-skills"
+        submodule_root.mkdir()
+        assert not _copy_prayog_references(repo, submodule_root, apply=True)
+
+    def test_copies_references_on_apply(self, repo: Path):
+        submodule_root = repo / "prayog-skills"
+        assert _copy_prayog_references(repo, submodule_root, apply=True)
+        assert (repo / "references").is_dir()
+        assert (repo / "references" / "checks.md").is_file()
+        assert (repo / "references" / "output-template.md").is_file()
+
+    def test_dry_run_reports_new(self, repo: Path):
+        submodule_root = repo / "prayog-kills"
+        assert (repo / "references").exists() is False
+        # dry-run when dest doesn't exist yet
+        _copy_prayog_references(repo, submodule_root, apply=False)
+        assert (repo / "references").exists() is False  # no apply
+
+    def test_dry_run_reports_up_to_date(self, repo: Path):
+        submodule_root = repo / "prayog-skills"
+        _copy_prayog_references(repo, submodule_root, apply=True)
+        # dry-run when already copied
+        _copy_prayog_references(repo, submodule_root, apply=False)
+        assert (repo / "references").is_dir()
+
+    def test_content_hash_detects_stale_file(self, repo: Path):
+        submodule_root = repo / "prayog-skills"
+        _copy_prayog_references(repo, submodule_root, apply=True)
+        # Staleness: update source file
+        (submodule_root / "references" / "checks.md").write_text(
+            "# updated checks", encoding="utf-8",
+        )
+        assert _references_content_differs(
+            submodule_root / "references", repo / "references",
+        )
+        # Re-apply to fix
+        _copy_prayog_references(repo, submodule_root, apply=True)
+        assert not _references_content_differs(
+            submodule_root / "references", repo / "references",
+        )
+
+    def test_content_hash_detects_added_file(self, repo: Path):
+        submodule_root = repo / "prayog-skills"
+        _copy_prayog_references(repo, submodule_root, apply=True)
+        # Staleness: add new file to source
+        (submodule_root / "references" / "id-conventions.md").write_text(
+            "# conventions", encoding="utf-8",
+        )
+        assert _references_content_differs(
+            submodule_root / "references", repo / "references",
+        )
+
+    def test_content_hash_no_diff_when_identical(self, repo: Path):
+        submodule_root = repo / "prayog-skills"
+        _copy_prayog_references(repo, submodule_root, apply=True)
+        assert not _references_content_differs(
+            submodule_root / "references", repo / "references",
+        )
+
+    def test_content_hash_returns_false_when_source_empty(self, tmp_path: Path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
+        (dest / "old.md").write_text("old", encoding="utf-8")
+        assert not _references_content_differs(src, dest)
