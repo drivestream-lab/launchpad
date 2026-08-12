@@ -1,4 +1,4 @@
-# Greenfield app repo onboarding (v0.5.10)
+# Greenfield app repo onboarding
 
 Repeatable sequence for adding a **new application repository** to an existing programme:
 GitHub repo → scaffold → harness envelope → SDD handoff → wave PRs.
@@ -211,7 +211,7 @@ make test
 | Step | Owner | Action |
 |------|-------|--------|
 | Spec PR | **Dev** | Branch `chore/INIT-*-spec-example-api`; follow the pinned Prayog `workflow.yaml` |
-| Wave issues | **Dev** | `gh issue create` per wave from §9 |
+| Wave issues | **Dev** | `/create-board-tickets` after spec merge |
 | W0+ | Dev | Feature PRs on foundation |
 
 See [delivery-workflow.md](../ship/delivery-workflow.md).
@@ -276,8 +276,10 @@ cp .env.example .env && make setup && make check && make test
 | Stack | Foundation template | Status |
 |-------|---------------------|--------|
 | `python-backend` | `python-fastapi-foundation` | Implemented |
-| `nextjs-frontend` | `nextjs-bff-foundation` (planned) | Stub |
-| `terraform-iac` | `terraform-azure-foundation` or `terraform-aws-foundation` (when published) | IaC repos |
+| `nextjs-frontend` | `nextjs-bff-foundation` | Implemented |
+| `terraform-iac` | `terraform-azure-foundation` or `terraform-aws-foundation` | IaC repos |
+| `flink` | TBD | Brownfield / apply-harness only |
+| `edge-agent` | `edge-agent-triton-foundation` | `v0.1.0` |
 | `meta-pm` | `tenant-meta-foundation` | Meta repos only |
 
 ---

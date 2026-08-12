@@ -5,6 +5,7 @@ Public commands:
   init-client         Day-1 / Day-N GitHub setup (teams, repos, gitflow, board)
   apply-scaffold      Cookiecutter scaffold from scaffold-<org>.yaml
   apply-harness       Pin constitution + seed agent skills from harness-<org>.yaml
+  reset-harness       Clear local harness materialization before remount
   apply-gates         Provision delivery labels + validate review-role bindings
   board-bind          Resolve programme engineering board from governance config
   apply-forge-templates  Seed issue forms + PR template from kit + governance
@@ -52,6 +53,11 @@ def _add_scope_flags(parser: argparse.ArgumentParser) -> None:
 
 def _dry_run_from_args(args: argparse.Namespace) -> bool:
     return not getattr(args, "apply", False)
+
+
+def _active_client_id() -> str | None:
+    cid = os.environ.get("LAUNCHPAD_CLIENT", "").strip()
+    return cid or None
 
 
 def _config_dir(args: argparse.Namespace) -> Path:
@@ -106,6 +112,7 @@ def cmd_init_client(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         dry_run=_dry_run_from_args(args),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -118,6 +125,7 @@ def cmd_apply_scaffold(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         force=getattr(args, "force", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -129,6 +137,20 @@ def cmd_apply_harness(args: argparse.Namespace) -> int:
         repo_name=args.repo or "",
         apply=getattr(args, "apply", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
+    )
+
+
+def cmd_reset_harness(args: argparse.Namespace) -> int:
+    from launchpad.commands.reset_harness import run_reset_harness
+
+    return run_reset_harness(
+        meta=args.meta,
+        repo_name=args.repo or "",
+        apply=getattr(args, "apply", False),
+        include_seeded_workflows=getattr(args, "include_seeded_workflows", False),
+        config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -141,6 +163,7 @@ def cmd_apply_forge_templates(args: argparse.Namespace) -> int:
         apply=getattr(args, "apply", False),
         force=getattr(args, "force", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -152,6 +175,7 @@ def cmd_apply_gates(args: argparse.Namespace) -> int:
         repo_name=args.repo or "",
         apply=getattr(args, "apply", False),
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -173,6 +197,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         meta=args.meta,
         repo_name=args.repo or "",
         config_dir=_config_dir(args),
+        client_id=_active_client_id(),
     )
 
 
@@ -249,6 +274,24 @@ def build_parser() -> argparse.ArgumentParser:
     _add_apply_flags(p)
     p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
     p.set_defaults(func=cmd_apply_harness)
+
+    # ── reset-harness ─────────────────────────────────────────────────────────
+    p = sub.add_parser(
+        "reset-harness",
+        help="Clear local harness materialization (hub, pin, AGENTS block) before remount",
+    )
+    _add_scope_flags(p)
+    _add_apply_flags(p)
+    p.add_argument(
+        "--include-seeded-workflows",
+        action="store_true",
+        help=(
+            "Also remove kit-seeded workflow files (ci, policy-branch-name, "
+            "and legacy board-seed-gate.yml if present)"
+        ),
+    )
+    p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
+    p.set_defaults(func=cmd_reset_harness)
 
     # ── apply-forge-templates ─────────────────────────────────────────────────
     p = sub.add_parser(

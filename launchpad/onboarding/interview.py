@@ -1,17 +1,14 @@
-"""Greenfield onboard interview — 4 questions, auto-applies locally.
+"""Greenfield onboard interview — day-1 meta config from operator answers.
 
 Flow:
-  1. Ask: programme name (human, e.g. "KOLA")
-  2. Derive programme_slug, show it, confirm or override
-  3. Ask: GitHub org (exact spelling, e.g. "apex-common")
-  4. Ask: workspace path (where meta repo will be cloned) — local only
+  1. Programme name / slug / GitHub org / workspace
+  2. PM + PE team slugs (defaults: pm-team / pe-team) — written into YAML SSOT
+  3. Creates <workspace>/<slug>-meta/config/ with all 5 YAML files
+  4. Patches ~/.config/launchpad/clients.yaml with path + workspace
+  5. Writes env.d/<slug>.env stub; prints NEXT
 
-After the 4 questions:
-  • Creates <workspace>/<slug>-meta/config/ with all 5 YAML files
-    (programme.yaml has no workspace field)
-  • Patches ~/.config/launchpad/clients.yaml with path + workspace
-  • Writes env.d/<slug>.env stub with GitHub PAT instructions
-  • Prints a single NEXT: step
+Team names and skills ref are not kit hard locks: teams come from answers;
+prayog-skills uses floating ``ref: latest`` (resolved at apply-harness).
 """
 
 from __future__ import annotations
@@ -24,10 +21,11 @@ from typing import Any, Callable, TextIO
 import yaml
 
 from launchpad.clients import CLIENTS_FILE, CONFIG_DIR, ENV_D_DIR
-from launchpad.onboarding.errors import OnboardingError
 from launchpad.ui import format_next_box, shorten_path
 
 _SLUG_RE = re.compile(r"^[a-z][a-z0-9-]{0,62}$")
+_DEFAULT_PM_TEAM = "pm-team"
+_DEFAULT_PE_TEAM = "pe-team"
 
 
 # ─── Prompt helpers ─────────────────────────────────────────────────────────
@@ -95,7 +93,7 @@ forge:
 """
 
 
-def _render_governance(org: str, meta_repo: str) -> str:
+def _render_governance(org: str, meta_repo: str, *, pm_team: str, pe_team: str) -> str:
     return f"""\
 apiVersion: launchpad/v1
 kind: GovernanceConfig
@@ -110,17 +108,22 @@ stack_profiles:
   # python-backend: Python / FastAPI microservice
   # nextjs-frontend: Next.js frontend or BFF
   # terraform-iac: Terraform infrastructure-as-code
-  # go-backend: Go microservice
+  # flink: Flink streaming monorepo (team: data-platform-devs)
+  # edge-agent: Edge agent services
+  # platform-tooling: Kit/SSOT brownfield
 
 teams:
-  - name: platform-core
-    description: Platform owners
+  - name: {pm_team}
+    description: Product — PRD and meta develop merges
+    privacy: closed
+  - name: {pe_team}
+    description: Platform engineering — delivery gates and technical review
     privacy: closed
 
 repos:
   {meta_repo}:
     stack: meta-pm
-    teams: [platform-core]
+    teams: [{pm_team}, {pe_team}]
     visibility: private
     description: Control-plane for {org}
 
@@ -136,39 +139,45 @@ project_board:
 """
 
 
-def _render_harness(org: str) -> str:
+def _render_harness(org: str, *, pe_team: str) -> str:
     return f"""\
 apiVersion: launchpad/v1
 kind: HarnessConfig
 org: {org}
 
-# One profile entry per stack you use.
-# constitution.ref must be a pinned tag — change it here to upgrade rules.
-#
-# codeowners_template: filename inside kit templates/ to seed as .github/CODEOWNERS
-#   Default convention: CODEOWNERS.<profile-name>  (e.g. CODEOWNERS.python-backend)
-#
-# harness_pin_template: filename inside kit templates/ to seed as .harness-pin.yaml
-#   Default convention: harness-pin.<profile-name>.yaml
-#
-# Both fields are optional — omit to use the convention-based default.
+# Day 1: meta is PRD-ready. App profiles below are Day N (uncomment when needed).
+# skills[].ref: latest  → apply-harness resolves GitHub releases/latest on each apply.
+# Or pin an explicit tag (e.g. v0.5.0-rc.2) to freeze.
+delivery_contract: sdd-delivery/v2
+delivery_roles:
+  engineering-gate: {pe_team}
+
 profiles:
   meta-pm:
     # constitution: omitted — meta repos hold config/planning docs, not code.
-    # No .cursor/rules submodule is needed here.
-    skills: []
+    skills:
+      - repo: prayog-skills
+        ref: latest
+    community_skills:
+      - source: github/awesome-copilot
+        ref: v1.0.0
+        skill: prd
+    skill_runtimes:
+      - .agents/skills
+      - .claude/skills
     codeowners_template: CODEOWNERS.meta-pm
     harness_pin_template: harness-pin.meta.yaml
 
-  python-backend:
-    constitution:
-      repo: python-services-rules
-      ref: v2.1.0
-    skills:
-      - repo: python-agent-skills
-        ref: v1.0.0
-    codeowners_template: CODEOWNERS.python-backend
-    harness_pin_template: harness-pin.python-backend.yaml
+  # ─── Day N — uncomment when you add this stack to governance ─────────────
+  # python-backend:
+  #   constitution:
+  #     repo: python-services-rules
+  #     ref: v2.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   codeowners_template: CODEOWNERS.python-backend
+  #   harness_pin_template: harness-pin.python-backend.yaml
 
   # nextjs-frontend:
   #   constitution:
@@ -176,22 +185,40 @@ profiles:
   #     ref: v0.1.4
   #   skills:
   #     - repo: prayog-skills
-  #       ref: v0.4.0
+  #       ref: latest
   #   codeowners_template: CODEOWNERS.nextjs-frontend
   #   harness_pin_template: harness-pin.nextjs-frontend.yaml
 
-  terraform-iac:
-    constitution:
-      repo: terraform-infra-rules
-      ref: v0.1.2
-    skills:
-      - repo: prayog-skills
-        ref: v0.4.3-rc.1
-    codeowners_template: CODEOWNERS.terraform-iac
-    harness_pin_template: harness-pin.terraform-iac.yaml
+  # terraform-iac:
+  #   constitution:
+  #     repo: terraform-infra-rules
+  #     ref: v0.1.2
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   codeowners_template: CODEOWNERS.terraform-iac
+  #   harness_pin_template: harness-pin.terraform-iac.yaml
 
-# Per-repo harness_profile overrides (optional).
-# If absent, a repo's harness_profile defaults to its stack from governance.yaml.
+  # flink:
+  #   constitution:
+  #     repo: data-platform-rules
+  #     ref: v0.3.1
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   codeowners_template: CODEOWNERS.flink
+  #   harness_pin_template: harness-pin.flink.yaml
+
+  # edge-agent:
+  #   constitution:
+  #     repo: edge-agent-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   codeowners_template: CODEOWNERS.edge-agent
+  #   harness_pin_template: harness-pin.edge-agent.yaml
+
 repos: {{}}
 """
 
@@ -242,7 +269,7 @@ repos: {{}}
 """
 
 
-def _render_catalog(org: str, meta_repo: str) -> str:
+def _render_catalog(org: str, meta_repo: str, *, pm_team: str, pe_team: str) -> str:
     return f"""\
 apiVersion: launchpad/v1
 kind: ServiceCatalog
@@ -257,29 +284,23 @@ services:
     stack: meta-pm
     description: Control-plane for {org}
     status: live
-    teams: [platform-core]
+    teams: [{pm_team}, {pe_team}]
     links:
       repo: https://github.com/{org}/{meta_repo}
 
   # ─── Day-N examples (uncomment when the repo is live) ───────────────────
   #
-  # <slug>-platform-core:
+  # <slug>-api:
   #   stack: python-backend
   #   description: Core platform microservice
   #   status: planned
-  #   teams: [platform-core]
+  #   teams: [{pe_team}]
   #
   # <slug>-web:
   #   stack: nextjs-frontend
   #   description: Web UI
   #   status: planned
-  #   teams: [platform-core]
-  #
-  # <slug>-infra:
-  #   stack: terraform-iac
-  #   description: Terraform infrastructure modules
-  #   status: planned
-  #   teams: [platform-core]
+  #   teams: [{pe_team}]
 """
 
 
@@ -345,19 +366,18 @@ def run_interview(
     input_fn: Callable[[str], str] | None = None,
     out: TextIO = sys.stdout,
 ) -> None:
-    """Run the 4-question interview, write config files, patch registry, print NEXT."""
+    """Run the interview, write config files, patch registry, print NEXT."""
     out.write("\n")
     out.write("╔══════════════════════════════════════════╗\n")
     out.write("║   launchpad — onboard interview          ║\n")
     out.write("╚══════════════════════════════════════════╝\n")
     out.write("\n")
-    out.write("This sets up your programme locally in 4 questions.\n")
-    out.write("All config files are created in your meta repo.\n\n")
+    out.write("Day 1 sets up your meta programme locally.\n")
+    out.write("Team slugs you enter are written into governance/harness YAML;\n")
+    out.write("init-client creates those GitHub teams from the YAML.\n\n")
 
-    # Q1: Programme name
     programme = _ask("Programme name  (e.g. KOLA)", input_fn=input_fn, out=out)
 
-    # Q2: Confirm slug (auto-derived)
     derived = _derive_slug(programme)
     out.write(f"\n  Auto-derived slug: {derived}\n")
     slug = _ask_slug(
@@ -367,15 +387,27 @@ def run_interview(
         out=out,
     )
 
-    # Q3: GitHub org
     out.write("\n  GitHub org — the exact organisation slug on GitHub.\n")
     out.write("  Example: apex-common, acme-corp, my-startup\n")
     org = _ask("GitHub org", input_fn=input_fn, out=out)
 
-    # Q4: Workspace
     default_ws = str(Path("~/Workspace").expanduser())
-    out.write(f"\n  Parent directory where your meta repo will live.\n")
+    out.write("\n  Parent directory where your meta repo will live.\n")
     workspace = _ask("Workspace path", default_ws, input_fn=input_fn, out=out)
+
+    out.write("\n  Day-1 teams (created later by init-client from governance YAML).\n")
+    pm_team = _ask_slug(
+        "PM team slug  (product / PRD / meta)",
+        _DEFAULT_PM_TEAM,
+        input_fn=input_fn,
+        out=out,
+    )
+    pe_team = _ask_slug(
+        "PE team slug  (engineering gates)",
+        _DEFAULT_PE_TEAM,
+        input_fn=input_fn,
+        out=out,
+    )
 
     meta_repo = f"{slug}-meta"
     workspace_path = Path(workspace).expanduser().resolve()
@@ -388,19 +420,25 @@ def run_interview(
     out.write(f"  slug:            {slug}\n")
     out.write(f"  org:             {org}\n")
     out.write(f"  meta repo:       {meta_repo}\n")
+    out.write(f"  pm team:         {pm_team}\n")
+    out.write(f"  pe team:         {pe_team}\n")
+    out.write("  prayog skills:   ref: latest  (resolved on apply-harness)\n")
     out.write(f"  workspace:       {workspace_path}\n")
     out.write(f"  local path:      {meta_path}\n")
     out.write("─" * 50 + "\n\n")
 
-    # Write config files
     config_dir.mkdir(parents=True, exist_ok=True)
 
     files: dict[str, str] = {
         "programme.yaml": _render_programme(slug, programme, org, meta_repo),
-        f"governance-{org}.yaml": _render_governance(org, meta_repo),
-        f"harness-{org}.yaml": _render_harness(org),
+        f"governance-{org}.yaml": _render_governance(
+            org, meta_repo, pm_team=pm_team, pe_team=pe_team
+        ),
+        f"harness-{org}.yaml": _render_harness(org, pe_team=pe_team),
         f"scaffold-{org}.yaml": _render_scaffold(org),
-        f"service-catalog-{org}.yaml": _render_catalog(org, meta_repo),
+        f"service-catalog-{org}.yaml": _render_catalog(
+            org, meta_repo, pm_team=pm_team, pe_team=pe_team
+        ),
     }
 
     for filename, content in files.items():
@@ -411,7 +449,6 @@ def run_interview(
         else:
             out.write(f"  –  {fpath.relative_to(meta_path)}  (already exists, skipped)\n")
 
-    # Patch registry (machine-local path + workspace — never in programme.yaml)
     _patch_clients_yaml(slug, meta_path, workspace=workspace_path)
     out.write(f"\n  ✔  ~/.config/launchpad/clients.yaml  (id: {slug})\n")
     out.write(f"       path:      {meta_path}\n")
@@ -429,6 +466,9 @@ def run_interview(
             "Scopes: repo, admin:org, project",
             f"2. chmod 600 {env_display}",
             f"3. launchpad --client {slug} doctor",
+            f"4. launchpad --client {slug} init-client --meta --apply",
+            f"5. launchpad --client {slug} apply-harness --meta --apply",
+            f"6. launchpad --client {slug} apply-gates --meta --apply",
         ])
     )
     out.write("\n")

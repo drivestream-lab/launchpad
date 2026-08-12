@@ -56,7 +56,7 @@ Process: [delivery-workflow.md](delivery-workflow.md) · [delivery-model.md](del
 1. PRD in **<client>-meta** `prd/INIT-*.md` — declares `delivery_model` + wave table when `waves`
 2. Eng opens spec PR per repo: `product/INIT-*.md` + feasibility + TDD + plan — **no `src/`**
 3. Spec PR merge to **`develop`**
-4. Dev seeds board: `gh issue create` per wave from plan §9
+4. Dev runs `/create-board-tickets` after spec merge (plan §9 WorkManifest)
 5. Dev implements from **product** + **as-built** — not from meta PRD alone
 
 ### INIT spec (`product/INIT-*.md`) — mandatory sections
@@ -72,7 +72,7 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 | Wave PR gate | Same-PR checklist (tests, feature map, as-built, overlap) |
 | Appendix | Optional verify → wave → unit → canon (eng validates) |
 | Dev read order | Spec → canon → as-built → tests README → AGENTS (once) |
-| Verify commands | CI (`make check`, `make test`) vs live verify (closure) |
+| Smoke commands | CI (`make check`, `make test`) vs live scripts under `tests/verify/` (wave-acceptance) |
 | Constraints | No initiative blocks in `AGENTS.md`; no `src/` in spec PR |
 
 **Wave parity gate:** spec wave table IDs = PRD §4.0 / §4.5 wave IDs (PRE* allowed; scope may refine after `/initiative-feasibility`).
@@ -81,11 +81,22 @@ Agent starting point: [templates/INIT-spec-PR.md](../../launchpad/templates/INIT
 
 ## Dev delivery (board issue)
 
-1. `/pre-implement` — read `AGENTS.md`, **product** spec for slice, **as-built**
-2. Implement code + `tests/unit/` + verify scripts per overlap rules
-3. **Same PR:** update `as-built/implementation-status.md` (verification rows; `## Testing harness` if layout changed); update `tests/README.md` feature map
-4. `/verify` — board **Verify command**
-5. PR to **`develop`** with template traceability
+1. `/pre-implement` — gate-only checklist (no product code / no branch open)
+2. `/loop-spec` — implement + unit/check on `head_ref`; Forge `/commit-workspace` as required
+3. `wave-pr-action` — Draft PR after `/loop-spec` (no required human
+   `/open-draft-pr` when pin `authorization: automated`; walkers may still run
+   it) → human **`wave-acceptance`** (smoke under `tests/verify` or P15 N/A;
+   label **`wave-accepted`**)
+4. **Same PR:** update `as-built/implementation-status.md` and `tests/README.md` as needed
+5. Pass-2 closeout: `/learning-extract` → `/ground-spec` → pin may `wave-done-action`
+   → `wave-signoff` (human merge only)
+6. **Closure (all waves done, once):** `initiative-closure` →
+   `/purge-initiative-artifacts-app` → `initiative-closure-pr-action-app` →
+   `initiative-closure-signoff-app` → `/purge-initiative-artifacts-meta` →
+   `initiative-closure-pr-action-meta` → `initiative-closure-signoff-meta`.
+   Not per-wave. Launchpad does not delete files.
+
+`tests/verify/` holds smoke **scripts** (not a skill package).
 
 Test-quality retro (**INIT-EXAMPLE-001**): board spec path points to `product/INIT-EXAMPLE-001.md` and capability docs (e.g. `05-roles-and-authz.md`), not bootstrap artifacts.
 

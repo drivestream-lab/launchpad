@@ -12,8 +12,7 @@ Two views depending on flag:
   --repo <name>   (Engineer / Repo-owner view)
     Kit version check
     Repo phase checklist: governance, clone, scaffold, harness
-    Constitution: declared ref vs locally pinned ref (drift check)
-    Skills: declared ref vs locally pinned ref (drift check)
+    Constitution / skills: local HEAD vs origin tip for declared ref (SSOT)
     Exit code 1 if drift detected — safe for CI pipelines
 
 check-harness is removed — status --repo covers its functionality.
@@ -48,6 +47,7 @@ from launchpad.clients import resolve_programme_workspace
 from launchpad.programme.board_binding import resolve_board_binding
 from launchpad.harness.paths import HARNESS_PROFILE_REL, PM_HARNESS_PROFILE, PRAYOG_SKILLS_SUBMODULE_REL
 from launchpad.harness.skills_materialize import all_runtime_skills_present, hub_skill_present, runtime_skill_present
+from launchpad.harness.submodules import compare_local_to_origin
 from launchpad.harness.skills_resolve import (
     HarnessResolveError,
     resolve_delivery_contract,
@@ -144,6 +144,7 @@ def _print_kit_section() -> bool:
 
 
 def _latest_tag(org: str, repo: str) -> str | None:
+    """Return latest tag name without leading ``v``, or None on failure."""
     try:
         r = httpx.get(
             f"https://api.github.com/repos/{org}/{repo}/tags",
@@ -157,6 +158,23 @@ def _latest_tag(org: str, repo: str) -> str | None:
     except Exception:
         pass
     return None
+
+
+def _latest_release_tag(org: str, repo: str) -> str | None:
+    """Prefer GitHub ``releases/latest``; fall back to newest tag."""
+    try:
+        r = httpx.get(
+            f"https://api.github.com/repos/{org}/{repo}/releases/latest",
+            timeout=_API_TIMEOUT,
+            headers={"Accept": "application/vnd.github+json"},
+        )
+        if r.status_code == 200:
+            tag = str(r.json().get("tag_name") or "").lstrip("v")
+            if tag:
+                return tag
+    except Exception:
+        pass
+    return _latest_tag(org, repo)
 
 
 def _print_foundation_section(sca: Any) -> None:
@@ -220,6 +238,48 @@ def _print_governance_pins(h: Any) -> None:
                 print(f"  [→] {pname:<20}  {label:<34}  @ {skill.ref or 'HEAD'}")
 
 
+def _print_prayog_freshness(h: Any) -> None:
+    """Advisory: declared prayog-skills refs vs GitHub releases/latest."""
+    pins: dict[tuple[str, str], set[str]] = {}
+    for profile in h.profiles.values():
+        for skill in profile.skills:
+            repo_name = skill.repo.split("/")[-1] if skill.repo else ""
+            if repo_name != "prayog-skills":
+                continue
+            ref = (skill.ref or "").strip()
+            if not ref:
+                continue
+            pins.setdefault((skill.org, "prayog-skills"), set()).add(ref)
+
+    if not pins:
+        return
+
+    _section("Prayog skills freshness")
+    for (org, repo), refs in sorted(pins.items()):
+        latest = _latest_release_tag(org, repo)
+        for declared in sorted(refs):
+            declared_n = declared.lstrip("v")
+            if declared.lower() == "latest":
+                if latest is None:
+                    print(f"  [?] {org}/{repo}  @latest  (check unavailable)")
+                else:
+                    print(f"  [✔] {org}/{repo}  @latest → v{latest}  (floating)")
+                continue
+            if latest is None:
+                print(f"  [?] {org}/{repo}  @{declared}  (check unavailable)")
+            elif latest == declared_n:
+                print(f"  [✔] {org}/{repo}  @{declared}  (up to date)")
+            else:
+                print(
+                    f"  [!] {org}/{repo}  @{declared} declared — "
+                    f"v{latest} available on GitHub"
+                )
+                print(
+                    "      Bump skills[].ref in harness YAML when ready "
+                    "(or use ref: latest for floating pins)"
+                )
+
+
 # ── Submodule drift (Engineer view) ───────────────────────────────────────────
 
 
@@ -255,7 +315,7 @@ def _print_submodule_drift(
     submodule_rel: str,
     repo_path: Path,
 ) -> bool:
-    """Print declared vs local submodule state. Returns True if drift detected."""
+    """Print local HEAD vs origin tip for declared ref. Returns True if drift."""
     _section(section)
     print(f"  [→] declared:  {repo_label} @ {declared_ref}")
 
@@ -265,13 +325,27 @@ def _print_submodule_drift(
         return True
 
     sub_path = repo_path / submodule_rel
-    head_result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=sub_path,
-        capture_output=True,
-        text=True,
-    )
-    local_sha = head_result.stdout.strip()
+    tip = compare_local_to_origin(sub_path, declared_ref)
+    local_disp = local_ref
+    local_short = (tip.local_sha or "")[:7] or "?"
+    origin_short = (tip.origin_sha or "")[:7] or "?"
+
+    if not tip.unavailable and tip.origin_sha:
+        if tip.in_sync:
+            print(
+                f"  [✔] local:     {repo_label} @ {local_disp}  "
+                f"(in sync with origin tip {origin_short})"
+            )
+            return False
+        print(
+            f"  [!] origin tip moved: local {local_short} → origin {origin_short}  "
+            f"(ref {declared_ref})"
+        )
+        print(f"  [!] local:     {repo_label} @ {local_disp}  ← behind origin tip")
+        return True
+
+    # Origin unreachable — do not claim remote-current; fall back to local objects.
+    print("  [?] origin:    tip check unavailable")
     declared_sha = ""
     for candidate in (f"origin/{declared_ref}", declared_ref):
         result = subprocess.run(
@@ -284,11 +358,14 @@ def _print_submodule_drift(
             declared_sha = result.stdout.strip()
             break
 
-    if local_ref == declared_ref or (local_sha and local_sha == declared_sha):
-        print(f"  [✔] local:     {repo_label} @ {local_ref}  (in sync)")
+    if local_ref == declared_ref or (tip.local_sha and tip.local_sha == declared_sha):
+        print(
+            f"  [✔] local:     {repo_label} @ {local_disp}  "
+            f"(local objects match declared; origin not verified)"
+        )
         return False
 
-    print(f"  [!] local:     {repo_label} @ {local_ref}  ← behind declared {declared_ref}")
+    print(f"  [!] local:     {repo_label} @ {local_disp}  ← behind declared {declared_ref}")
     return True
 
 
@@ -317,10 +394,19 @@ def _print_skills_drift(profile: Any, repo_path: Path) -> bool:
         return False
 
     drift = False
+    legacy_nested = repo_path / ".agents" / "skills" / "prayog-skills"
+    if legacy_nested.is_dir() and not (repo_path / PRAYOG_SKILLS_SUBMODULE_REL).is_dir():
+        _section("Skills bundle  (prayog-skills)")
+        print(
+            "  [✗] local:     nested .agents/skills/prayog-skills/ "
+            f"(expected {PRAYOG_SKILLS_SUBMODULE_REL}/ at repo root — re-run apply-harness)"
+        )
+        drift = True
+
     for skill in profile.skills:
         declared = skill.ref or "HEAD"
         label = f"{skill.org}/{skill.repo}"
-        rel = f".agents/skills/{skill.repo}"
+        rel = PRAYOG_SKILLS_SUBMODULE_REL
         if _print_submodule_drift(
             section=f"Skills bundle  ({skill.repo})",
             repo_label=label,
@@ -433,11 +519,19 @@ def _print_delivery_contract_check(repo_path: Path, expected: str) -> bool:
         actual = resolve_delivery_contract(submodule_root)
     except HarnessResolveError as exc:
         print(f"  [✗] {exc}")
+        print(
+            "      Bump skills[].ref to a GitHub release that ships "
+            "delivery-contract.yaml, or omit delivery_contract for a legacy pin"
+        )
         return True
     if actual == expected:
         print(f"  [✔] {actual}  (matches harness)")
         return False
     print(f"  [✗] declared: {expected}  pinned: {actual}")
+    print(
+        "      Align harness delivery_contract with the pin, or bump skills[].ref "
+        "to a release that provides the expected contract"
+    )
     return True
 
 
@@ -501,6 +595,7 @@ def run_status(
     repo_name: str = "",
     config_dir: Path | None = None,  # None only in tests — main() always resolves via clients.yaml
     workspace: Path | None = None,
+    client_id: str | None = None,
 ) -> int:
     if not meta and not repo_name:
         print("ERROR: pass --meta or --repo <name>", file=sys.stderr)
@@ -548,7 +643,11 @@ def run_status(
             pass
 
     try:
-        ws = resolve_programme_workspace(config_dir=cdir, override=workspace)
+        ws = resolve_programme_workspace(
+            client_id=client_id,
+            config_dir=cdir,
+            override=workspace,
+        )
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
@@ -590,7 +689,7 @@ def run_status(
             if binding.url:
                 board_detail += f" — {binding.url}"
             if not meta and stack != PM_HARNESS_PROFILE:
-                board_detail += " — run /board-seed after spec merge"
+                board_detail += " — run /create-board-tickets after spec merge"
         else:
             board_detail = "project_board disabled in governance"
     print(f"  [{_mark(board_ok if not board_neutral else None, neutral=board_neutral)}] Programme board          ({board_detail})")
@@ -727,6 +826,7 @@ def run_status(
     if meta:
         if h:
             _print_governance_pins(h)
+            _print_prayog_freshness(h)
         if sca:
             _print_foundation_section(sca)
         if profile and clone_ok and profile.skills:

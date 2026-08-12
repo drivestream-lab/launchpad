@@ -45,7 +45,7 @@ body:
   - type: input
     id: verify_command
     attributes:
-      label: Verify command (if known)
+      label: Smoke command (if known)
       placeholder: make check / poetry run python -m tests.verify.verify_all
     validations:
       required: false

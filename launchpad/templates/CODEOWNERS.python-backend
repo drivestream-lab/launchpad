@@ -11,7 +11,7 @@
 # TDD requires PE sign-off before /spec-implementation-plan runs
 /docs/specification/reports/Technical-Review-*       @example-org/pe-team
 
-# Implementation plan requires dev lead review before board seed (gh issue create per wave)
+# Implementation plan requires dev lead review before /create-board-tickets (gh issue create per wave)
 /docs/specification/reports/Implementation-Plan-*    @example-org/backend-devs
 
 # Ground reports gate the next wave — tech lead must approve

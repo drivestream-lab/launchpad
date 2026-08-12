@@ -55,7 +55,7 @@ Day N app repos: [playbook/operator/greenfield-app-repo.md](../../playbook/opera
 | `prd/` | Product requirements (`INIT-*.md`) after PM sign-off |
 | `planning/` | Pre-build narratives — not app-repo SSOT |
 | `programs/` | Programme overviews |
-| `work/` | `WorkManifest` YAML archive |
+| `work/` | Optional human archive of plan §9 copies (not schema SSOT) |
 | `wiki/` | Published to GitHub Wiki — see [wiki-setup.md](../../playbook/wiki/wiki-setup.md) |
 | `playbook/` | Client-specific playbook deltas (kit playbook is SSOT) |
 

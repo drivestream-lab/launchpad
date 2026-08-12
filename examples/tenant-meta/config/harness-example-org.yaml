@@ -13,6 +13,10 @@ delivery_roles:
 # constitution.ref — must be a pinned tag (never a branch).
 # To upgrade rules: bump the ref here, then re-run apply-harness.
 #
+# skills[].ref — tenant-owned. Current kit tracks tip d3bd94e
+# (wave-acceptance; required forge_skills; no /verify). Retag when published.
+# Stack key == harness profile == prayog profiles/{stack_key}.yaml.
+#
 # codeowners_template  — filename in kit templates/ seeded as .github/CODEOWNERS
 # harness_pin_template — filename in kit templates/ seeded as .harness-pin.yaml
 # Both default to the convention:  CODEOWNERS.<profile-name>
@@ -25,7 +29,7 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: d3bd94e
     community_skills:
       - source: github/awesome-copilot
         ref: v1.0.0
@@ -43,7 +47,7 @@ profiles:
       ref: v2.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: d3bd94e
     codeowners_template: CODEOWNERS.python-backend
     harness_pin_template: harness-pin.python-backend.yaml
 
@@ -54,9 +58,31 @@ profiles:
   #     ref: v0.1.4
   #   skills:
   #     - repo: prayog-skills
-  #       ref: v0.4.0
+  #       ref: d3bd94e
   #   codeowners_template: CODEOWNERS.nextjs-frontend
   #   harness_pin_template: harness-pin.nextjs-frontend.yaml
+
+  # ─── Flink streaming (domain team: data-platform-devs) ───────────────────
+  # flink:
+  #   constitution:
+  #     repo: data-platform-rules   # Flink constitution repo
+  #     ref: v0.3.1
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: d3bd94e
+  #   codeowners_template: CODEOWNERS.flink
+  #   harness_pin_template: harness-pin.flink.yaml
+
+  # ─── Edge agent ──────────────────────────────────────────────────────────
+  # edge-agent:
+  #   constitution:
+  #     repo: edge-agent-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: d3bd94e
+  #   codeowners_template: CODEOWNERS.edge-agent
+  #   harness_pin_template: harness-pin.edge-agent.yaml
 
   # ─── Terraform IaC profile ────────────────────────────────────────────────
   terraform-iac:
@@ -65,7 +91,7 @@ profiles:
       ref: v0.1.2
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: d3bd94e
     codeowners_template: CODEOWNERS.terraform-iac
     harness_pin_template: harness-pin.terraform-iac.yaml
 

@@ -1,3 +1,6 @@
+# PM harness profile — meta workspace only.
+# launchpad apply-harness reads requirements_skills at the pinned prayog ref.
+
 profile: meta-pm
 
 requirements_skills:
@@ -5,7 +8,13 @@ requirements_skills:
   - review-findings
   - update-documents
   - prd-impact-map
+  - purge-initiative-artifacts-meta
 
 layout:
   prd_root: prd/
   reports_dir: prd/reports/
+
+forge_skills:
+  - commit-workspace
+  - open-draft-pr
+  - create-board-tickets

@@ -1,4 +1,4 @@
-profile: frontend
+profile: nextjs-frontend
 delivery_contract: {{DELIVERY_CONTRACT}}
 
 rules:
@@ -8,6 +8,6 @@ rules:
 agent_skills:
   repo: drivestream-lab/prayog-skills
   ref: {{AGENT_SKILLS_REF}}
-  profile: frontend
+  profile: nextjs-frontend
   skills:
 {{AGENT_SKILLS_LIST}}

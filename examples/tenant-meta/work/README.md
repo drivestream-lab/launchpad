@@ -1,18 +1,24 @@
-# Work manifests (`work/`)
+# Work / optional archive (`work/`)
 
-`WorkManifest` YAML files document epic + wave structure for an INIT. They are **archived in meta for traceability** — not consumed by a factory CLI in v0.5.10.
+**SSOT for WorkManifest is not Launchpad.** Canonical machine-readable intent lives in:
 
-## Board seeding (v0.5.10)
+1. Plan **§9** inside `Implementation-Plan-{INIT}.md` (approved on the spec PR)
+2. The pinned prayog contract: `prayog-skills/references/workmanifest-contract.md`
+3. Example YAML on the pin: `prayog-skills/tests/fixtures/workmanifest/valid.yaml`
 
-After spec PR merge, dev seeds the board with **`gh issue create` per wave** from `/spec-implementation-plan` §9:
+Identity: `apiVersion: prayog/v1` + `kind: WorkManifest` only. Do **not** use `launchpad/v1`.
+
+Validate with the pin (not Launchpad kit CI):
 
 ```bash
-# Example — one issue per wave (titles/bodies from plan §9)
-gh issue create --title "[INIT-EXAMPLE-001 W0] ..." --body-file w0-body.md --label initiative
+python prayog-skills/scripts/workmanifest_contract.py <plan.md|manifest.yaml>
 ```
 
-See [playbook/ship/delivery-workflow.md](../../../playbook/ship/delivery-workflow.md).
+After spec merge, humans run forge **`/create-board-tickets`** (preflight + project). Launchpad only materializes that skill.
 
-## Archive format
+## Optional meta archive
 
-`INIT-EXAMPLE-001.yaml` is a **synthetic example** of the WorkManifest shape. Dev may copy §9 into `work/INIT-*.yaml` and open a meta PR for audit trail; PM merges when present.
+A copy under `work/INIT-*.yaml` may exist for human audit. It is **not** a second
+schema and must not drift from plan §9. Prefer plan §9 only. After board seed,
+the programme board is the long-term WorkManifest home; plan / working papers may
+be purged at **initiative closure** (prayog purge skills — not Launchpad).

@@ -16,14 +16,18 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 | validate-requirements | | | prayog-skills |
 | review-findings | | | prayog-skills |
 | update-documents | | | prayog-skills |
-| generate-work-manifest | removed v0.3.1 | — | was prayog-skills backlog skill; superseded by spec-implementation-plan §9 |
 | initiative-feasibility | | | prayog-skills dev |
 | spec-technical-review | | | prayog-skills dev (PE lane) |
 | spec-implementation-plan | | | prayog-skills dev |
-| pre-implement | | | prayog-skills dev |
+| pre-implement | | | prayog-skills dev (gate-only) |
 | loop-spec | | | prayog-skills dev |
-| ground-spec | | | prayog-skills dev |
-| verify | | | prayog-skills dev |
+| open-draft-pr | | | forge walker — optional at wave-pr-action |
+| learning-extract | | | prayog-skills dev (Pass-2 closeout) |
+| ground-spec | | | prayog-skills dev (G1–G10) |
+| purge-initiative-artifacts-app | | | prayog-skills dev (closure; app) |
+| purge-initiative-artifacts-meta | | | prayog-skills requirements (closure; meta) |
+| spec-technical-review | | | T1–T12 when TDD produced |
+| spec-implementation-plan | | | P1–P16 |
 
 ---
 
@@ -37,32 +41,20 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 Slice: one board issue / wave from initiative spec.
 ```
 
-**Pass if:** checklist lists AGENTS.md, relevant `.mdc`, as-built columns; states verify vs unit scope; no code unless asked.
+**Pass if:** checklist lists AGENTS.md, relevant `.mdc`, as-built columns; states
+smoke (`tests/verify`) vs unit scope; **no product code** and **no branch open** (gate-only).
+Publish checklist via Forge `/commit-workspace` when the pin requires it.
 
 ---
 
-## 2. verify (app repo)
-
-**Workspace:** app repo — server running, `tests/config.yaml` configured
+## 2. Board tickets (forge skill — after spec merge)
 
 ```text
-/verify
-
-Run verify for one feature area per tests/README.md.
+/create-board-tickets INIT-<id>
 ```
 
-**Pass if:** agent cites `tests/README.md`, uses documented verify command, notes env prerequisites.
-
----
-
-## 3. Board seed (operator — not a skill)
-
-```bash
-# After spec PR merge — one issue per wave from plan §9
-gh issue create --title "[INIT-EXAMPLE-001 W0] ..." --body-file w0-body.md
-```
-
-**Pass if:** epic + wave issues exist on the board with required project fields populated.
+**Pass if:** epic + wave issues exist on the board with required project fields populated
+(plan §9 WorkManifest; not a development-lane skill).
 
 ---
 
@@ -92,7 +84,7 @@ Initiative: INIT-EXAMPLE-003
 Feasibility report: docs/specification/reports/Feasibility-Report-INIT-EXAMPLE-003.md
 ```
 
-**Pass if:** TDD produced; T1–T10 checks evidenced; draft ADRs for each NEW-ADR finding; PE questions resolved or deferred with defaults; PM questions explicitly routed (not answered by agent).
+**Pass if:** TDD produced; **T1–T12** checks evidenced; draft ADRs for each NEW-ADR finding; PE questions resolved or deferred with defaults; PM questions explicitly routed (not answered by agent).
 
 ---
 
@@ -106,24 +98,60 @@ Feasibility report path: docs/specification/reports/Initiative-Feasibility-Repor
 Technical review path: docs/specification/reports/Technical-Review-INIT-EXAMPLE-003.md (or N/A)
 ```
 
-**Pass if:** §0 PE sign-off referenced; W0–Wn phases with REQ/TASK/FILE; done-when per task; P1–P14 checks; §9 WorkManifest YAML present. Board seed happens **after** spec merge.
+**Pass if:** §0 PE sign-off referenced; W0–Wn phases with REQ/TASK/FILE; done-when per task;
+**P1–P16** checks (P16 = WorkManifest contract via pin validator); §9 WorkManifest YAML present.
+Board tickets (`/create-board-tickets`) happen **after** spec merge.
 
 ---
 
-## 7. loop-spec (app repo, during wave implementation)
+## 7. loop-spec (app repo, Pass-1 — before wave Draft PR)
 
 ```text
 /loop-spec
 
-Implement W1 for INIT-EXAMPLE-003. Run {verify_command} and {check_command} after each task.
-Fix failures before moving on. Stop when all tasks green.
+Implement W1 for INIT-EXAMPLE-003. Run {check_command} and {test_command} after each task.
+Fix failures before moving on. Stop when all tasks green on head_ref.
+Do not open the Draft PR, commit/push, or run /learning-extract / /ground-spec in this hop.
 ```
 
-**Pass if:** agent implements task-by-task; verifies after each; fixes before proceeding; stops and requests human checkpoint — does not self-approve or advance to next wave.
+**Pass if:** agent implements task-by-task; records proof locally; does **not** run git/gh
+mutations as skill success; leaves Forge readiness for `/commit-workspace` then
+`wave-pr-action` (`open_draft_pr` requires).
 
 ---
 
-## 8. ground-spec (app repo, after wave implementation)
+## 8. open-draft-pr (forge walker — optional at wave-pr-action)
+
+**When:** Walker path after `/loop-spec` + required `/commit-workspace` on the same
+`head_ref`. Not required when the pin sets `authorization: automated` on
+`wave-pr-action`.
+
+```text
+/open-draft-pr
+```
+
+Requires `title`, `body_path`, `head_ref`, `base_ref` (`draft: true`). Then human
+**`wave-acceptance`** (smoke under `tests/verify` or P15 N/A; label **`wave-accepted`**).
+
+**Pass if:** Draft wave PR opened; no merge by this skill; no label applied by this skill.
+
+---
+
+## 9. learning-extract (app repo, Pass-2 closeout)
+
+**When:** After human `wave-acceptance` / tip fixes; park at `wave-awaiting-closeout` cleared.
+
+```text
+/learning-extract
+
+Wave: W1 of INIT-EXAMPLE-003
+```
+
+**Pass if:** structured learning report produced (L-* taxonomy); handoff toward `/ground-spec`.
+
+---
+
+## 10. ground-spec (app repo, after learning-extract)
 
 ```text
 /ground-spec
@@ -131,11 +159,47 @@ Fix failures before moving on. Stop when all tasks green.
 Spec: 01  (or wave W1 of INIT-EXAMPLE-003)
 ```
 
-**Pass if:** ground check output included; FR checklist evidenced; §Contracts produced table populated with module, entry point, input/output shapes; PR instructions present.
+**Pass if:** **G1–G10** (`GF-*` findings); ground report local only; handoff toward
+pin `wave-done-action` then `wave-signoff`; no commit/merge by this skill. Human
+merges at `wave-signoff` (publish only).
+
+---
+
+## 11. purge-initiative-artifacts-app (app repo — initiative closure)
+
+**When:** All waves done; human `initiative-closure` judgment. **Not** after each wave.
+
+```text
+/purge-initiative-artifacts-app
+
+Initiative: INIT-EXAMPLE-003
+```
+
+**Pass if:** allowlisted app working papers processed in app workspace; no KEEP deleted;
+handoff toward `initiative-closure-pr-action-app`. Launchpad does not perform deletes — skill owns semantics.
+
+---
+
+## 12. purge-initiative-artifacts-meta (meta repo — initiative closure)
+
+**When:** After app closure signoff in the dual-loop closure lane.
+
+```text
+/purge-initiative-artifacts-meta
+
+Initiative: INIT-EXAMPLE-003
+```
+
+**Pass if:** allowlisted meta working papers processed in meta workspace; handoff toward
+`initiative-closure-pr-action-meta`. No required human `/open-draft-pr` when pin
+`authorization: automated` on that node; human merges at
+`initiative-closure-signoff-meta`.
 
 ---
 
 ## Exit
 
-- [ ] Dev bundle (§1–2, §4–8) scored **Y** on pilot repo
+- [ ] Dev bundle (§1–3, §4–12) scored **Y** on pilot repo
+- [ ] Technical review audition cites **T1–T12** when TDD is produced
 - [ ] `launchpad status --repo <pilot>` passes after harness migration PR
+- [ ] C2 excluded: feasibility probes, security-gate/T13, `parallel_safe`, auto-merge

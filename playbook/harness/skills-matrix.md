@@ -15,8 +15,27 @@ Skills CLI installs to **`.agents/skills/`** (project) or **`~/.agents/skills/`*
 
 | Who | Open in Cursor | Skills |
 |-----|----------------|--------|
-| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle via `apply-harness --meta` |
-| **Developer** | app repo | prayog dev bundle — `/spec-draft` through `/verify` |
+| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle (incl. `/purge-initiative-artifacts-meta`) + forge skills via `apply-harness --meta` |
+| **Developer** | app repo | prayog dev bundle + forge — `/spec-draft` … `/ground-spec`, `/purge-initiative-artifacts-app`, plus forge |
+
+**Shared forge skills** (meta + app, required `forge_skills` → `skills/forge/`):
+`/commit-workspace`, `/open-draft-pr`, `/create-board-tickets`. Not workflow graph
+nodes — human install surface only (walkers). Board tickets use
+`/create-board-tickets` (not a development-lane skill). Unrelated to kit forge
+templates (`apply-forge-templates`).
+
+**Wave sequencing (pinned workflow):** Pass-1 `/pre-implement` → `/loop-spec` →
+`wave-pr-action` → `wave-acceptance` (label `wave-accepted`). Do not require a
+human `/open-draft-pr` when the pin sets `authorization: automated` on that node.
+Pass-2 `/learning-extract` → `/ground-spec` → `wave-done-action` (board Done) →
+`wave-signoff` (human merge only). Smoke scripts live under `tests/verify/` — not
+a `/verify` skill.
+
+**Closure (all waves done, once):** `initiative-closure` →
+`/purge-initiative-artifacts-app` → `initiative-closure-pr-action-app` →
+`initiative-closure-signoff-app` → `/purge-initiative-artifacts-meta` →
+`initiative-closure-pr-action-meta` → `initiative-closure-signoff-meta`.
+No per-wave purge; Launchpad does not implement deletes.
 
 ---
 

@@ -1,23 +1,25 @@
 apiVersion: launchpad/v1
 kind: HarnessConfig
 org: apex-common
+delivery_contract: sdd-delivery/v2
+delivery_roles:
+  engineering-gate: pe-team
 
 profiles:
   meta-pm:
     # constitution omitted — meta repos have no .cursor/rules submodule
-    skills: []
+    skills:
+      - repo: prayog-skills
+        ref: latest
+    community_skills:
+      - source: github/awesome-copilot
+        ref: v1.0.0
+        skill: prd
+    skill_runtimes:
+      - .agents/skills
+      - .claude/skills
     codeowners_template: CODEOWNERS.meta-pm
     harness_pin_template: harness-pin.meta.yaml
-
-  python-backend:
-    constitution:
-      repo: python-services-rules
-      ref: v2.1.0
-    skills:
-      - repo: python-agent-skills
-        ref: v1.0.0
-    codeowners_template: CODEOWNERS.python-backend
-    harness_pin_template: harness-pin.python-backend.yaml
 
 # Per-repo overrides (optional).
 # If absent, repo's harness_profile defaults to its stack from governance.yaml.

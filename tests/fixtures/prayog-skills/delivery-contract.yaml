@@ -1,27 +1,225 @@
+# Vendored from drivestream-lab/prayog-skills@d3bd94e038f7c8fe95517ab2f29373661d76f800 (wave-acceptance; no /verify).
+# Scrubbed: no Orchestrator/orch product names in comments for Launchpad fixtures.
 apiVersion: prayog/v1
 kind: DeliveryContract
+
 id: sdd-delivery
 version: 2
 status: rc
 workflow: workflow.yaml
+handoff_spec: references/handoff-envelope.md
+forge_spec: references/forge-side-effects.md
+prompt_package_spec: references/prompt-package-contract.md
+workmanifest_spec: references/workmanifest-contract.md
+
+# WorkManifest — immutable approved execution intent (epic/waves/tasks/deps/
+# files/exit proof/wave verification). Board status and runtime evidence live
+# in owning systems/artifacts, not in the approved manifest. Walker-neutral:
+# human or programme runner. Launchpad materializes the pin only.
+workmanifest:
+  identity:
+    apiVersion: prayog/v1
+    kind: WorkManifest
+  nature: immutable-approved-execution-intent
+  validator: scripts/workmanifest_contract.py
+
+outcomes:
+  - pass
+  - findings
+  - needs-input
+  - blocked
+  - stale
+  - failed
+  - skipped
+
+principles:
+  - navigation-is-read-only
+  - external-writes-require-authorization
+  - human-gates-never-auto-transition
+  - artifacts-not-chat-are-durable-state
+  - invocation-mode-is-not-an-exemption
+
+# Dispatch (skill nodes only) — automation eligibility SSOT in workflow.yaml
+#
+# Enum (rc-2 v1 contract tests):
+#   manual       — human or agent may run the skill; orchestrators must not auto-dispatch
+#   orchestrated — orchestrator may auto-dispatch when programme trigger + handoff authorize
+#   observed     — reserved/future; excluded from rc-2 v1 contract tests
+#
+# Schema default: absent `dispatch` on a skill (e.g. v0.4.3 pins) → treat as `manual`.
+# Consumers must not maintain skill-id allowlists; read pinned workflow.yaml only.
+#
+# Human-checkpoint nodes require `purpose` (intent slug). Mechanism is always
+# `type: human-checkpoint` — do not invent `type: gate`. Prefer node id ≡ purpose
+# (e.g. prd-impact-acceptance, coding-readiness, wave-acceptance, wave-signoff).
+# GitHub projection labels stay lane-named (impact-map-*, spec-*); they are not
+# renamed when checkpoint ids change.
+#
+# Consumer algorithm (human invoke and AgentRunner — same legality):
+#   next = resolve(handoff.stage, handoff.outcome) from pinned workflow.yaml
+#   if next.type != skill:
+#       STOP  # human-checkpoint, external-action, decision, terminal
+#   dispatch_value = next.dispatch ?? manual
+#   # Human / ad-hoc agent may run a skill when workflow preconditions allow.
+#   # Orchestrator auto-dispatch only when dispatch_value == orchestrated and
+#   # programme trigger + handoff authorize.
+#   if orchestrator_auto and dispatch_value != orchestrated:
+#       STOP
+#   if next.type == human-checkpoint:  # also when resolved next is checkpoint
+#       STOP  # never auto-advance; purpose is for display/ops only
+
+dispatch:
+  enum:
+    - manual
+    - orchestrated
+  schema_default: manual
+  reserved_future:
+    - observed
+  policy_fixture: tests/fixtures/workflow_dispatch_policy.json
+
+# Forge (mutation side-effects) — orthogonal to tools-during-hop (e.g. code-graph).
+#
+# Pin declares policy + required instance slots. Content skills fill handoff.forge.
+# Human forge skills (skills/forge/<action-kebab>/) and orchestrator ForgeClient
+# both consume pin ⋉ handoff. Content skills must not treat local CLI (e.g. gh)
+# as automate success.
+#
+# Skill nodes: forge.commit_workspace only (absent → disabled).
+# External-action nodes: forge.action + draft/labels/requires as applicable.
+# Every external-action MUST set authorization: explicit | automated (required;
+# no omission / no default). explicit = STOP for interactive authorize;
+# automated = ForgeClient runs when handoff.forge is complete (no interactive
+# STOP). `open_draft_pr` is reused for PRD/spec/wave Draft PRs.
+# `update_board_status` is pin-declared (wave In Progress / Done); orch
+# ForgeClient only — **no** human forge skill package (keep AGENTS thin).
+# There is **no** merge Forge action — merge remains human-only at
+# `wave-signoff` (publish). Human approved is `wave-acceptance` (label
+# `wave-accepted` phase-1 ingress). Head/ref binding is run context (not pin).
+# Approval labels (*-lgtm, wave-accepted) never auto from content skills.
+#
+# Human skill id = forge.action with '_' → '-' **when** a skills/forge package
+# exists. Orchestrators never auto-dispatch forge skills (not on workflow
+# outcomes; disable-model-invocation: true). `automated` means pre-authorized
+# ForgeClient / programme executor — not that content skills may mutate GitHub.
+# Orch process hops are declared only in workflow.yaml (no off-graph side effects).
+forge:
+  commit_workspace:
+    enum:
+      - disabled
+      - optional
+      - required
+    schema_default: disabled
+  external_action:
+    authorization:
+      enum:
+        - explicit
+        - automated
+      required_on: every-external-action-node
+      # No schema_default — pin must set the field; missing is invalid.
+  actions:
+    enum:
+      - commit_workspace
+      - open_draft_pr
+      - create_board_tickets
+      - update_board_status
+    reserved_future:
+      - link_pr_to_ticket
+      - post_forge_comment
+  human_skill_id: action_with_underscores_to_hyphens
+  # update_board_status: orch ForgeClient only — omit from human_forge_skills
+  forbid_auto_labels_suffix: "-lgtm"
+  policy_fixture: tests/fixtures/workflow_forge_policy.json
+  contract: references/forge-side-effects.md
+
+# Prompt packages (skill invocation briefs) — orthogonal to dispatch.
+# Coverage = skills/requirements/* ∪ skills/development/* ∪ skills/forge/*
+# (see inventory). Automated consumers fail closed; humans may freeform.
+# Runtime bind/render/outcome persistence is programme-runner BOUNDINPUT (later).
+prompts:
+  layout: skills/<area>/<skill-id>/prompts/
+  areas:
+    - requirements
+    - development
+    - forge
+  inventory_fixture: tests/fixtures/prompt_inventory.json
+  contract: references/prompt-package-contract.md
+  template_syntax: simple-mustache-vars  # {{var}} only
+  shared_variables:
+    - ticket
+    - initiative
+    - handoff_path
+    - workspace
+    - skill_id
+  eval_before_promote: true
+
+human_checkpoint:
+  required_field: purpose
+  mechanism: human-checkpoint
+
 github:
   labels:
     - name: impact-map-pending
       color: BFD4F2
       description: Gate 1 awaiting PE review
       profiles: [meta-pm]
+    - name: impact-map-blocked
+      color: D73A4A
+      description: Gate 1 blocked or changes requested
+      profiles: [meta-pm]
+    - name: impact-map-lgtm
+      color: 0E8A16
+      description: Gate 1 approved for current PR head
+      profiles: [meta-pm]
+    - name: impact-map-revised
+      color: FBCA04
+      description: Impact map revised; re-review required
+      profiles: [meta-pm]
+    - name: impact-map-stale
+      color: E99695
+      description: PRD or impact-map approval is stale
+      profiles: [meta-pm]
     - name: spec-pending
       color: BFD4F2
       description: Gate 2 awaiting PE review
+      profiles: [app]
+    - name: spec-blocked
+      color: D73A4A
+      description: Gate 2 blocked or changes requested
       profiles: [app]
     - name: spec-lgtm
       color: 0E8A16
       description: Gate 2 approved for current spec PR head
       profiles: [app]
+    - name: spec-revised
+      color: FBCA04
+      description: Spec package revised; re-review required
+      profiles: [app]
+    - name: spec-stale
+      color: E99695
+      description: Upstream meta or PRD approval is stale
+      profiles: [app]
+    - name: wave-accepted
+      color: 0E8A16
+      description: >-
+        Wave tip human-approved at wave-acceptance (smoke or P15 N/A);
+        not a merge signal
+      profiles: [app]
   review_roles:
-    gate-1:
+    prd-impact-acceptance:
       role: engineering-gate
       profiles: [meta-pm]
-    gate-2:
+    coding-readiness:
       role: engineering-gate
       profiles: [app]
+    wave-acceptance:
+      role: engineering-gate
+      profiles: [app]
+    wave-signoff:
+      role: engineering-gate
+      profiles: [app]
+    initiative-closure-signoff-app:
+      role: engineering-gate
+      profiles: [app]
+    initiative-closure-signoff-meta:
+      role: engineering-gate
+      profiles: [meta-pm]

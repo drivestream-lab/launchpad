@@ -115,7 +115,8 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        # illustrative — tenant chooses the tag
+        ref: d3bd94e
     community_skills:
       - source: github/awesome-copilot
         ref: v1.0.0
@@ -125,32 +126,52 @@ profiles:
       - .claude/skills
 
   python-backend:
-    prayog_profile: python-backend    # optional when name matches harness profile
     constitution:
       repo: python-services-rules
       ref: v2.1.0
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: d3bd94e
     skill_runtimes:
       - .agents/skills
       - .claude/skills
 
   nextjs-frontend:
-    prayog_profile: frontend           # prayog file is profiles/frontend.yaml
     constitution:
       repo: nextjs-bff-rules
       ref: v0.1.5
     skills:
       - repo: prayog-skills
-        ref: v0.4.3-rc.1
+        ref: d3bd94e
+
+  flink:
+    constitution:
+      repo: data-platform-rules   # Flink constitution repo
+      ref: v0.3.1
+    skills:
+      - repo: prayog-skills
+        ref: d3bd94e
+
+  edge-agent:
+    constitution:
+      repo: edge-agent-rules
+      ref: v0.1.0
+    skills:
+      - repo: prayog-skills
+        ref: d3bd94e
 
 repos:
   special-repo: python-backend
 ```
 
-Skill **names** resolve from prayog `profiles/{prayog_profile}.yaml` at the pinned
-`skills[].ref` (`requirements_skills` for `meta-pm`, `development_skills` for app profiles).
+`skills[].ref` is **tenant-owned**. Launchpad pins the declared ref only; it does
+not choose a prayog-skills version. When `delivery_contract` is set, the pin must
+ship `delivery-contract.yaml` whose `{id}/v{version}` matches.
+
+**Identity equality:** skill names resolve from prayog `profiles/{stack_key}.yaml`
+(same string as the harness profile name). Profile aliases are **rejected**.
+Lane lists (`requirements_skills` for `meta-pm`, `development_skills` for app
+profiles) plus required `forge_skills`.
 
 **Resolution order:** `repos.<name>` → `repo.stack` from governance → no harness.
 

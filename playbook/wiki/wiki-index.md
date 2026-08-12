@@ -67,7 +67,7 @@ Base URL: `tenant <client>-meta/blob/develop/`
 |------|------|
 | PAT + factory CLI | `docs/onboarding/factory-cli.md` |
 | Setup platform | `README.md` (Factory CLI section) |
-| Work manifests | `work/INIT-*.yaml` (generated); see `prd/` in meta repo |
+| Work manifests | Plan §9 + pin contract (board = long-term after seed; may purge at initiative closure) |
 | Teams / RBAC | `playbook/ship/teams-and-rbac.md` |
 
 ---
@@ -81,7 +81,7 @@ Base URL: `tenant <client>-meta/blob/develop/`
 | Skills matrix | `playbook/harness/skills-matrix.md` |
 | Skills audition | `playbook/harness/skills-audition.md` |
 | Pre-implement (example-api) | `example-org/example-api` → `.agents/skills/pre-implement/SKILL.md` |
-| Verify skill (example-api) | `example-org/example-api` → `.agents/skills/verify/SKILL.md` |
+| Ground-spec (example-api) | `example-org/example-api` → `.agents/skills/ground-spec/SKILL.md` |
 
 ---
 

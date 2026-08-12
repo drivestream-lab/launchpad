@@ -126,6 +126,7 @@ def materialize_skill_tree(
                     f"→  {os.path.relpath(hub_root / name, repo / runtime / name)}"
                 )
             materialized.append(name)
+        _remove_full_pack_runtime_links(repo, runtime_roots, apply=False)
         _print_stale_cleanup(repo, hub_root, runtime_roots, skill_names, community_submodule_dirs, apply=False)
         return materialized
 
@@ -134,7 +135,9 @@ def materialize_skill_tree(
     for name in skill_names:
         src = find_skill_source_dir(submodule_root, name, lane_key=lane_key)
         if src is None:
-            print(f"  ✗  hub skill: {name} not found in {prayog_submodule_rel}", file=sys.stderr)
+            print(f"  ✗  hub skill: {name} not found in {prayog_submodule_rel} "
+                  f"(searched skills/{{requirements|development|forge}}/{name}/)",
+                  file=sys.stderr)
             continue
 
         hub_dest = hub_root / name
@@ -151,11 +154,9 @@ def materialize_skill_tree(
         for runtime in runtime_roots:
             print(f"  ✔  runtime skill: {runtime}/{name}")
 
-    # prayog-skills at root: symlink submodule itself to runtime roots
-    runtime_dest = repo / runtime_roots[0] / "prayog-skills" if runtime_roots else None
-    if runtime_dest is not None:
-        runtime_rel = os.path.relpath(submodule_root, runtime_dest.parent)
-        _symlink(runtime_rel, runtime_dest)
+    # Never expose the full prayog-skills pack under agent skill roots — only
+    # profile-listed skill names (from profiles/*.yaml) are linked above.
+    _remove_full_pack_runtime_links(repo, runtime_roots, apply=True)
 
     _cleanup_stale(
         repo,
@@ -165,6 +166,24 @@ def materialize_skill_tree(
         community_submodule_dirs=community_submodule_dirs,
     )
     return materialized
+
+
+def _remove_full_pack_runtime_links(
+    repo: Path,
+    runtime_roots: list[str],
+    *,
+    apply: bool,
+) -> None:
+    """Drop leftover ``<runtime>/prayog-skills`` so agents cannot discover the full pack."""
+    for runtime in runtime_roots:
+        pack_link = repo / runtime / _PRAYOG_SUBMODULE_NAME
+        if not (pack_link.exists() or pack_link.is_symlink()):
+            continue
+        if not apply:
+            print(f"    [dry-run] remove full-pack runtime link: {runtime}/{_PRAYOG_SUBMODULE_NAME}")
+            continue
+        _remove_skill_entry(pack_link)
+        print(f"  ✔  removed full-pack runtime link: {runtime}/{_PRAYOG_SUBMODULE_NAME}")
 
 
 def materialize_community_skill_tree(

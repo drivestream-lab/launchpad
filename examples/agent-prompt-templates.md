@@ -10,8 +10,8 @@ Copy-paste starters for Cursor Agent. **Use the section for your role** — work
 
 | Role | Open in Cursor | Skills | Typical work |
 |------|----------------|--------|--------------|
-| **Product owner / PM** | `<client>-meta` | `/prd`, `/validate-requirements`, `/review-findings`, `/update-documents`, `/prd-impact-map` | PRD writing, impact mapping, product Q&A on PRD PR |
-| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/ground-spec`, `/verify` | Opens spec PR, spec/feasibility/TDD/plan, board seed after merge, wave implementation |
+| **Product owner / PM** | `<client>-meta` | `/prd`, `/validate-requirements`, `/review-findings`, `/update-documents`, `/prd-impact-map`, `/purge-initiative-artifacts-meta` | PRD writing, impact mapping, product Q&A; closure meta purge |
+| **Developer** | App repo (e.g. `example-api`) | `/spec-draft`, `/initiative-feasibility`, `/spec-technical-review`, `/spec-implementation-plan`, `/pre-implement`, `/loop-spec`, `/learning-extract`, `/ground-spec`, `/purge-initiative-artifacts-app` | Spec PR, plan, board tickets; Pass-1/2; closure app purge |
 
 **Board:** cite **GitHub issue #** and **full title** — not manifest ids (`Q1`, `T2`) in conversation.
 
@@ -114,7 +114,7 @@ Service catalog: config/service-catalog.yaml
 Generate prd/reports/Impact-Map-INIT-EXAMPLE-002.md locally.
 Present the PR-readiness handoff and stop without GitHub side effects.
 After I explicitly authorize PR creation, use gh when configured; otherwise
-provide exact commands. Initialize impact-map-pending for PE Gate 1.
+provide exact commands. Initialize impact-map-pending for PE `prd-impact-acceptance`.
 ```
 
 ---
@@ -137,22 +137,17 @@ Report only — list gaps; do not merge spec PR until clean.
 
 ---
 
-## 7 — Seed board (dev — after spec PR merges)
+## 7 — Board tickets (dev — after spec PR merges)
 
 **When:** Spec PR merged to `develop` in app repo.  
 **Workspace:** app repo (not meta).  
-**Output:** GitHub Issues — one per wave (`W0`, `W1`, …) from plan §9
+**Skill:** forge `/create-board-tickets` (plan §9 WorkManifest already in the plan)
 
 ```text
-From Implementation-Plan-INIT-EXAMPLE-002.md §9 WorkManifest YAML:
-
-Create one GitHub Issue per wave using gh issue create:
-- id W0 → title "[INIT-EXAMPLE-002 W0] {wave goal}"
-- id W1 → depends_on W0
-Use §9 body text for issue bodies. Label: init-example-002.
-
-Optional: archive §9 in <client>-meta/work/INIT-EXAMPLE-002.yaml for traceability (PM merges meta PR).
+/create-board-tickets INIT-EXAMPLE-002
 ```
+
+**Pass if:** EPIC + wave sub-issues on the programme board from plan §9.
 
 ---
 
@@ -209,13 +204,13 @@ Read:
 - docs/specification/as-built/implementation-status.md
 
 Execute one slice:
-1. Implement code + tests (unit vs verify — no overlap)
+1. Implement code + tests (unit vs smoke scripts — no overlap)
 2. Update product spec status if behavior ships
 3. Update as-built/implementation-status.md in same PR
-4. Run board Verify command
+4. Run board Smoke command (or N/A for P15)
 
 Branch: feature/INIT-EXMPL-002-w{N}-{slug}  ← see branching-policy.md
-Verify: (paste from board — e.g. make check && poetry run python -m tests.verify.verify_all)
+Smoke: (paste from board — e.g. tests/verify/… or N/A)
 
 Do not edit .cursor/rules/ submodule.
 ```
@@ -240,23 +235,23 @@ Read:
 - docs/specification/as-built/implementation-status.md (## Testing harness)
 - tests/README.md
 
-Deliver per overlap rules: unit and/or verify trim; update feature map + as-built.
+Deliver per overlap rules: unit and/or smoke-script trim; update feature map + as-built.
 
 Branch: chore/INIT-EXAMPLE-001-<slug>
-Verify: make test (or board Verify command)
+Smoke: board Smoke command, or tests/verify/…, or N/A
 
 Do not edit .cursor/rules/ submodule. No new product features unless scoped.
 ```
 
 ### Historical wave reference (complete — do not re-implement)
 
-| Wave | Product spec | Verify |
-|------|--------------|--------|
+| Wave | Product spec | Smoke |
+|------|--------------|-------|
 | W1 auth | `05-roles-and-authz.md` | `make test` |
 | W2 onboarding | `03-tenant-and-user-lifecycle.md` | `make test` |
 | W3 device/OTP | `06-device-traffic-and-mqtt.md` | `make test` |
 | W4 bridge | `06-device-traffic-and-mqtt.md` | `make test` |
-| W5 close-out | `tests/README.md` | `make check && poetry run python -m tests.verify.verify_all` |
+| W5 close-out | `tests/README.md` | `tests/verify` / repo verify_command |
 
 ---
 
@@ -316,40 +311,12 @@ Feasibility report: docs/specification/reports/Initiative-Feasibility-Report-INI
 Spec: docs/specification/product/INIT-EXAMPLE-003.md
 
 Output: docs/specification/reports/Implementation-Plan-INIT-EXAMPLE-003.md
-Includes §WorkManifest YAML. Merge spec PR, then gh issue create to seed board.
+Includes §WorkManifest YAML. Merge spec PR, then `/create-board-tickets`.
 ```
 
 ---
 
-## D4 — Verify only (post-implementation)
-
-**When:** Code done; run board verify before opening PR or after CI.
-
-```text
-/verify
-
-Initiative: INIT-EXAMPLE-001
-Issue: #<n>
-Verify command: make test
-
-Run the command; report pass/fail and any fixes needed.
-```
-
-Live stack example:
-
-```text
-/verify
-
-Initiative: INIT-EXAMPLE-002
-Issue: #42
-Verify command: make check && poetry run python -m tests.verify.verify_all
-
-conda activate example-api required for verify_all.
-```
-
----
-
-## D5 — Cross-service check
+## D4 — Cross-service check
 
 **When:** Issue touches HTTP routes, JWT claims, or peer integrations.
 
@@ -367,50 +334,75 @@ Confirm example-api changes do not break EMQX auth, device validation, or Kafka 
 
 ---
 
-## D6 — Wave implementation (implement → verify → ground)
+## D5 — Wave implementation (Pass-1 → wave-acceptance → Pass-2)
 
-**When:** Board wave issue is In Progress; pre-implement checklist is done.  
-**One wave = one PR.** Ground report is the last commit before PR is marked ready.
+**When:** Board wave issue is In Progress.  
+**One wave = one Draft PR after code is on `head_ref`.**
 
 ```text
 Initiative: INIT-EXAMPLE-002
 Issue: #42 — [INIT-EXMPL-002 W1] extraction engine
 Repo: example-api (this workspace)
-Branch: feature/INIT-EXMPL-002-w1-extraction (already open from /pre-implement)
+
+/pre-implement
+# gate-only checklist — then /commit-workspace when required
 
 /loop-spec
-
 Implement W1 tasks in order from plan.
 Run {check_command} and {test_command} after each task.
-Fix failures before moving on. Stop when all tasks green.
-Do not implement W2 scope.
+Do not open the Draft PR or run /learning-extract / /ground-spec in this hop.
+# then /commit-workspace when required
+
+# wave-pr-action — Draft PR after loop (no mid-coding Draft PR).
+# When pin authorization: automated, do not require /open-draft-pr.
+# Walker fallback:
+/open-draft-pr
+# title, body_path, head_ref, base_ref; draft: true
+# Human wave-acceptance: smoke under tests/verify (or P15 N/A),
+# then apply label wave-accepted on the Draft PR tip.
+# Content skills must not apply the label.
 ```
 
-When loop exits green:
+After human `wave-acceptance` / tip fixes (Pass-2 closeout):
+
+```text
+/learning-extract
+
+Wave: W1 of INIT-EXAMPLE-002
+```
+
+Then:
 
 ```text
 /ground-spec
 
 Spec: 01  (or wave W1 of INIT-EXAMPLE-002)
-Commit ground report as last commit on feature/INIT-EXMPL-002-w1-extraction.
-Open PR: "[INIT-EXMPL-002 W1] extraction engine — implementation + ground report"
+# local report only — pin may wave-done-action (board Done);
+# human merges at wave-signoff (publish only)
 ```
 
 ---
 
-## D7 — Harness / platform chore (bootstrap — reference)
+## D5b — Initiative closure (after all waves)
 
-**When:** BOOTSTRAP-001-style harness work in app repo (historical).
+**When:** Every wave is Done. **Once** per initiative — not per wave.  
+**App workspace** then **meta workspace**.
 
 ```text
-Initiative: BOOTSTRAP-001
-Repo: example-api
-Task: Harness only — no product features.
+# In app repo (example-api)
+/purge-initiative-artifacts-app
 
-/pre-implement
+Initiative: INIT-EXAMPLE-002
+# KEEP/PURGE from pin artifact-write-contract — Launchpad does not delete
+# then initiative-closure-pr-action-app → initiative-closure-signoff-app
+```
 
-Deliverables: AGENTS.md links to <client>-meta playbook; .agents/skills; PR template; as-built columns.
-Verify: make check
+```text
+# In <client>-meta
+/purge-initiative-artifacts-meta
+
+Initiative: INIT-EXAMPLE-002
+# then initiative-closure-pr-action-meta → initiative-closure-signoff-meta
 ```
 
 ---
@@ -424,6 +416,6 @@ Every PR description should match board fields:
 | Initiative | `INIT-EXAMPLE-001` or `INIT-EXAMPLE-002` |
 | Issue | `#<n>` |
 | Spec path | `docs/specification/product/INIT-EXAMPLE-001.md` |
-| Verify command | `make test` |
+| Smoke command | `tests/verify/…`, repo `verify_command`, or `N/A` |
 
 Template: app repo `.github/pull_request_template.md`

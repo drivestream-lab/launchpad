@@ -9,12 +9,24 @@ PRD delivery_model + wave table
   → repo spec (mirror wave IDs; may add PRE* gates)
   → dev: /spec-implementation-plan §9 WorkManifest YAML   ← on spec branch, before spec merge
   → spec PR merge
-  → gh issue create per wave from plan §9   ← after spec merge
-  → feature branch PR per wave → merge → wave Done
-  → INIT closure when all units + success criteria pass
+  → /create-board-tickets (forge; P16 + pin validator preflight)
+  → /pre-implement → /loop-spec → wave-pr-action → wave-acceptance
+      (smoke / P15 N/A; label wave-accepted)
+  → Pass-2: /learning-extract → /ground-spec → wave-done-action (board Done)
+      → wave-signoff (human merge only)
+  → Closure (all waves done): initiative-closure
+      → /purge-initiative-artifacts-app → initiative-closure-pr-action-app
+      → initiative-closure-signoff-app
+      → /purge-initiative-artifacts-meta → initiative-closure-pr-action-meta
+      → initiative-closure-signoff-meta
 ```
 
-**Work manifest rule:** PM provides the PRD. Dev generates wave manifest content via `/spec-implementation-plan` §9. PM never hand-writes `work/INIT-*.yaml` before spec merge. See [delivery-workflow.md](delivery-workflow.md#work-manifest).
+**Work manifest rule:** SSOT is plan §9 under pinned prayog
+`references/workmanifest-contract.md` (`apiVersion: prayog/v1`). After board
+seed, the programme board is the long-term WorkManifest home; the plan file may
+be purged at initiative closure. PM never hand-writes Launchpad-owned
+WorkManifest YAML. Optional meta `work/` copies are audit-only. See
+[delivery-workflow.md](delivery-workflow.md).
 
 Related: [delivery-workflow.md](delivery-workflow.md) · [spec-layout.md](spec-layout.md) · [pm-workflow.md](../../docs/setup/pm-setup.md)
 
@@ -90,29 +102,27 @@ After **all** wave issues are Done:
 | Declare `delivery_model` + waves in PRD | ✓ | review |
 | Spec PR + `/spec-draft` | — | ✓ |
 | `/spec-implementation-plan` §9 | — | ✓ (on spec branch) |
-| Board seed after spec merge | — | ✓ (`gh issue create` per wave from plan §9) |
+| Board tickets after spec merge | — | ✓ (`/create-board-tickets`) |
 | Implement wave PRs | — | ✓ |
 | Close epic | ✓ | verify S-criteria |
 
 ---
 
-## Board seed behavior
+## Board tickets
 
-Dev runs `/spec-implementation-plan` **while spec PR is open**. Plan §9 emits WorkManifest YAML with **one `work:` item per wave** (`id: W0`, `W1`, …).
+Dev runs `/spec-implementation-plan` **while spec PR is open**. Plan §9 emits
+WorkManifest YAML (`prayog/v1`) validated by P16 + pin
+`scripts/workmanifest_contract.py`.
 
-**After spec PR merge**, dev seeds the board:
+**After spec PR merge**, dev runs forge **`/create-board-tickets`** (preflight + project).
 
 | Role | Action |
 |------|--------|
-| **Dev** | Runs `/spec-implementation-plan`; owns §9 YAML content |
-| **Dev** | Seeds board **after spec PR merge** |
-| **PM** | Does **not** author manifest before spec merge; may merge archived `work/*.yaml` in meta for traceability |
+| **Dev** | Owns §9 YAML content on the spec branch |
+| **Dev** | `/create-board-tickets` after spec PR merge |
+| **PM** | Does **not** author manifest before spec merge; may archive a §9 copy under meta `work/` (non-schema) |
 
-| Path | When | Who |
-|------|------|-----|
-| `gh issue create` | Default — all initiatives | Dev — from §9 YAML on spec branch |
-
-Do not hand-write wave manifests — dev generates them via `/spec-implementation-plan` §9.
+Do not treat Launchpad examples as WorkManifest SSOT.
 
 ---
 

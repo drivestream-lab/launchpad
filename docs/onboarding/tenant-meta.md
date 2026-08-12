@@ -159,11 +159,12 @@ One-time configuration for your org (e.g. **example-org**).
 | Team | Role |
 |------|------|
 | `pm-team` | Meta `develop` merges; spec handoff on app repos |
-| `backend-devs` | App repo `develop` merges |
+| `backend-devs` | App repo `develop` merges (`python-backend`) |
 | `release-managers` | `main` only |
-| `platform-devs` | Factory / meta automation |
-| `frontend-devs` | BFF repos (when added) |
-| `data-platform-devs` | Data platform repos (when added) |
+| `platform-devs` | Factory / Terraform IaC / platform-tooling |
+| `frontend-devs` | BFF repos (`nextjs-frontend`) |
+| `data-platform-devs` | Data platform domain — owns stack `flink` |
+| `edge-agent-devs` | Edge agent repos |
 | `qa-team` | QA manifests and deploy verification |
 | `pe-team` | Technical review, ADR, harness/rules (CODEOWNERS) |
 
@@ -188,7 +189,7 @@ Details: [teams and RBAC](../../playbook/ship/teams-and-rbac.md).
 | Scaffold | ✓ `apply-scaffold` | |
 | Harness + forge | ✓ `apply-harness`, `apply-forge-templates` | |
 | Verify | ✓ `status` | |
-| Wave issues | | `gh issue create` per plan §9 |
+| Wave issues | | `/create-board-tickets` after spec merge |
 
 ---
 

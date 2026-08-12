@@ -143,17 +143,18 @@ class TestHarnessSchema:
         h = load_harness(FIXTURES / "harness-day1.yaml")
         assert h.org == "apex-common"
         assert "meta-pm" in h.profiles
-        assert "python-backend" in h.profiles
-        assert h.profiles["python-backend"].constitution.repo == "python-services-rules"
+        assert list(h.profiles) == ["meta-pm"]
+        assert h.delivery_contract == "sdd-delivery/v2"
+        assert h.delivery_roles["engineering-gate"] == "pe-team"
+        assert h.profiles["meta-pm"].skills[0].repo == "prayog-skills"
+        assert h.profiles["meta-pm"].skills[0].ref == "latest"
 
     def test_template_fields_explicit(self):
         h = load_harness(FIXTURES / "harness-day1.yaml")
         assert h.profiles["meta-pm"].codeowners_template == "CODEOWNERS.meta-pm"
         assert h.profiles["meta-pm"].harness_pin_template == "harness-pin.meta.yaml"
         assert h.profiles["meta-pm"].constitution is None  # meta-pm has no rules submodule
-        assert h.profiles["python-backend"].codeowners_template == "CODEOWNERS.python-backend"
-        assert h.profiles["python-backend"].harness_pin_template == "harness-pin.python-backend.yaml"
-        assert h.profiles["python-backend"].constitution is not None
+        assert h.profiles["meta-pm"].community_skills[0].skill == "prd"
 
     def test_template_fields_convention_default(self):
         """If codeowners_template / harness_pin_template are absent, convention applies."""
@@ -173,7 +174,9 @@ class TestHarnessSchema:
 
     def test_resolve_profile_defaults_to_stack(self):
         h = load_harness(FIXTURES / "harness-day1.yaml")
-        assert h.resolve_profile("any-repo", "python-backend") == "python-backend"
+        assert h.resolve_profile("kola-meta", "meta-pm") == "meta-pm"
+        # Unknown stack with no matching profile → None
+        assert h.resolve_profile("any-repo", "python-backend") is None
 
     def test_resolve_profile_uses_override(self):
         raw = {
@@ -247,13 +250,13 @@ class TestHarnessSchema:
         }
         h = HarnessSchema(raw)
         prof = h.profiles["meta-pm"]
-        assert prof.prayog_profile == "meta-pm"
+        assert prof.name == "meta-pm"
         assert len(prof.community_skills) == 1
         assert prof.community_skills[0].source == "github/awesome-copilot"
         assert prof.community_skills[0].ref == "v1.0.0"
         assert prof.skill_runtimes == [".agents/skills", ".claude/skills"]
 
-    def test_prayog_profile_alias(self):
+    def test_prayog_profile_alias_rejected(self):
         raw = {
             "org": "acme",
             "profiles": {
@@ -263,8 +266,8 @@ class TestHarnessSchema:
                 }
             },
         }
-        h = HarnessSchema(raw)
-        assert h.profiles["nextjs-frontend"].prayog_profile == "frontend"
+        with pytest.raises(SchemaError, match="prayog_profile is not supported"):
+            HarnessSchema(raw)
 
     def test_community_skill_missing_ref_raises(self):
         raw = {

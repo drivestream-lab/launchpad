@@ -49,7 +49,8 @@ Use `--force` to overwrite after governance repo list changes.
 |------|-------|
 | `CODEOWNERS.python-backend` | `python-backend` |
 | `CODEOWNERS.nextjs-frontend` | `nextjs-frontend` |
-| `CODEOWNERS.data-platform` | `data-platform` |
+| `CODEOWNERS.flink` | `flink` |
+| `CODEOWNERS.edge-agent` | `edge-agent` |
 | `CODEOWNERS.terraform-iac` | `terraform-iac` (Azure/AWS foundations) |
 | `CODEOWNERS.meta-pm` | `meta-pm` (meta repo) |
 
@@ -61,7 +62,8 @@ Use `--force` to overwrite after governance repo list changes.
 |------|-------|
 | `harness-pin.python-backend.yaml` | `python-backend` |
 | `harness-pin.nextjs-frontend.yaml` | `nextjs-frontend` |
-| `harness-pin.data-platform.yaml` | `data-platform` |
+| `harness-pin.flink.yaml` | `flink` |
+| `harness-pin.edge-agent.yaml` | `edge-agent` |
 | `harness-pin.terraform-iac.yaml` | `terraform-iac` |
 | `harness-pin.meta.yaml` | `meta-pm` (meta repo) |
 
@@ -82,7 +84,6 @@ When `harness-<org>.yaml` sets `delivery_contract` (e.g. `sdd-delivery/v2`),
 |------|---------|
 | `github/workflows/ci.yml` | Placeholder CI — job name `ci` for required checks |
 | `github/workflows/policy-branch-name.yml` | Branch name validation on PRs to `develop` |
-| `github/workflows/board-seed-gate.yml` | Fail merge when spec PR lacked `spec-lgtm` or plan on `develop` |
 
 Manual-only workflows (not auto-seeded):
 
