@@ -7,3 +7,7 @@
 !prayog-skills/
 .claude/skills/*
 .cursor/skills/
+
+# launchpad harness — deployed shared references (copy of prayog-skills/references/)
+# Managed by apply-harness; reset-harness removes it.
+references/
