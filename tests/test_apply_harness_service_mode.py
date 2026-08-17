@@ -1,4 +1,4 @@
-"""Service-mode status: --no-client + caller config/workspace/token."""
+"""Service-mode apply-harness: --no-client + caller config/workspace/token."""
 
 from __future__ import annotations
 
@@ -54,16 +54,32 @@ def _write_minimal_meta(config: Path, *, org: str = "example-org", meta: str = "
         ),
         encoding="utf-8",
     )
+    (config / f"harness-{org}.yaml").write_text(
+        "\n".join(
+            [
+                "apiVersion: launchpad/v1",
+                "kind: HarnessConfig",
+                f"org: {org}",
+                "profiles:",
+                "  python-backend:",
+                "    skills:",
+                "      - repo: prayog-skills",
+                "        ref: dummy",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
 
 
-def test_status_no_client_requires_config_dir(capsys: pytest.CaptureFixture[str]) -> None:
-    rc = main(["status", "--no-client", "--repo", "example-api"])
+def test_apply_harness_no_client_requires_config_dir(capsys: pytest.CaptureFixture[str]) -> None:
+    rc = main(["apply-harness", "--no-client", "--repo", "example-api", "--apply"])
     assert rc == 1
     err = capsys.readouterr().err
     assert "--no-client requires --config-dir" in err
 
 
-def test_status_no_client_incompatible_with_client_flag(
+def test_apply_harness_no_client_incompatible_with_client_flag(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     config = tmp_path / "meta" / "config"
@@ -72,19 +88,20 @@ def test_status_no_client_incompatible_with_client_flag(
         [
             "--client",
             "example",
-            "status",
+            "apply-harness",
             "--no-client",
             "--config-dir",
             str(config),
             "--repo",
             "example-api",
+            "--apply",
         ]
     )
     assert rc == 1
     assert "incompatible with --client" in capsys.readouterr().err
 
 
-def test_status_no_client_uses_caller_workspace_not_registry(
+def test_apply_harness_no_client_uses_caller_workspace_not_registry(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """Leftover clients.yaml must not steer clone path when --no-client."""
@@ -94,16 +111,9 @@ def test_status_no_client_uses_caller_workspace_not_registry(
     config = meta / "config"
     _write_minimal_meta(config)
 
-    # Wrong place (what a leftover laptop registry would point at)
     wrong_clone = operator_ws / "example-api"
     wrong_clone.mkdir(parents=True)
     (wrong_clone / ".git").mkdir()
-
-    # Correct Gateflow clone
-    good_clone = service_ws / "example-api"
-    good_clone.mkdir(parents=True)
-    (good_clone / ".git").mkdir()
-    (good_clone / ".harness-pin.yaml").write_text("profile: python-backend\n", encoding="utf-8")
 
     op_meta = operator_ws / "example-meta"
     op_meta.mkdir(parents=True)
@@ -137,7 +147,7 @@ def test_status_no_client_uses_caller_workspace_not_registry(
 
     rc = main(
         [
-            "status",
+            "apply-harness",
             "--no-client",
             "--config-dir",
             str(config),
@@ -145,27 +155,25 @@ def test_status_no_client_uses_caller_workspace_not_registry(
             str(service_ws),
             "--repo",
             "example-api",
+            "--apply",
         ]
     )
-    # May be 0 or 1 depending on harness completeness — assert path + token.
-    out = capsys.readouterr().out
-    assert str(good_clone) in out
-    assert str(wrong_clone) not in out
+    captured = capsys.readouterr()
+    combined = captured.out + captured.err
+    assert str(service_ws / "example-api") in combined
+    assert str(wrong_clone) not in combined
     assert os.environ["GITHUB_TOKEN"] == "github_pat_FROM_GATEFLOW"
     assert "LAUNCHPAD_CLIENT" not in os.environ
-    assert rc in (0, 1)
+    assert rc == 1
 
 
-def test_status_no_client_skips_env_d_override(
+def test_apply_harness_no_client_skips_env_d_override(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     service_ws = tmp_path / "ws"
     meta = service_ws / "example-meta"
     config = meta / "config"
     _write_minimal_meta(config)
-    clone = service_ws / "example-api"
-    clone.mkdir(parents=True)
-    (clone / ".git").mkdir()
 
     env_d = tmp_path / "env.d"
     env_d.mkdir()
@@ -195,7 +203,7 @@ def test_status_no_client_skips_env_d_override(
 
     main(
         [
-            "status",
+            "apply-harness",
             "--no-client",
             "--config-dir",
             str(config),
@@ -203,57 +211,19 @@ def test_status_no_client_skips_env_d_override(
             str(service_ws),
             "--repo",
             "example-api",
+            "--apply",
         ]
     )
     assert os.environ["GITHUB_TOKEN"] == "github_pat_CALLER"
 
 
-def test_status_clean_vm_no_clients_yaml(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """No ~/.config/launchpad at all — service mode still runs."""
-    service_ws = tmp_path / "ws"
-    meta = service_ws / "example-meta"
-    config = meta / "config"
-    _write_minimal_meta(config)
-    clone = service_ws / "example-api"
-    clone.mkdir(parents=True)
-    (clone / ".git").mkdir()
-
-    missing = tmp_path / "missing-clients.yaml"
-    monkeypatch.setattr(clients_mod, "CLIENTS_FILE", missing)
-    monkeypatch.setattr(clients_mod, "ENV_D_DIR", tmp_path / "no-env-d")
-    monkeypatch.delenv("LAUNCHPAD_CLIENT", raising=False)
-    monkeypatch.setenv("GITHUB_TOKEN", "github_pat_CALLER")
-
-    rc = main(
-        [
-            "status",
-            "--no-client",
-            "--config-dir",
-            str(config),
-            "--workspace",
-            str(service_ws),
-            "--repo",
-            "example-api",
-        ]
-    )
-    out = capsys.readouterr().out
-    assert str(clone) in out
-    assert "Governance declared" in out
-    assert rc in (0, 1)
-
-
-def test_status_format_json_is_parseable_and_keeps_tty_off_stdout(
+def test_apply_harness_format_json_missing_clone(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     service_ws = tmp_path / "ws"
     meta = service_ws / "example-meta"
     config = meta / "config"
     _write_minimal_meta(config)
-    clone = service_ws / "example-api"
-    clone.mkdir(parents=True)
-    (clone / ".git").mkdir()
 
     monkeypatch.setattr(clients_mod, "CLIENTS_FILE", tmp_path / "missing-clients.yaml")
     monkeypatch.setattr(clients_mod, "ENV_D_DIR", tmp_path / "no-env-d")
@@ -262,7 +232,7 @@ def test_status_format_json_is_parseable_and_keeps_tty_off_stdout(
 
     rc = main(
         [
-            "status",
+            "apply-harness",
             "--no-client",
             "--config-dir",
             str(config),
@@ -270,35 +240,30 @@ def test_status_format_json_is_parseable_and_keeps_tty_off_stdout(
             str(service_ws),
             "--repo",
             "example-api",
+            "--apply",
             "--format",
             "json",
         ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
-    assert payload["command"] == "status"
+    assert rc == 1
+    assert payload["ok"] is False
+    assert payload["command"] == "apply-harness"
     assert payload["repo"] == "example-api"
-    assert payload["exit"] == rc
-    assert payload["ok"] is (rc == 0)
-    ids = [c["id"] for c in payload["checks"]]
-    assert "clone" in ids
-    assert "governance" in ids
-    assert "harness" in ids
-    assert "Governance declared" not in captured.out
-    assert "Governance declared" in captured.err
-    assert rc in (0, 1)
+    assert payload["exit"] == 1
+    assert "local clone not found" in (payload["error"] or "")
+    assert "apply-harness" not in captured.out.split("{", 1)[0]
+    assert "WARN" in captured.err or "clone not found" in captured.err
 
 
-def test_status_default_format_stays_human_tty(
+def test_apply_harness_human_stdout_unchanged_without_format_json(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     service_ws = tmp_path / "ws"
     meta = service_ws / "example-meta"
     config = meta / "config"
     _write_minimal_meta(config)
-    clone = service_ws / "example-api"
-    clone.mkdir(parents=True)
-    (clone / ".git").mkdir()
 
     monkeypatch.setattr(clients_mod, "CLIENTS_FILE", tmp_path / "missing-clients.yaml")
     monkeypatch.setattr(clients_mod, "ENV_D_DIR", tmp_path / "no-env-d")
@@ -306,7 +271,7 @@ def test_status_default_format_stays_human_tty(
 
     rc = main(
         [
-            "status",
+            "apply-harness",
             "--no-client",
             "--config-dir",
             str(config),
@@ -314,11 +279,12 @@ def test_status_default_format_stays_human_tty(
             str(service_ws),
             "--repo",
             "example-api",
+            "--apply",
         ]
     )
     out = capsys.readouterr().out
-    assert out.lstrip().startswith("status")
-    assert "Governance declared" in out
+    assert "apply-harness" in out
+    assert "WARN" in out
     with pytest.raises(json.JSONDecodeError):
         json.loads(out)
-    assert rc in (0, 1)
+    assert rc == 1

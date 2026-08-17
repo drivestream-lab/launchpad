@@ -54,31 +54,50 @@ With `--client <id>`, factory commands resolve sibling repo clones from this
 `workspace` (cwd-independent). You do not need to `cd` to the workspace root
 before `reset-harness` / `apply-harness` / `status`.
 
-### Service-mode `status` (VM / headless — no `~/.config/launchpad`)
+### Service mode (VM / headless — no `~/.config/launchpad`)
 
-Orchestrators (e.g. Gateflow) that already own synced meta + clones + a programme
-PAT must **not** synthesize `clients.yaml` / `env.d` on the VM.
+Orchestrators that already own synced meta + clones + a programme PAT must
+**not** synthesize `clients.yaml` / `env.d` on the VM. `--no-client` is an
+identity switch (where config/workspace/token come from), not a different
+`status` / `apply-harness` dialect.
 
 ```bash
 # Child process only — never put the PAT on argv
 export GITHUB_TOKEN="<programme-pat-from-db>"
 
+# Inspect (same checks as a laptop `status`)
 launchpad status \
   --no-client \
   --repo example-api \
-  --config-dir /var/gateflow/workspaces/org/example-meta/config \
-  --workspace /var/gateflow/workspaces/org
+  --config-dir /var/workspaces/org/example-meta/config \
+  --workspace /var/workspaces/org
+
+# Materialize after clone (full --apply: pins + hubs; do not commit from the VM)
+launchpad apply-harness \
+  --no-client \
+  --repo example-api \
+  --config-dir /var/workspaces/org/example-meta/config \
+  --workspace /var/workspaces/org \
+  --apply
+
+# Same facts, machine-readable stdout (TTY still on stderr)
+launchpad status --no-client --repo example-api \
+  --config-dir /var/workspaces/org/example-meta/config \
+  --workspace /var/workspaces/org \
+  --format json
 ```
 
 | Flag / env | Meaning |
 |------------|---------|
-| `--no-client` | Skip `clients.yaml` and `env.d`; ignore leftover `LAUNCHPAD_CLIENT` |
+| `--no-client` | Skip `clients.yaml` and `env.d`; ignore leftover `LAUNCHPAD_CLIENT`. Valid with `status` and `apply-harness` only. |
 | `--config-dir` | Synced meta `config/` (required with `--no-client`) |
 | `--workspace` | Parent of `<repo>` (same as `clients.yaml` workspace) |
+| `--format json` | Opt-in: one JSON document on stdout. Default is the current human TTY. |
 | `GITHUB_TOKEN` / `GH_TOKEN` | Programme PAT for this process only — **not** overridden by `env.d` |
 
 Operator path is unchanged: `launchpad --client <id> status --repo …` still uses
-the registry and `env.d` (file wins over ambient token on laptops).
+the registry and `env.d` (file wins over ambient token on laptops). Human TTY
+without `--format json` is unchanged, including when `--no-client` is set.
 
 `--config-dir` alone (without `--no-client`) still requires an active client and
 does **not** override workspace/secrets — use service-mode flags on a VM.
