@@ -6,6 +6,8 @@ harness_profile resolves as: repos.<name> override → repo.stack from governanc
 Usage:
   launchpad apply-harness --meta [--apply]
   launchpad apply-harness --repo <name> [--apply]
+  launchpad apply-harness --no-client --config-dir <meta>/config --workspace <root> --repo <name> --apply
+  launchpad apply-harness --repo <name> --apply --format json
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from launchpad.clients import ClientRegistryError, resolve_programme_workspace
 from launchpad.harness.community_skills import community_skill_names, install_community_skills
 from launchpad.harness.paths import (
     HARNESS_PROFILE_REL,
@@ -34,7 +37,7 @@ from launchpad.harness.skills_resolve import (
     slash_list,
 )
 from launchpad.harness.submodules import pin_submodule
-from launchpad.clients import ClientRegistryError, resolve_programme_workspace
+from launchpad.output import CommandReport
 from launchpad.programme.board_binding import resolve_board_binding
 from launchpad.schema import SchemaError
 from launchpad.schema.harness import HarnessProfile, load_harness
@@ -838,10 +841,39 @@ def run_apply_harness(
     config_dir: Path | None = None,
     workspace: Path | None = None,
     client_id: str | None = None,
+    output_format: str = "text",
 ) -> int:
+    report = CommandReport("apply-harness", output_format=output_format)
+    with report:
+        return _run_apply_harness(
+            report,
+            meta=meta,
+            repo_name=repo_name,
+            apply=apply,
+            config_dir=config_dir,
+            workspace=workspace,
+            client_id=client_id,
+        )
+
+
+def _run_apply_harness(
+    report: CommandReport,
+    *,
+    meta: bool,
+    repo_name: str,
+    apply: bool,
+    config_dir: Path | None,
+    workspace: Path | None,
+    client_id: str | None,
+) -> int:
+    def done(rc: int, error: str | None = None) -> int:
+        if error:
+            report.error = error
+        return report.finish(rc)
+
     if not meta and not repo_name:
         print("ERROR: pass --meta or --repo <name>", file=sys.stderr)
-        return 1
+        return done(1, "pass --meta or --repo <name>")
 
     if config_dir is None:
         raise RuntimeError("config_dir not resolved — pass --client <id> or run launchpad onboard interview")
@@ -849,20 +881,22 @@ def run_apply_harness(
 
     harness_path = _find_config(cdir, "harness-*.yaml")
     if harness_path is None:
-        print(f"ERROR: harness-<org>.yaml not found in {cdir}", file=sys.stderr)
-        return 1
+        msg = f"harness-<org>.yaml not found in {cdir}"
+        print(f"ERROR: {msg}", file=sys.stderr)
+        return done(1, msg)
 
     gov_path = _find_config(cdir, "governance-*.yaml")
     if gov_path is None:
-        print(f"ERROR: governance-<org>.yaml not found in {cdir}", file=sys.stderr)
-        return 1
+        msg = f"governance-<org>.yaml not found in {cdir}"
+        print(f"ERROR: {msg}", file=sys.stderr)
+        return done(1, msg)
 
     try:
         h = load_harness(harness_path)
         gov = load_governance(gov_path)
     except SchemaError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
+        return done(1, str(exc))
 
     org = gov.org
     prog = None
@@ -876,7 +910,7 @@ def run_apply_harness(
             meta_repo = prog.meta_repo
     except SchemaError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
+        return done(1, str(exc))
 
     try:
         ws = resolve_programme_workspace(
@@ -886,7 +920,7 @@ def run_apply_harness(
         )
     except ClientRegistryError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
+        return done(1, str(exc))
 
     if meta:
         target = meta_repo
@@ -894,15 +928,18 @@ def run_apply_harness(
     else:
         target = repo_name
         if repo_name not in gov.repos:
-            print(f"ERROR: repo '{repo_name}' not in governance yaml", file=sys.stderr)
-            return 1
+            msg = f"repo '{repo_name}' not in governance yaml"
+            print(f"ERROR: {msg}", file=sys.stderr)
+            return done(1, msg)
         stack = gov.repos[repo_name].stack
 
+    report.repo = target
     profile_name = h.resolve_profile(target, stack)
     if profile_name is None or profile_name not in h.profiles:
         print(f"  No harness profile found for {target} (stack={stack}) — skipping.")
         print(f"  Add a '{stack}' profile to harness-{h.org}.yaml and re-run.")
-        return 0
+        report.add_check("profile", True, f"no profile for stack {stack} — skipped")
+        return done(0)
 
     profile = h.profiles[profile_name]
     repo_path = Path(ws).expanduser().resolve() / target
@@ -911,11 +948,13 @@ def run_apply_harness(
     board_url = binding.url if binding.configured and profile_name != PM_HARNESS_PROFILE else ""
 
     print(f"apply-harness  →  {h.org}/{target}  [profile: {profile_name}]")
-    if not repo_path.is_dir():
+    clone_ok = repo_path.is_dir()
+    report.add_check("clone", clone_ok, str(repo_path))
+    if not clone_ok:
         print(f"  WARN: local clone not found at {repo_path}")
         print("  Clone it first, then re-run apply-harness.")
         if apply:
-            return 1
+            return done(1, f"local clone not found at {repo_path}")
 
     result = _apply_harness_to_repo(
         repo_path,
@@ -930,8 +969,10 @@ def run_apply_harness(
         apply=apply,
     )
     if result != 0:
-        return result
+        report.add_check("apply", False, "apply-harness failed")
+        return done(result, "apply-harness failed")
 
+    report.add_check("apply", True, f"profile: {profile_name}")
     if not apply:
         target_flag = "--meta" if meta else f"--repo {target}"
         print_next_box([f"launchpad apply-harness {target_flag} --apply"])
@@ -947,4 +988,4 @@ def run_apply_harness(
             )
         print_next_box(next_steps)
 
-    return 0
+    return done(0)

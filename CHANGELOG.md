@@ -11,6 +11,19 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.35] — 2026-08-17
+
+### Added
+
+- **Service-mode `apply-harness`:** same `--no-client` + `--config-dir` +
+  `--workspace` contract as `status`. Full `--apply` (pin + materialize);
+  no second apply dialect. Operator `--client` / `env.d` path unchanged.
+- **`--format json`** on `status` and `apply-harness` (opt-in). Same checks and
+  exit codes as the human TTY; JSON on stdout, TTY on stderr. Default remains
+  the current human output even with `--no-client`.
+
+---
+
 ## [0.5.34] — 2026-08-17
 
 ### Added
