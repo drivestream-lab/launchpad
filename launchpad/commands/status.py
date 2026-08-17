@@ -21,6 +21,7 @@ Usage:
   launchpad status --meta
   launchpad status --repo <name>
   launchpad status --no-client --config-dir <meta>/config --workspace <root> --repo <name>
+  launchpad status --repo <name> --format json
 """
 
 from __future__ import annotations
@@ -45,6 +46,7 @@ from launchpad.forge.templates.render import (
 )
 from launchpad.harness.community_skills import community_skill_names
 from launchpad.clients import resolve_programme_workspace
+from launchpad.output import CommandReport
 from launchpad.programme.board_binding import resolve_board_binding
 from launchpad.harness.paths import HARNESS_PROFILE_REL, PM_HARNESS_PROFILE, PRAYOG_SKILLS_SUBMODULE_REL
 from launchpad.harness.skills_materialize import all_runtime_skills_present, hub_skill_present, runtime_skill_present
@@ -597,10 +599,33 @@ def run_status(
     config_dir: Path | None = None,  # None only in tests — main() always resolves via clients.yaml
     workspace: Path | None = None,
     client_id: str | None = None,
+    output_format: str = "text",
+) -> int:
+    report = CommandReport("status", output_format=output_format)
+    with report:
+        return _run_status(
+            report,
+            meta=meta,
+            repo_name=repo_name,
+            config_dir=config_dir,
+            workspace=workspace,
+            client_id=client_id,
+        )
+
+
+def _run_status(
+    report: CommandReport,
+    *,
+    meta: bool,
+    repo_name: str,
+    config_dir: Path | None,
+    workspace: Path | None,
+    client_id: str | None,
 ) -> int:
     if not meta and not repo_name:
         print("ERROR: pass --meta or --repo <name>", file=sys.stderr)
-        return 1
+        report.error = "pass --meta or --repo <name>"
+        return report.finish(1)
 
     if config_dir is None:
         # Should not reach here — main() blocks client-less commands early.
@@ -617,7 +642,8 @@ def run_status(
             prog = load_programme(prog_path)
         except SchemaError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
-            return 1
+            report.error = str(exc)
+            return report.finish(1)
 
     gov_path = _find_config(cdir, "governance-*.yaml")
     if gov_path:
@@ -651,7 +677,8 @@ def run_status(
         )
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
+        report.error = str(exc)
+        return report.finish(1)
     meta_repo = prog.meta_repo if prog else (
         cdir.parent.name if cdir.parent.name.endswith("-meta") else "unknown-meta"
     )
@@ -664,6 +691,7 @@ def run_status(
         target = repo_name
         stack = gov.repos[repo_name].stack if gov and repo_name in gov.repos else ""
 
+    report.repo = target
     print(f"\nstatus  →  {org}/{target}")
 
     # ── Kit version ──────────────────────────────────────────────────────────
@@ -886,4 +914,28 @@ def run_status(
         or (clone_ok and forge_provider == "github" and (not forge_ok or forge_stale))
         or drift_detected
     )
-    return 1 if has_failure else 0
+    report.add_check("governance", gov_ok, stack_label)
+    report.add_check("board", True if board_neutral else board_ok, board_detail)
+    report.add_check("clone", clone_ok, clone_detail)
+    if not sca_configured or not sca_enabled:
+        report.add_check("scaffold", True, "off")
+    else:
+        report.add_check(
+            "scaffold",
+            sca_applied and not sca_pending,
+            "applied" if sca_applied else "enabled but not applied",
+        )
+    if not clone_ok:
+        report.add_check("harness", False, harness_detail)
+    elif harness_neutral:
+        report.add_check("harness", True, harness_detail)
+    else:
+        report.add_check("harness", harness_ok, harness_detail)
+    if not clone_ok:
+        report.add_check("forge", True, forge_detail)
+    elif forge_provider == "gitlab":
+        report.add_check("forge", True, forge_detail)
+    else:
+        report.add_check("forge", forge_ok and not forge_stale, forge_detail)
+    report.add_check("drift", not drift_detected, "detected" if drift_detected else "none")
+    return report.finish(1 if has_failure else 0)

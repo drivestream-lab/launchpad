@@ -11,6 +11,7 @@ Public commands:
   apply-forge-templates  Seed issue forms + PR template from kit + governance
   status              Readiness checklist + kit version + constitution drift check
                       (service-mode: --no-client --config-dir --workspace)
+                      (--format json: same checks, machine-readable stdout)
   doctor              Preflight: token, config, version checks
   clients             List registered clients (~/.config/launchpad/clients.yaml)
   whoami              Verify GITHUB_TOKEN and print login
@@ -50,6 +51,60 @@ def _add_scope_flags(parser: argparse.ArgumentParser) -> None:
     scope = parser.add_mutually_exclusive_group(required=True)
     scope.add_argument("--meta", action="store_true", help="target the meta repo")
     scope.add_argument("--repo", default="", metavar="NAME", help="target a specific app repo")
+
+
+_SERVICE_MODE_COMMANDS = frozenset({"status", "apply-harness"})
+
+
+def _add_service_mode_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--workspace",
+        default="",
+        metavar="PATH",
+        help=(
+            "Clone workspace root (parent of <repo>); required for reliable "
+            "service-mode with --no-client. Same meaning as clients.yaml workspace."
+        ),
+    )
+    parser.add_argument(
+        "--no-client",
+        action="store_true",
+        help=(
+            "Service mode: do not use ~/.config/launchpad clients.yaml or env.d. "
+            "Requires --config-dir. Honours process GITHUB_TOKEN/GH_TOKEN only."
+        ),
+    )
+
+
+def _add_format_flag(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help=(
+            "text (default): current TTY on stdout. "
+            "json: one JSON document on stdout; TTY on stderr. Same checks/exit."
+        ),
+    )
+
+
+def _workspace_from_args(args: argparse.Namespace) -> Path | None:
+    raw_ws = getattr(args, "workspace", "") or ""
+    return Path(raw_ws).expanduser() if raw_ws.strip() else None
+
+
+def _emit_json_failure_if_requested(args: argparse.Namespace, message: str) -> None:
+    if getattr(args, "command", "") not in _SERVICE_MODE_COMMANDS:
+        return
+    from launchpad.output import emit_failure_json, normalize_format
+
+    if normalize_format(getattr(args, "format", "text")) != "json":
+        return
+    emit_failure_json(
+        getattr(args, "command", "") or "",
+        message,
+        repo=getattr(args, "repo", "") or "",
+    )
 
 
 def _dry_run_from_args(args: argparse.Namespace) -> bool:
@@ -133,12 +188,15 @@ def cmd_apply_scaffold(args: argparse.Namespace) -> int:
 def cmd_apply_harness(args: argparse.Namespace) -> int:
     from launchpad.commands.apply_harness import run_apply_harness
 
+    no_client = bool(getattr(args, "no_client", False))
     return run_apply_harness(
         meta=args.meta,
         repo_name=args.repo or "",
         apply=getattr(args, "apply", False),
         config_dir=_config_dir(args),
-        client_id=_active_client_id(),
+        workspace=_workspace_from_args(args),
+        client_id=None if no_client else _active_client_id(),
+        output_format=getattr(args, "format", "text"),
     )
 
 
@@ -194,16 +252,14 @@ def cmd_board_bind(args: argparse.Namespace) -> int:
 def cmd_status(args: argparse.Namespace) -> int:
     from launchpad.commands.status import run_status
 
-    raw_ws = getattr(args, "workspace", "") or ""
-    workspace = Path(raw_ws).expanduser() if raw_ws.strip() else None
     no_client = bool(getattr(args, "no_client", False))
-
     return run_status(
         meta=args.meta,
         repo_name=args.repo or "",
         config_dir=_config_dir(args),
-        workspace=workspace,
+        workspace=_workspace_from_args(args),
         client_id=None if no_client else _active_client_id(),
+        output_format=getattr(args, "format", "text"),
     )
 
 
@@ -279,6 +335,8 @@ def build_parser() -> argparse.ArgumentParser:
     _add_scope_flags(p)
     _add_apply_flags(p)
     p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
+    _add_service_mode_flags(p)
+    _add_format_flag(p)
     p.set_defaults(func=cmd_apply_harness)
 
     # ── reset-harness ─────────────────────────────────────────────────────────
@@ -350,23 +408,8 @@ def build_parser() -> argparse.ArgumentParser:
         default="",
         help="Override config/ dir (default: derived from clients.yaml)",
     )
-    p.add_argument(
-        "--workspace",
-        default="",
-        metavar="PATH",
-        help=(
-            "Clone workspace root (parent of <repo>); required for reliable "
-            "service-mode with --no-client. Same meaning as clients.yaml workspace."
-        ),
-    )
-    p.add_argument(
-        "--no-client",
-        action="store_true",
-        help=(
-            "Service mode: do not use ~/.config/launchpad clients.yaml or env.d. "
-            "Requires --config-dir. Honours process GITHUB_TOKEN/GH_TOKEN only."
-        ),
-    )
+    _add_service_mode_flags(p)
+    _add_format_flag(p)
     p.set_defaults(func=cmd_status)
 
     return parser
@@ -386,24 +429,25 @@ def main(argv: list[str] | None = None) -> int:
         a == "--client" or a.startswith("--client=") for a in raw_argv
     )
 
-    # Service-mode status: caller-supplied config/workspace/token — skip registry.
+    # Service mode: caller-supplied config/workspace/token — skip registry.
     if no_client:
-        if command != "status":
-            print("ERROR: --no-client is only valid with 'status'", file=sys.stderr)
+        if command not in _SERVICE_MODE_COMMANDS:
+            msg = "--no-client is only valid with 'status' or 'apply-harness'"
+            print(f"ERROR: {msg}", file=sys.stderr)
+            _emit_json_failure_if_requested(args, msg)
             return 1
         if client_flag_on_argv:
-            print(
-                "ERROR: --no-client is incompatible with --client "
-                "(omit --client for service-mode status)",
-                file=sys.stderr,
+            msg = (
+                "--no-client is incompatible with --client "
+                "(omit --client for service mode)"
             )
+            print(f"ERROR: {msg}", file=sys.stderr)
+            _emit_json_failure_if_requested(args, msg)
             return 1
         if not (getattr(args, "config_dir", "") or "").strip():
-            print(
-                "ERROR: --no-client requires --config-dir "
-                "(path to synced meta config/)",
-                file=sys.stderr,
-            )
+            msg = "--no-client requires --config-dir (path to synced meta config/)"
+            print(f"ERROR: {msg}", file=sys.stderr)
+            _emit_json_failure_if_requested(args, msg)
             return 1
         # Ignore leftover LAUNCHPAD_CLIENT from the parent environment.
         os.environ.pop("LAUNCHPAD_CLIENT", None)
@@ -414,6 +458,7 @@ def main(argv: list[str] | None = None) -> int:
             body = getattr(exc, "body", "")
             if body:
                 print(body, file=sys.stderr)
+            _emit_json_failure_if_requested(args, str(exc))
             return 1
         except (
             RuntimeError,
@@ -424,26 +469,29 @@ def main(argv: list[str] | None = None) -> int:
             OnboardingError,
         ) as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
+            _emit_json_failure_if_requested(args, str(exc))
             return 1
 
     try:
         client_id = apply_client_context(getattr(args, "client", "") or "")
     except ClientRegistryError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
+        _emit_json_failure_if_requested(args, str(exc))
         return 1
 
     # Commands that need a client error at _config_dir() time — but give a
     # better message here upfront so the user doesn't see a stack trace.
     if client_id is None and command not in _CLIENT_EXEMPT_COMMANDS:
         from launchpad.clients import CLIENTS_FILE
-        print(
-            f"ERROR: no client active — pass --client <id> or set 'default:' in {CLIENTS_FILE}\n"
+        msg = (
+            f"no client active — pass --client <id> or set 'default:' in {CLIENTS_FILE}\n"
             f"  Run 'launchpad clients' to see registered programmes.\n"
             f"  First time? Run 'launchpad onboard interview'.\n"
-            f"  Service/VM inspect: launchpad status --no-client "
-            f"--config-dir <meta>/config --workspace <root> --repo <name>",
-            file=sys.stderr,
+            f"  Service/VM: launchpad status|apply-harness --no-client "
+            f"--config-dir <meta>/config --workspace <root> --repo <name>"
         )
+        print(f"ERROR: {msg}", file=sys.stderr)
+        _emit_json_failure_if_requested(args, msg)
         return 1
 
     try:
@@ -453,6 +501,7 @@ def main(argv: list[str] | None = None) -> int:
         body = getattr(exc, "body", "")
         if body:
             print(body, file=sys.stderr)
+        _emit_json_failure_if_requested(args, str(exc))
         return 1
     except (
         RuntimeError,
@@ -463,6 +512,7 @@ def main(argv: list[str] | None = None) -> int:
         OnboardingError,
     ) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
+        _emit_json_failure_if_requested(args, str(exc))
         return 1
 
 

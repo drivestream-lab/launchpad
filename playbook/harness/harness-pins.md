@@ -120,7 +120,7 @@ Stack key == harness profile == prayog `profiles/{stack_key}.yaml` == pin
 
 **Gitignored (local only):** `.harness/skills/<skill>/` hub symlinks and mirrors under `skill_runtimes` (e.g. `.agents/skills/<skill>/`). The **prayog-skills** submodule at repo root is tracked. Re-run `apply-harness --apply` on every machine after clone.
 
-**cwd:** With `--client <id>`, `apply-harness` / `reset-harness` / `status` resolve the clone root from `clients.yaml` `workspace` (or `path` parent). You do **not** need to `cd` to the programme workspace root first.
+**cwd:** With `--client <id>`, `apply-harness` / `reset-harness` / `status` resolve the clone root from `clients.yaml` `workspace` (or `path` parent). You do **not** need to `cd` to the programme workspace root first. Headless VMs use the same commands with `--no-client --config-dir --workspace` (see [multi-laptop.md](../../docs/setup/multi-laptop.md)); `--apply` is the full pin + materialize (re-run after clone — hubs are gitignored).
 
 **Tracked submodules:** `.cursor/rules/` (constitution), `prayog-skills/` (root), and any **community** repos under `.harness/community/`.
 
