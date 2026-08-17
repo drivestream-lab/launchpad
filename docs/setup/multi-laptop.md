@@ -54,6 +54,35 @@ With `--client <id>`, factory commands resolve sibling repo clones from this
 `workspace` (cwd-independent). You do not need to `cd` to the workspace root
 before `reset-harness` / `apply-harness` / `status`.
 
+### Service-mode `status` (VM / headless — no `~/.config/launchpad`)
+
+Orchestrators (e.g. Gateflow) that already own synced meta + clones + a programme
+PAT must **not** synthesize `clients.yaml` / `env.d` on the VM.
+
+```bash
+# Child process only — never put the PAT on argv
+export GITHUB_TOKEN="<programme-pat-from-db>"
+
+launchpad status \
+  --no-client \
+  --repo example-api \
+  --config-dir /var/gateflow/workspaces/org/example-meta/config \
+  --workspace /var/gateflow/workspaces/org
+```
+
+| Flag / env | Meaning |
+|------------|---------|
+| `--no-client` | Skip `clients.yaml` and `env.d`; ignore leftover `LAUNCHPAD_CLIENT` |
+| `--config-dir` | Synced meta `config/` (required with `--no-client`) |
+| `--workspace` | Parent of `<repo>` (same as `clients.yaml` workspace) |
+| `GITHUB_TOKEN` / `GH_TOKEN` | Programme PAT for this process only — **not** overridden by `env.d` |
+
+Operator path is unchanged: `launchpad --client <id> status --repo …` still uses
+the registry and `env.d` (file wins over ambient token on laptops).
+
+`--config-dir` alone (without `--no-client`) still requires an active client and
+does **not** override workspace/secrets — use service-mode flags on a VM.
+
 ### Secrets file (operators / PM only)
 
 Engineers do **not** need `env.d` — see [engineer-setup.md](engineer-setup.md).

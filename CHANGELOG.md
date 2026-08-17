@@ -11,6 +11,17 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.34] — 2026-08-17
+
+### Added
+
+- **Service-mode `status`:** `--no-client` + `--config-dir` + `--workspace` for
+  headless/VM inspect without `~/.config/launchpad`. Skips `clients.yaml` /
+  `env.d`; honours child-process `GITHUB_TOKEN` / `GH_TOKEN` only (no `--token`
+  argv). Operator `--client` path unchanged.
+
+---
+
 ## [0.5.33] — 2026-08-10
 
 ### Fixed

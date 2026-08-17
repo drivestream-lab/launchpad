@@ -10,6 +10,7 @@ Public commands:
   board-bind          Resolve programme engineering board from governance config
   apply-forge-templates  Seed issue forms + PR template from kit + governance
   status              Readiness checklist + kit version + constitution drift check
+                      (service-mode: --no-client --config-dir --workspace)
   doctor              Preflight: token, config, version checks
   clients             List registered clients (~/.config/launchpad/clients.yaml)
   whoami              Verify GITHUB_TOKEN and print login
@@ -193,11 +194,16 @@ def cmd_board_bind(args: argparse.Namespace) -> int:
 def cmd_status(args: argparse.Namespace) -> int:
     from launchpad.commands.status import run_status
 
+    raw_ws = getattr(args, "workspace", "") or ""
+    workspace = Path(raw_ws).expanduser() if raw_ws.strip() else None
+    no_client = bool(getattr(args, "no_client", False))
+
     return run_status(
         meta=args.meta,
         repo_name=args.repo or "",
         config_dir=_config_dir(args),
-        client_id=_active_client_id(),
+        workspace=workspace,
+        client_id=None if no_client else _active_client_id(),
     )
 
 
@@ -339,7 +345,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Programme readiness checklist + single best NEXT: command",
     )
     _add_scope_flags(p)
-    p.add_argument("--config-dir", default="", help="Override config/ dir (default: derived from clients.yaml)")
+    p.add_argument(
+        "--config-dir",
+        default="",
+        help="Override config/ dir (default: derived from clients.yaml)",
+    )
+    p.add_argument(
+        "--workspace",
+        default="",
+        metavar="PATH",
+        help=(
+            "Clone workspace root (parent of <repo>); required for reliable "
+            "service-mode with --no-client. Same meaning as clients.yaml workspace."
+        ),
+    )
+    p.add_argument(
+        "--no-client",
+        action="store_true",
+        help=(
+            "Service mode: do not use ~/.config/launchpad clients.yaml or env.d. "
+            "Requires --config-dir. Honours process GITHUB_TOKEN/GH_TOKEN only."
+        ),
+    )
     p.set_defaults(func=cmd_status)
 
     return parser
@@ -351,7 +378,53 @@ _CLIENT_EXEMPT_COMMANDS = {"doctor", "clients", "whoami", "onboard"}
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
+    raw_argv = list(argv) if argv is not None else sys.argv[1:]
     args = parser.parse_args(argv)
+    command = getattr(args, "command", "") or ""
+    no_client = bool(getattr(args, "no_client", False))
+    client_flag_on_argv = any(
+        a == "--client" or a.startswith("--client=") for a in raw_argv
+    )
+
+    # Service-mode status: caller-supplied config/workspace/token — skip registry.
+    if no_client:
+        if command != "status":
+            print("ERROR: --no-client is only valid with 'status'", file=sys.stderr)
+            return 1
+        if client_flag_on_argv:
+            print(
+                "ERROR: --no-client is incompatible with --client "
+                "(omit --client for service-mode status)",
+                file=sys.stderr,
+            )
+            return 1
+        if not (getattr(args, "config_dir", "") or "").strip():
+            print(
+                "ERROR: --no-client requires --config-dir "
+                "(path to synced meta config/)",
+                file=sys.stderr,
+            )
+            return 1
+        # Ignore leftover LAUNCHPAD_CLIENT from the parent environment.
+        os.environ.pop("LAUNCHPAD_CLIENT", None)
+        try:
+            return args.func(args)
+        except GitHubError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            body = getattr(exc, "body", "")
+            if body:
+                print(body, file=sys.stderr)
+            return 1
+        except (
+            RuntimeError,
+            ValueError,
+            FileNotFoundError,
+            SchemaError,
+            ClientRegistryError,
+            OnboardingError,
+        ) as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
 
     try:
         client_id = apply_client_context(getattr(args, "client", "") or "")
@@ -361,13 +434,14 @@ def main(argv: list[str] | None = None) -> int:
 
     # Commands that need a client error at _config_dir() time — but give a
     # better message here upfront so the user doesn't see a stack trace.
-    command = getattr(args, "command", "") or ""
     if client_id is None and command not in _CLIENT_EXEMPT_COMMANDS:
         from launchpad.clients import CLIENTS_FILE
         print(
             f"ERROR: no client active — pass --client <id> or set 'default:' in {CLIENTS_FILE}\n"
             f"  Run 'launchpad clients' to see registered programmes.\n"
-            f"  First time? Run 'launchpad onboard interview'.",
+            f"  First time? Run 'launchpad onboard interview'.\n"
+            f"  Service/VM inspect: launchpad status --no-client "
+            f"--config-dir <meta>/config --workspace <root> --repo <name>",
             file=sys.stderr,
         )
         return 1
