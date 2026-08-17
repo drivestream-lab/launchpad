@@ -20,6 +20,7 @@ check-harness is removed — status --repo covers its functionality.
 Usage:
   launchpad status --meta
   launchpad status --repo <name>
+  launchpad status --no-client --config-dir <meta>/config --workspace <root> --repo <name>
 """
 
 from __future__ import annotations
