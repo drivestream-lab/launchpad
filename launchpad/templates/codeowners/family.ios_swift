@@ -1,0 +1,37 @@
+# iOS / Swift profile — Tuist Sources/Resources layout
+# Replace @example-org/... with actual GitHub org/team names.
+#
+# Branch protection required:
+#   Settings → Branches → develop → "Require review from Code Owners" ON
+#
+# Sign-off workflow: launchpad/playbook/ship/delivery-workflow.md § Sign-off workflow
+
+# ── Spec pipeline reports (skill gates) ──────────────────────────────────────
+
+/docs/specification/reports/Technical-Review-*       @example-org/pe-team
+/docs/specification/reports/Implementation-Plan-*    @example-org/{{DEV_TEAM}}
+/docs/specification/reports/Ground-Report-*          @example-org/{{DEV_TEAM}}
+/docs/specification/reports/Feasibility-Report-*     @example-org/pm-team @example-org/{{DEV_TEAM}}
+
+# ── Product specs ─────────────────────────────────────────────────────────────
+
+/docs/specification/product/                         @example-org/pm-team @example-org/{{DEV_TEAM}}
+/docs/specification/adr/                             @example-org/pe-team
+/docs/specification/as-built/                        @example-org/{{DEV_TEAM}}
+
+# ── Constitution and skills ───────────────────────────────────────────────────
+
+.cursor/rules/                                       @example-org/pe-team
+.agents/skills/                                      @example-org/{{DEV_TEAM}}
+
+# ── iOS / Tuist layout ────────────────────────────────────────────────────────
+
+/Sources/                                            @example-org/{{DEV_TEAM}}
+/Resources/                                          @example-org/{{DEV_TEAM}}
+/Tests/                                              @example-org/{{DEV_TEAM}}
+/Project.swift                                       @example-org/{{DEV_TEAM}}
+/Tuist/                                              @example-org/{{DEV_TEAM}}
+
+# ── Default ───────────────────────────────────────────────────────────────────
+
+*                                                    @example-org/{{DEV_TEAM}}

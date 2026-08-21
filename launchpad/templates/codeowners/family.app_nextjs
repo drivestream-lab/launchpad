@@ -1,0 +1,37 @@
+# Frontend / BFF profile — copy to .github/CODEOWNERS in each app repo
+# Replace @example-org/... with actual GitHub org/team names.
+#
+# Branch protection required:
+#   Settings → Branches → develop → "Require review from Code Owners" ON
+#
+# Sign-off workflow: launchpad/playbook/ship/delivery-workflow.md § Sign-off workflow
+
+# ── Spec pipeline reports (skill gates) ──────────────────────────────────────
+
+# TDD requires PE sign-off before /spec-implementation-plan runs
+/docs/specification/reports/Technical-Review-*       @example-org/pe-team
+
+# Implementation plan requires dev lead review before /create-board-tickets (gh issue create per wave)
+/docs/specification/reports/Implementation-Plan-*    @example-org/{{DEV_TEAM}}
+
+# Ground reports gate the next wave — tech lead must approve
+/docs/specification/reports/Ground-Report-*          @example-org/{{DEV_TEAM}}
+
+# Feasibility reports — PM answers product questions on the PR
+/docs/specification/reports/Feasibility-Report-*     @example-org/pm-team @example-org/{{DEV_TEAM}}
+
+# ── Product specs ─────────────────────────────────────────────────────────────
+
+/docs/specification/product/                         @example-org/pm-team @example-org/{{DEV_TEAM}}
+/docs/specification/adr/                             @example-org/pe-team
+/docs/specification/as-built/                        @example-org/{{DEV_TEAM}}
+
+# ── Source ────────────────────────────────────────────────────────────────────
+
+/app/                                                @example-org/{{DEV_TEAM}}
+/lib/                                                @example-org/{{DEV_TEAM}}
+/src/                                                @example-org/{{DEV_TEAM}}
+
+# ── Default ───────────────────────────────────────────────────────────────────
+
+*                                                    @example-org/{{DEV_TEAM}}

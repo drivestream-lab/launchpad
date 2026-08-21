@@ -165,8 +165,7 @@ profiles:
     skill_runtimes:
       - .agents/skills
       - .claude/skills
-    codeowners_template: CODEOWNERS.meta-pm
-    harness_pin_template: harness-pin.meta.yaml
+    # owners defaults: team pm-team, layout meta
 
   # ─── Day N — uncomment when you add this stack to governance ─────────────
   # python-backend:
@@ -176,8 +175,7 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: latest
-  #   codeowners_template: CODEOWNERS.python-backend
-  #   harness_pin_template: harness-pin.python-backend.yaml
+  #   # owners defaults: team backend-devs, layout app_src
 
   # nextjs-frontend:
   #   constitution:
@@ -186,8 +184,7 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: latest
-  #   codeowners_template: CODEOWNERS.nextjs-frontend
-  #   harness_pin_template: harness-pin.nextjs-frontend.yaml
+  #   # owners defaults: team frontend-devs, layout app_nextjs
 
   # terraform-iac:
   #   constitution:
@@ -196,8 +193,7 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: latest
-  #   codeowners_template: CODEOWNERS.terraform-iac
-  #   harness_pin_template: harness-pin.terraform-iac.yaml
+  #   # owners defaults: team platform-devs, layout iac
 
   # flink:
   #   constitution:
@@ -206,8 +202,7 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: latest
-  #   codeowners_template: CODEOWNERS.flink
-  #   harness_pin_template: harness-pin.flink.yaml
+  #   # owners defaults: team data-platform-devs, layout flink
 
   # edge-agent:
   #   constitution:
@@ -216,8 +211,42 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: latest
-  #   codeowners_template: CODEOWNERS.edge-agent
-  #   harness_pin_template: harness-pin.edge-agent.yaml
+  #   # owners defaults: team edge-agent-devs, layout app_src
+
+  # edge-inference-engine:
+  #   constitution:
+  #     repo: edge-inference-engine-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   owners:
+  #     team: edge-agent-devs
+  #     layout: app_src
+  #     extra_paths:
+  #       - /model_checkpoints/
+
+  # android-kotlin:
+  #   constitution:
+  #     repo: android-kotlin-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   owners:
+  #     team: mobile-devs
+  #     layout: android_kotlin
+
+  # ios-swift:
+  #   constitution:
+  #     repo: ios-swift-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: latest
+  #   owners:
+  #     team: mobile-devs
+  #     layout: ios_swift
 
 repos: {{}}
 """

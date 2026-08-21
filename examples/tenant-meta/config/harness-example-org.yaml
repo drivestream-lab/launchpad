@@ -17,10 +17,11 @@ delivery_roles:
 # (wave-acceptance; required forge_skills; no /verify). Retag when published.
 # Stack key == harness profile == prayog profiles/{stack_key}.yaml.
 #
-# codeowners_template  — filename in kit templates/ seeded as .github/CODEOWNERS
-# harness_pin_template — filename in kit templates/ seeded as .harness-pin.yaml
-# Both default to the convention:  CODEOWNERS.<profile-name>
-#                                  harness-pin.<profile-name>.yaml
+# owners.layout + owners.team — CODEOWNERS family (optional for known stacks;
+#   migration defaults apply). layout: none skips CODEOWNERS.
+# codeowners_template — optional file under meta config/templates/, or legacy
+#   CODEOWNERS.<stack> name (shim + deprecation WARN). Prefer owners: instead.
+# harness_pin_template — deprecated; pin is always generated (WARN if set).
 
 org: example-org
 
@@ -37,8 +38,7 @@ profiles:
     skill_runtimes:
       - .agents/skills
       - .claude/skills
-    codeowners_template: CODEOWNERS.meta-pm
-    harness_pin_template: harness-pin.meta.yaml
+    # owners defaults: team pm-team, layout meta
 
   # ─── Python microservice profile ─────────────────────────────────────────
   python-backend:
@@ -48,8 +48,7 @@ profiles:
     skills:
       - repo: prayog-skills
         ref: d3bd94e
-    codeowners_template: CODEOWNERS.python-backend
-    harness_pin_template: harness-pin.python-backend.yaml
+    # owners defaults: team backend-devs, layout app_src
 
   # ─── Next.js frontend / BFF profile ──────────────────────────────────────
   # nextjs-frontend:
@@ -59,8 +58,7 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: d3bd94e
-  #   codeowners_template: CODEOWNERS.nextjs-frontend
-  #   harness_pin_template: harness-pin.nextjs-frontend.yaml
+  #   # owners defaults: team frontend-devs, layout app_nextjs
 
   # ─── Flink streaming (domain team: data-platform-devs) ───────────────────
   # flink:
@@ -70,8 +68,7 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: d3bd94e
-  #   codeowners_template: CODEOWNERS.flink
-  #   harness_pin_template: harness-pin.flink.yaml
+  #   # owners defaults: team data-platform-devs, layout flink
 
   # ─── Edge agent ──────────────────────────────────────────────────────────
   # edge-agent:
@@ -81,8 +78,45 @@ profiles:
   #   skills:
   #     - repo: prayog-skills
   #       ref: d3bd94e
-  #   codeowners_template: CODEOWNERS.edge-agent
-  #   harness_pin_template: harness-pin.edge-agent.yaml
+  #   # owners defaults: team edge-agent-devs, layout app_src
+
+  # ─── Edge inference engine (config-only; declare owners) ─────────────────
+  # edge-inference-engine:
+  #   constitution:
+  #     repo: edge-inference-engine-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: d3bd94e
+  #   owners:
+  #     team: edge-agent-devs
+  #     layout: app_src
+  #     extra_paths:
+  #       - /model_checkpoints/
+
+  # ─── Android / Kotlin (mobile-devs) ──────────────────────────────────────
+  # android-kotlin:
+  #   constitution:
+  #     repo: android-kotlin-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: d3bd94e
+  #   owners:
+  #     team: mobile-devs
+  #     layout: android_kotlin
+
+  # ─── iOS / Swift (mobile-devs) ───────────────────────────────────────────
+  # ios-swift:
+  #   constitution:
+  #     repo: ios-swift-rules
+  #     ref: v0.1.0
+  #   skills:
+  #     - repo: prayog-skills
+  #       ref: d3bd94e
+  #   owners:
+  #     team: mobile-devs
+  #     layout: ios_swift
 
   # ─── Terraform IaC profile ────────────────────────────────────────────────
   terraform-iac:
@@ -92,8 +126,7 @@ profiles:
     skills:
       - repo: prayog-skills
         ref: d3bd94e
-    codeowners_template: CODEOWNERS.terraform-iac
-    harness_pin_template: harness-pin.terraform-iac.yaml
+    # owners defaults: team platform-devs, layout iac
 
 # Per-repo harness_profile overrides (optional).
 # If absent, a repo's harness_profile defaults to its stack from governance.yaml.

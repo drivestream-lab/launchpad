@@ -22,7 +22,8 @@ Config: [`governance-example-org.yaml`](../../examples/tenant-meta/config/govern
 | `frontend-devs` | Web BFF / portals | `nextjs-frontend` |
 | `platform-devs` | Platform tooling + Terraform IaC | `platform-tooling`, `terraform-iac` |
 | `data-platform-devs` | Data platform | `flink` (now); `spark` / batch later |
-| `edge-agent-devs` | Edge runtime | `edge-agent` |
+| `edge-agent-devs` | Edge runtime | `edge-agent`, `edge-inference-engine` |
+| `mobile-devs` | Mobile apps | `android-kotlin`, `ios-swift` |
 | `qa-team` | QA | (read/push; not a develop-merge owner) |
 
 ## Stack → primary CODEOWNERS team
@@ -35,7 +36,10 @@ Config: [`governance-example-org.yaml`](../../examples/tenant-meta/config/govern
 | `terraform-iac` | `platform-devs` |
 | `flink` | `data-platform-devs` |
 | `edge-agent` | `edge-agent-devs` |
-| `platform-tooling` | `platform-devs` |
+| `edge-inference-engine` | declare `owners.team` (often `edge-agent-devs`) |
+| `android-kotlin` | `mobile-devs` |
+| `ios-swift` | `mobile-devs` |
+| `platform-tooling` | `platform-devs` (CODEOWNERS skipped: `layout: none`) |
 
 App stacks keep `pe-team` / `pm-team` on report/spec paths (existing pattern).  
 Kit placeholders: `@example-org/{team}`.

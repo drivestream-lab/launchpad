@@ -2,16 +2,17 @@
 
 Reference files seeded by factory commands into each repo clone.
 
-**SSOT:** launchpad kit `templates/` (installed with pipx / editable install). Tenant meta repos do **not** keep a parallel `templates/` folder.
+**SSOT:** launchpad kit `templates/` (installed with pipx / editable install).
+Optional tenant overrides: `<meta>/config/templates/` (for custom CODEOWNERS files).
 
 ---
 
 ## Seeded by `apply-harness`
 
-| Artifact | Source template | Destination |
-|----------|-----------------|-------------|
-| CODEOWNERS | `CODEOWNERS.<stack>` from harness profile | `.github/CODEOWNERS` |
-| Harness pin | `harness-pin.<stack>.yaml` from harness profile | `.harness-pin.yaml` |
+| Artifact | Source | Destination |
+|----------|--------|-------------|
+| CODEOWNERS | Layout family from `owners.layout` (or legacy/custom `codeowners_template`) | `.github/CODEOWNERS` |
+| Harness pin | **Generated** from harness profile (constitution + skills) | `.harness-pin.yaml` |
 | AGENTS.md | `AGENTS.md` / `AGENTS.meta.md` | `AGENTS.md` |
 | Gitignore (harness) | `gitignore.harness` | `.gitignore` (append or upgrade symlink patterns) |
 | Delivery workflows | `github/workflows/*.yml` when `delivery_contract` is set | `.github/workflows/` (app repos only; skip if file exists) |
@@ -19,6 +20,7 @@ Reference files seeded by factory commands into each repo clone.
 | Skills | skill repos from harness profile | `.harness/skills/` hub + runtime symlinks |
 
 Substitutes `example-org` → actual GitHub org from `governance-<org>.yaml` in CODEOWNERS.
+Substitutes owning team from `owners.team` (or migration defaults for known stacks).
 
 ---
 
@@ -43,29 +45,34 @@ Use `--force` to overwrite after governance repo list changes.
 
 ---
 
-## CODEOWNERS (per stack)
+## CODEOWNERS layout families (`templates/codeowners/`)
 
-| File | Stack |
-|------|-------|
-| `CODEOWNERS.python-backend` | `python-backend` |
-| `CODEOWNERS.nextjs-frontend` | `nextjs-frontend` |
-| `CODEOWNERS.flink` | `flink` |
-| `CODEOWNERS.edge-agent` | `edge-agent` |
-| `CODEOWNERS.terraform-iac` | `terraform-iac` (Azure/AWS foundations) |
-| `CODEOWNERS.meta-pm` | `meta-pm` (meta repo) |
+Kit grows with **layout families**, not per-stack files. Set in harness YAML:
 
----
+```yaml
+owners:
+  team: backend-devs
+  layout: app_src
+  # extra_paths: [/model_checkpoints/]   # optional
+```
 
-## Harness pin skeletons (per stack)
+| `owners.layout` | Family file | Typical stacks |
+|-----------------|-------------|----------------|
+| `app_src` | `family.app_src` | `python-backend`, `edge-inference-engine` |
+| *(edge-agent)* | `family.app_edge` | `edge-agent` (same `app_src` layout key; docker-shaped) |
+| `app_nextjs` | `family.app_nextjs` | `nextjs-frontend` |
+| `flink` | `family.flink` | `flink` |
+| `iac` | `family.iac` | `terraform-iac` |
+| `meta` | `family.meta` | `meta-pm` |
+| `android_kotlin` | `family.android_kotlin` | `android-kotlin` → team `mobile-devs` |
+| `ios_swift` | `family.ios_swift` | `ios-swift` → team `mobile-devs` |
+| `none` | *(skip write)* | `platform-tooling`; deferred embedded/RTOS |
 
-| File | Stack |
-|------|-------|
-| `harness-pin.python-backend.yaml` | `python-backend` |
-| `harness-pin.nextjs-frontend.yaml` | `nextjs-frontend` |
-| `harness-pin.flink.yaml` | `flink` |
-| `harness-pin.edge-agent.yaml` | `edge-agent` |
-| `harness-pin.terraform-iac.yaml` | `terraform-iac` |
-| `harness-pin.meta.yaml` | `meta-pm` (meta repo) |
+**Legacy:** enrolled metas may still set `codeowners_template: CODEOWNERS.python-backend`.
+Those names map to families with a **stderr WARN + fix instructions** (v0.5.36+).
+Custom files: place under `meta/config/templates/` and keep `codeowners_template: <filename>`.
+
+**Deprecated:** `harness_pin_template` is ignored; pin is always generated (WARN once per apply).
 
 ---
 
