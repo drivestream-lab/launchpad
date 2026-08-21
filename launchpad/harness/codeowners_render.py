@@ -8,7 +8,6 @@ from pathlib import Path
 from launchpad.schema.owners import (
     EDGE_APP_SRC_FAMILY,
     LEGACY_CODEOWNERS_TEMPLATES,
-    OwnersConfig,
     family_template_name,
     resolve_owners,
 )
