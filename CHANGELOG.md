@@ -11,6 +11,38 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.36] — 2026-08-21
+
+### Added
+
+- **Config-scalable stacks (B+C):** `.harness-pin.yaml` is always generated from
+  the harness profile (no per-stack `harness-pin.*` kit files). CODEOWNERS is
+  rendered from **layout families** (`owners.layout` + `owners.team`, optional
+  `extra_paths`) under `templates/codeowners/family.*`.
+- **Layout families:** `app_src`, `app_nextjs`, `flink`, `iac`, `meta`,
+  `android_kotlin`, `ios_swift`, `none` (plus internal edge-shaped `app_src` for
+  `edge-agent` parity).
+- **Catalog:** `edge-inference-engine`, `android-kotlin`, `ios-swift`; mobile
+  ownership via `mobile-devs`.
+- **Migration defaults** for known stacks so enrolled metas need not set
+  `owners:` on first remount.
+
+### Changed
+
+- Kit no longer ships `CODEOWNERS.<stack>` or `harness-pin.<stack>.yaml`.
+- Legacy `codeowners_template: CODEOWNERS.<stack>` names resolve via a shim and
+  print **WARN + fix instructions** (never silent). `harness_pin_template` is
+  ignored with a WARN. Dry-run shows the same WARNs.
+- Remount path unchanged: `reset-harness --apply` then `apply-harness --apply`.
+
+### Docs
+
+- `docs/stacks.md`, `templates/README.md`, teams/examples/interview comments
+  updated for owners + families; Law 5/6 notes for edge-triton-client and
+  dual mobile monorepos.
+
+---
+
 ## [0.5.35] — 2026-08-17
 
 ### Added

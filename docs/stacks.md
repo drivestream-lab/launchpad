@@ -1,8 +1,8 @@
 # Stacks Reference
 
 A **stack** is a named technology profile. It drives **harness** (constitution +
-prayog profile + pin/CODEOWNERS). Scaffold is separate — opt-in per repo in
-`scaffold-<org>.yaml`.
+prayog profile + generated pin / CODEOWNERS layout). Scaffold is separate —
+opt-in per repo in `scaffold-<org>.yaml`.
 
 ## First principles
 
@@ -20,7 +20,7 @@ prayog profile + pin/CODEOWNERS). Scaffold is separate — opt-in per repo in
 3. One team may own many stacks.  
 4. New engine ⇒ new stack; same team allowed.  
 5. Foundation variant ≠ new stack (unless rules/layout diverge).  
-6. One stack per repo (multi-constitution monorepo = future).
+6. One stack per repo (multi-constitution monorepo = anti-pattern today).
 
 ```text
 stack_key
@@ -28,8 +28,7 @@ stack_key
   == harness.profiles.{stack_key}
   == .harness-pin.yaml profile: / agent_skills.profile
   == prayog-skills/profiles/{stack_key}.yaml
-  == templates/harness-pin.{stack_key}.yaml
-  == templates/CODEOWNERS.{stack_key}
+  == owners.layout family (not a per-stack kit file)
 ```
 
 Stack keys name the **technology profile**, not the domain/team.
@@ -45,28 +44,43 @@ your meta repo:
 |------|------------------|
 | `governance-<org>.yaml` → `stack_profiles` | Stack names your programme uses |
 | `governance-<org>.yaml` → `repos.*.stack` | Which stack each repo uses |
-| `harness-<org>.yaml` → `profiles` | Constitution + skills per stack |
+| `harness-<org>.yaml` → `profiles` | Constitution + skills + optional `owners` per stack |
 | `scaffold-<org>.yaml` → `repos.*` | Cookiecutter source **only if** you scaffold |
 
 **Brownfield:** omit or disable scaffold — run `apply-harness` only.  
 **Greenfield:** add a scaffold block with `enabled: true`, `template`, `ref`, and `context`.
 
+Adding a stack requires tenant harness/governance YAML + a prayog
+`profiles/<stack_key>.yaml` at the skills pin. **No** new
+`harness-pin.<stack>.yaml` or `CODEOWNERS.<stack>` in the kit.
+A **new layout family** is needed only when the source/CODEOWNERS tree diverges.
+
 ---
 
 ## Catalog (first-class stacks)
 
-| `stack_key` | Role | Constitution (pin target) | Foundation (scaffold; optional) |
-|-------------|------|---------------------------|----------------------------------|
-| `meta-pm` | Programme meta | none | tenant-meta-foundation |
-| `python-backend` | FastAPI / Python services | python-services-rules | python-fastapi-foundation |
-| `nextjs-frontend` | Next.js BFF | nextjs-bff-rules | nextjs-bff-foundation |
-| `terraform-iac` | Terraform IaC | terraform-infra-rules | terraform-*-foundation |
-| `flink` | Flink streaming monorepo | data-platform-rules | TBD (brownfield until built) |
-| `edge-agent` | Edge agent | edge-agent-rules | edge-agent-triton-foundation |
-| `platform-tooling` | Kit/SSOT brownfield | none | none |
+| `stack_key` | Role | Constitution (pin target) | Foundation (scaffold; optional) | `owners.layout` | Default team |
+|-------------|------|---------------------------|----------------------------------|-----------------|--------------|
+| `meta-pm` | Programme meta | none | tenant-meta-foundation | `meta` | `pm-team` |
+| `python-backend` | FastAPI / Python services | python-services-rules | python-fastapi-foundation | `app_src` | `backend-devs` |
+| `nextjs-frontend` | Next.js BFF | nextjs-bff-rules | nextjs-bff-foundation | `app_nextjs` | `frontend-devs` |
+| `terraform-iac` | Terraform IaC | terraform-infra-rules | terraform-*-foundation | `iac` | `platform-devs` |
+| `flink` | Flink streaming monorepo | data-platform-rules | TBD (brownfield until built) | `flink` | `data-platform-devs` |
+| `edge-agent` | Edge agent | edge-agent-rules | edge-agent-triton-foundation (also edge-triton-client under same stack — Law 5) | `app_src` | `edge-agent-devs` |
+| `edge-inference-engine` | Edge inference engine | edge-inference-engine-rules | edge-pytorch-inference-foundation | `app_src` (+ optional `extra_paths`) | declare `owners.team` |
+| `android-kotlin` | Android / Kotlin | android-kotlin-rules | android-kotlin-foundation | `android_kotlin` | `mobile-devs` |
+| `ios-swift` | iOS / Swift | ios-swift-rules | ios-swift-foundation | `ios_swift` | `mobile-devs` |
+| `platform-tooling` | Kit/SSOT brownfield | none | none | `none` | ignored |
+
+**Deferred:** `embedded-c` / RTOS until lab rules exist — omit harness profile or use
+`owners.layout: none`.
+
+**Anti-pattern:** a dual iOS+Android monorepo with two constitutions under one
+stack (e.g. drivestream `mobile-native`). Law 6 — split repos or pick one
+constitution; do not enrol as a dual-mount harness profile.
 
 Constitution **repo slug** may differ from stack key; ownership team is domain
-(`data-platform-devs` owns `flink`).
+(`data-platform-devs` owns `flink`; `mobile-devs` owns android/ios).
 
 ---
 
@@ -85,13 +99,27 @@ Add a stack **only if** at least one holds:
 ## Adding a stack
 
 1. Add to `stack_profiles` in `config/governance-<org>.yaml`.  
-2. Add matching `profiles.<stack_key>` in `config/harness-<org>.yaml`.  
+2. Add matching `profiles.<stack_key>` in `config/harness-<org>.yaml` with
+   `owners.team` + `owners.layout` (required unless the stack is in the
+   migration-defaults map).  
 3. Ensure prayog ships `profiles/<stack_key>.yaml` at the pinned skills ref.  
-4. Kit templates `harness-pin.<stack_key>.yaml` + `CODEOWNERS.<stack_key>` (or contribute upstream).  
+4. If the source tree is new, contribute a `templates/codeowners/family.<layout>`
+   upstream — otherwise reuse an existing family.  
 5. Optional scaffold block in `scaffold-<org>.yaml`.
 
 No Launchpad allowlist edit is required for new constitution repo slugs
 (`apply-harness` rewrites `rules.repo` from harness `constitution`).
+
+### Legacy remount (enrolled programmes)
+
+Metas that still list `codeowners_template: CODEOWNERS.<stack>` keep working via
+a shim that renders the mapped family and prints **WARN + fix instructions**.
+Remove `*_template` keys when convenient; remount with the usual ritual:
+
+```text
+launchpad reset-harness --repo <name> --apply
+launchpad apply-harness --repo <name> --apply
+```
 
 ---
 

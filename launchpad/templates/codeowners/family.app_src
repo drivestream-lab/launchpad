@@ -1,0 +1,50 @@
+# Backend profile — copy to .github/CODEOWNERS in each app repo
+# Replace @example-org/... with actual GitHub org/team names.
+#
+# Branch protection required:
+#   Settings → Branches → develop → "Require review from Code Owners" ON
+#
+# Sign-off workflow: launchpad/playbook/ship/delivery-workflow.md § Sign-off workflow
+
+# ── Spec pipeline reports (skill gates) ──────────────────────────────────────
+
+# TDD requires PE sign-off before /spec-implementation-plan runs
+/docs/specification/reports/Technical-Review-*       @example-org/pe-team
+
+# Implementation plan requires dev lead review before /create-board-tickets (gh issue create per wave)
+/docs/specification/reports/Implementation-Plan-*    @example-org/{{DEV_TEAM}}
+
+# Ground reports gate the next wave — tech lead must approve
+/docs/specification/reports/Ground-Report-*          @example-org/{{DEV_TEAM}}
+
+# Feasibility reports — dev-owned; product Q&A on meta PRD PR
+/docs/specification/reports/Feasibility-Report-*     @example-org/{{DEV_TEAM}}
+
+# ── Product specs ─────────────────────────────────────────────────────────────
+
+# Spec changes need PM awareness + dev merge authority
+/docs/specification/product/                         @example-org/pm-team @example-org/{{DEV_TEAM}}
+
+# ── ADRs ──────────────────────────────────────────────────────────────────────
+
+# Architecture decisions require PE
+/docs/specification/adr/                             @example-org/pe-team
+
+# ── As-built ──────────────────────────────────────────────────────────────────
+
+# Dev-owned — PM cannot modify implementation status
+/docs/specification/as-built/                        @example-org/{{DEV_TEAM}}
+
+# ── Constitution and rules ────────────────────────────────────────────────────
+
+.cursor/rules/                                       @example-org/pe-team
+.agents/skills/                                      @example-org/{{DEV_TEAM}}
+
+# ── Source and tests ──────────────────────────────────────────────────────────
+
+/src/                                                @example-org/{{DEV_TEAM}}
+/tests/                                              @example-org/{{DEV_TEAM}}
+
+# ── Default ───────────────────────────────────────────────────────────────────
+
+*                                                    @example-org/{{DEV_TEAM}}
