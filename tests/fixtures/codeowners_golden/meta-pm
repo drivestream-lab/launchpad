@@ -1,0 +1,31 @@
+# Platform / meta profile — copy to <client>-meta root as CODEOWNERS
+# Replace @example-org/... with actual GitHub org/team names.
+
+# ── PRD and initiatives ────────────────────────────────────────────────────────
+
+# PRD files are PM + PE — product intent + architecture sign-off
+/prd/                                                @example-org/pm-team @example-org/pe-team
+
+# Work manifests — PM merges only (branch protection enforces this)
+/work/                                               @example-org/pm-team
+
+# ── Platform configuration ────────────────────────────────────────────────────
+
+# Harness, gitflow, org config — platform ops team
+/config/                                             @example-org/platform-devs
+
+# Process playbook — platform devs + PM co-own
+/playbook/                                           @example-org/platform-devs @example-org/pm-team
+
+# Wiki content
+/wiki/                                               @example-org/platform-devs
+
+# ── Constitution ──────────────────────────────────────────────────────────────
+
+# Rules and skills — PE guild owns the engineering constitution
+.cursor/rules/                                       @example-org/pe-team
+.agents/skills/                                      @example-org/pe-team
+
+# ── Default ───────────────────────────────────────────────────────────────────
+
+*                                                    @example-org/pm-team

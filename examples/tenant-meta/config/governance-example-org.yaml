@@ -21,6 +21,9 @@ stack_profiles:
   # terraform-iac: Terraform infrastructure-as-code
   # flink: Flink streaming monorepo (domain team: data-platform-devs)
   # edge-agent: Edge agent services
+  # edge-inference-engine: Edge inference engine
+  # android-kotlin: Android / Kotlin (mobile-devs)
+  # ios-swift: iOS / Swift (mobile-devs)
   # platform-tooling: Kit/SSOT brownfield (optional)
 
 teams:
@@ -38,6 +41,9 @@ teams:
     privacy: closed
   - name: edge-agent-devs
     description: Edge agent runtime
+    privacy: closed
+  - name: mobile-devs
+    description: Mobile (Android Kotlin + iOS Swift)
     privacy: closed
   - name: pm-team
     description: Programme management
@@ -84,6 +90,18 @@ repos:
   #   teams: [edge-agent-devs]
   #   visibility: private
   #   description: Edge agent service
+
+  # example-android:
+  #   stack: android-kotlin
+  #   teams: [mobile-devs]
+  #   visibility: private
+  #   description: Android Kotlin app
+
+  # example-ios:
+  #   stack: ios-swift
+  #   teams: [mobile-devs]
+  #   visibility: private
+  #   description: iOS Swift app
 
 policy:
   default_branch: main

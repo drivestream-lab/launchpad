@@ -21,12 +21,14 @@ from pathlib import Path
 from typing import Any
 
 from launchpad.clients import ClientRegistryError, resolve_programme_workspace
+from launchpad.harness.codeowners_render import seed_codeowners
 from launchpad.harness.community_skills import community_skill_names, install_community_skills
 from launchpad.harness.paths import (
     HARNESS_PROFILE_REL,
     PM_HARNESS_PROFILE,
     PRAYOG_SKILLS_SUBMODULE_REL,
 )
+from launchpad.harness.pin_render import harness_pin_template_warn, render_harness_pin
 from launchpad.harness.skills_materialize import lane_key_for_profile, materialize_skill_tree
 from launchpad.harness.skills_ref import SkillsRefResolveError, resolve_skills_ref
 from launchpad.harness.skills_resolve import (
@@ -44,8 +46,6 @@ from launchpad.schema.harness import HarnessProfile, load_harness
 from launchpad.schema.governance import load_governance
 from launchpad.ui import print_next_box
 
-_TEMPLATE_ORG_PLACEHOLDER = "example-org"
-
 
 def _find_config(config_dir: Path, pattern: str) -> Path | None:
     matches = list(config_dir.glob(pattern))
@@ -61,35 +61,6 @@ def _resolve_kit_template(filename: str) -> Path | None:
     return path if path.is_file() else None
 
 
-def _community_skills_yaml_block(profile: HarnessProfile) -> str:
-    if not profile.community_skills:
-        return "community_skills: []"
-    lines = ["community_skills:"]
-    for spec in profile.community_skills:
-        lines.append(f"  - source: {spec.source}")
-        lines.append(f"    ref: {spec.ref}")
-        lines.append(f"    skill: {spec.skill}")
-    return "\n".join(lines)
-
-
-def _seed_codeowners(repo_path: Path, tpl_name: str, org: str, *, apply: bool) -> None:
-    tpl_path = _resolve_kit_template(tpl_name)
-    if tpl_path is None:
-        print(f"  WARN: CODEOWNERS template '{tpl_name}' not found in kit templates/ — skipping")
-        return
-
-    dest = repo_path / ".github" / "CODEOWNERS"
-    if not apply:
-        print(f"    [dry-run] CODEOWNERS  ← {tpl_name}  →  .github/CODEOWNERS")
-        print(f"              (replace '{_TEMPLATE_ORG_PLACEHOLDER}' → '{org}')")
-        return
-
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    content = tpl_path.read_text(encoding="utf-8").replace(_TEMPLATE_ORG_PLACEHOLDER, org)
-    dest.write_text(content, encoding="utf-8")
-    print(f"  ✔  CODEOWNERS  ← {tpl_name}  (org: {org})")
-
-
 def _resolve_profile_skill_refs(
     profile: HarnessProfile,
 ) -> list[tuple[Any, str]]:
@@ -103,7 +74,6 @@ def _resolve_profile_skill_refs(
 
 def _seed_harness_pin(
     repo_path: Path,
-    tpl_name: str,
     profile: HarnessProfile,
     profile_name: str,
     skill_names: list[str],
@@ -112,51 +82,26 @@ def _seed_harness_pin(
     apply: bool,
     agent_skills_ref: str = "",
 ) -> None:
-    tpl_path = _resolve_kit_template(tpl_name)
-    if tpl_path is None:
-        print(f"  WARN: harness-pin template '{tpl_name}' not found in kit templates/ — skipping")
-        return
+    if profile.harness_pin_template_explicit:
+        print(
+            harness_pin_template_warn(profile_name, profile.harness_pin_template),
+            file=sys.stderr,
+        )
 
     if not apply:
-        print(f"    [dry-run] harness-pin ← {tpl_name}  →  .harness-pin.yaml")
+        print("    [dry-run] harness-pin ← generate  →  .harness-pin.yaml")
         return
 
     dest = repo_path / ".harness-pin.yaml"
-    con = profile.constitution
-    skill = profile.skills[0] if profile.skills else None
-    skills_block = "\n".join(f"    - {name}" for name in skill_names)
-
-    content = tpl_path.read_text(encoding="utf-8")
-    content = content.replace("{{DELIVERY_CONTRACT}}", delivery_contract)
-    if con:
-        content = content.replace("{{RULES_REF}}", con.ref)
-        content = re.sub(
-            r"(?m)^(rules:\n(?:[ \t]+.*\n)*?[ \t]+repo:\s*)\S+",
-            rf"\g<1>{con.org}/{con.repo}",
-            content,
-            count=1,
-        )
-
-    if skill:
-        pin_ref = agent_skills_ref or skill.ref or "HEAD"
-        content = content.replace("{{AGENT_SKILLS_REF}}", pin_ref)
-        content = content.replace(
-            "repo: drivestream-lab/prayog-skills",
-            f"repo: {skill.org}/{skill.repo}",
-        )
-    content = content.replace("{{AGENT_SKILLS_LIST}}", skills_block)
-
-    community_block = _community_skills_yaml_block(profile)
-    if "community_skills:" in content:
-        content = re.sub(
-            r"community_skills:\n(?:[ \t]+-[^\n]*\n(?:[ \t]+[^\n]*\n)*)*",
-            community_block + "\n",
-            content,
-            count=1,
-        )
-
+    content = render_harness_pin(
+        profile,
+        profile_name,
+        skill_names=skill_names,
+        delivery_contract=delivery_contract,
+        agent_skills_ref=agent_skills_ref,
+    )
     dest.write_text(content, encoding="utf-8")
-    print(f"  ✔  harness-pin synced ← {tpl_name}  (profile: {profile_name})")
+    print(f"  ✔  harness-pin generated  (profile: {profile_name})")
 
 
 def _fill_agents_placeholders(
@@ -611,6 +556,7 @@ def _apply_harness_to_repo(
     board_name: str = "",
     board_url: str = "",
     apply: bool = False,
+    meta_templates: Path | None = None,
 ) -> int:
     prayog_submodule = repo_path / PRAYOG_SKILLS_SUBMODULE_REL
     skill_names: list[str] = []
@@ -685,10 +631,20 @@ def _apply_harness_to_repo(
             harness_profile_name=profile_name,
             apply=False,
         )
-        _seed_codeowners(repo_path, profile.codeowners_template, org, apply=False)
+        try:
+            seed_codeowners(
+                repo_path,
+                profile,
+                profile_name,
+                org,
+                apply=False,
+                meta_templates=meta_templates,
+            )
+        except SchemaError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
         _seed_harness_pin(
             repo_path,
-            profile.harness_pin_template,
             profile,
             profile_name,
             skill_names=preview_names,
@@ -798,10 +754,20 @@ def _apply_harness_to_repo(
     community_names = install_community_skills(repo_path, profile, apply=True)
     all_skill_names = skill_names + community_names
 
-    _seed_codeowners(repo_path, profile.codeowners_template, org, apply=True)
+    try:
+        seed_codeowners(
+            repo_path,
+            profile,
+            profile_name,
+            org,
+            apply=True,
+            meta_templates=meta_templates,
+        )
+    except SchemaError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     _seed_harness_pin(
         repo_path,
-        profile.harness_pin_template,
         profile,
         profile_name,
         skill_names=all_skill_names,
@@ -967,6 +933,7 @@ def _run_apply_harness(
         board_name=board_name,
         board_url=board_url,
         apply=apply,
+        meta_templates=cdir / "templates",
     )
     if result != 0:
         report.add_check("apply", False, "apply-harness failed")

@@ -30,10 +30,15 @@ profiles        Map of stack name → HarnessProfile.
     skill       Skill directory name under source repo skills/.
   skill_runtimes      Optional. Agent runtime roots for flat skill symlinks.
                       Defaults to .agents/skills and .claude/skills.
-  codeowners_template   Filename inside kit templates/ to seed as .github/CODEOWNERS.
-                        Defaults to "CODEOWNERS.<profile-name>" (convention).
-  harness_pin_template  Filename inside kit templates/ to seed as .harness-pin.yaml.
-                        Defaults to "harness-pin.<profile-name>.yaml" (convention).
+  owners            Optional. CODEOWNERS layout family + owning team.
+    team            GitHub team slug (required unless layout is none).
+    layout          One of: app_src, app_nextjs, flink, iac, meta,
+                    android_kotlin, ios_swift, none.
+    extra_paths     Optional extra path globs owned by team.
+  codeowners_template   Optional override file (meta config/templates/ or kit).
+                        Legacy CODEOWNERS.<stack> names map to layout families
+                        with a deprecation WARN (v0.5.36+).
+  harness_pin_template  Deprecated — pin is always generated; key is ignored with WARN.
 repos           Map of repo slug → harness_profile (stack override per-repo).
                 If absent, harness_profile defaults to repo.stack from governance.
 
@@ -48,6 +53,7 @@ from typing import Any
 
 import yaml
 
+from launchpad.schema.owners import OwnersConfig, parse_owners_raw
 from launchpad.schema.errors import SchemaError
 
 API_VERSION = "launchpad/v1"
@@ -198,8 +204,19 @@ class HarnessProfile:
                 )
             self.skill_runtimes = runtimes
 
-        # Template filenames in kit templates/ — default to convention if not set.
-        # Convention: CODEOWNERS.<name>  and  harness-pin.<name>.yaml
+        self.owners: OwnersConfig | None = parse_owners_raw(
+            raw.get("owners"),
+            profile=name,
+            path=path,
+        )
+
+        # Optional overrides. Convention defaults kept for legacy remount detection.
+        self.codeowners_template_explicit: bool = "codeowners_template" in raw and bool(
+            str(raw.get("codeowners_template") or "").strip()
+        )
+        self.harness_pin_template_explicit: bool = "harness_pin_template" in raw and bool(
+            str(raw.get("harness_pin_template") or "").strip()
+        )
         self.codeowners_template: str = (
             str(raw.get("codeowners_template") or "").strip()
             or f"CODEOWNERS.{name}"
