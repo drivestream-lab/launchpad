@@ -1,3 +1,4 @@
 # PRD outline
 
-Use with `/prd` in **`<client>-meta`**. Output: `prd/INIT-<id>.md` only.
+Use **`/prd-think`** then **`/prd-quality`** in **`<client>-meta`** (think-first lane).
+Promote the scored candidate, then run the validate chain. Output: `prd/INIT-<id>.md`.

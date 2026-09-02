@@ -30,15 +30,12 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        ref: d3bd94e
-    community_skills:
-      - source: github/awesome-copilot
-        ref: v1.0.0
-        skill: prd
+        ref: v0.5.4
     skill_runtimes:
       - .agents/skills
       - .claude/skills
     # owners defaults: team pm-team, layout meta
+    # PM authoring: /prd-think → /prd-quality (prayog profile @ ref above)
 
   # ─── Python microservice profile ─────────────────────────────────────────
   python-backend:

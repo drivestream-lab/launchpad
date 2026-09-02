@@ -43,8 +43,18 @@ def _meta_profile() -> HarnessProfile:
         "meta-pm",
         {
             "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
+            "skill_runtimes": RUNTIMES,
+        },
+    )
+
+
+def _meta_profile_with_community() -> HarnessProfile:
+    return HarnessProfile(
+        "meta-pm",
+        {
+            "skills": [{"repo": "prayog-skills", "ref": "d3bd94e"}],
             "community_skills": [
-                {"source": "github/awesome-copilot", "ref": "v1.0.0", "skill": "prd"}
+                {"source": "github/awesome-copilot", "ref": "v1.0.0", "skill": "legacy-skill"}
             ],
             "skill_runtimes": RUNTIMES,
         },
@@ -118,6 +128,8 @@ class TestResolveSkillNames:
     def test_meta_pm_from_profile_yaml(self):
         names = resolve_skill_names(FIXTURES, _meta_profile(), "meta-pm")
         assert names == [
+            "prd-think",
+            "prd-quality",
             "validate-requirements",
             "review-findings",
             "update-documents",
@@ -380,20 +392,20 @@ class TestMaterializeSkillTree:
 class TestCommunitySkillTree:
     def test_community_hub_and_runtime_symlinks(self, tmp_path: Path):
         repo = tmp_path / "meta"
-        community_root = repo / ".harness" / "community" / "awesome-copilot" / "skills" / "prd"
+        community_root = repo / ".harness" / "community" / "awesome-copilot" / "skills" / "legacy-skill"
         community_root.mkdir(parents=True)
-        (community_root / "SKILL.md").write_text("# prd", encoding="utf-8")
+        (community_root / "SKILL.md").write_text("# legacy-skill", encoding="utf-8")
 
         assert materialize_community_skill_tree(
             repo,
             community_submodule_rel=".harness/community/awesome-copilot",
-            skill_name="prd",
+            skill_name="legacy-skill",
             runtime_roots=RUNTIMES,
             apply=True,
         )
-        assert hub_skill_present(repo, "prd")
-        assert runtime_skill_present(repo, "prd", ".agents/skills")
-        assert (repo / HARNESS_SKILLS_HUB_REL / "prd").is_symlink()
+        assert hub_skill_present(repo, "legacy-skill")
+        assert runtime_skill_present(repo, "legacy-skill", ".agents/skills")
+        assert (repo / HARNESS_SKILLS_HUB_REL / "legacy-skill").is_symlink()
 
 
 class TestSlashList:

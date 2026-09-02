@@ -11,6 +11,21 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.37] — 2026-09-02
+
+### Changed
+
+- **Think-first PM lane:** default meta-pm examples and onboarding no longer
+  ship `community_skills: awesome-copilot /prd`. Use prayog **`/prd-think`** and
+  **`/prd-quality`** (prayog **v0.5.4+**) instead.
+
+### Docs
+
+- Templates (`AGENTS.meta.md`, `INIT-PRD-outline.md`), playbooks, SCHEMA, and
+  harness interview defaults updated for the think-first chain.
+
+---
+
 ## [0.5.36] — 2026-08-21
 
 ### Added

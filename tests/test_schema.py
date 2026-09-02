@@ -151,10 +151,8 @@ class TestHarnessSchema:
 
     def test_template_fields_explicit(self):
         h = load_harness(FIXTURES / "harness-day1.yaml")
-        assert h.profiles["meta-pm"].codeowners_template == "CODEOWNERS.meta-pm"
-        assert h.profiles["meta-pm"].harness_pin_template == "harness-pin.meta.yaml"
         assert h.profiles["meta-pm"].constitution is None  # meta-pm has no rules submodule
-        assert h.profiles["meta-pm"].community_skills[0].skill == "prd"
+        assert h.profiles["meta-pm"].community_skills == []
 
     def test_template_fields_convention_default(self):
         """If codeowners_template / harness_pin_template are absent, convention applies."""

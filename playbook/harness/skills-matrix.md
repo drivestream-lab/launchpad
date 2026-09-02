@@ -15,7 +15,7 @@ Skills CLI installs to **`.agents/skills/`** (project) or **`~/.agents/skills/`*
 
 | Who | Open in Cursor | Skills |
 |-----|----------------|--------|
-| **PM / PO** | `<client>-meta` | `prd` + prayog PM bundle (incl. `/purge-initiative-artifacts-meta`) + forge skills via `apply-harness --meta` |
+| **PM / PO** | `<client>-meta` | prayog PM bundle (incl. `/prd-think`, `/prd-quality`, validate chain, `/purge-initiative-artifacts-meta`) + forge via `apply-harness --meta` |
 | **Developer** | app repo | prayog dev bundle + forge — `/spec-draft` … `/ground-spec`, `/purge-initiative-artifacts-app`, plus forge |
 
 **Shared forge skills** (meta + app, required `forge_skills` → `skills/forge/`):
@@ -51,8 +51,8 @@ launchpad apply-harness --meta --apply
 launchpad status --meta
 ```
 
-Community `/prd` and the Prayog PM bundle are materialized into configured
-runtime roots.
+Prayog PM bundle skills are materialized into configured runtime roots
+(`prd-think`, `prd-quality`, validate chain, forge skills, …).
 
 ---
 

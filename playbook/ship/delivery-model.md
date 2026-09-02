@@ -130,7 +130,7 @@ Do not treat Launchpad examples as WorkManifest SSOT.
 
 | Template | Use |
 |----------|-----|
-| [templates/INIT-PRD-outline.md](../../launchpad/templates/INIT-PRD-outline.md) | `/prd` — Delivery section stub |
+| [templates/INIT-PRD-outline.md](../../launchpad/templates/INIT-PRD-outline.md) | `/prd-think` → `/prd-quality` — think-first authoring |
 | [templates/INIT-spec-PR.md](../../launchpad/templates/INIT-spec-PR.md) | Spec PR on app repo |
 
 Playbook = policy; templates = agent starting structure.

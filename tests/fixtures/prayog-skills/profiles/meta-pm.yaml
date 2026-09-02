@@ -4,6 +4,8 @@
 profile: meta-pm
 
 requirements_skills:
+  - prd-think
+  - prd-quality
   - validate-requirements
   - review-findings
   - update-documents

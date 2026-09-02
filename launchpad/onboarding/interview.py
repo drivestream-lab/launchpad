@@ -158,14 +158,11 @@ profiles:
     skills:
       - repo: prayog-skills
         ref: latest
-    community_skills:
-      - source: github/awesome-copilot
-        ref: v1.0.0
-        skill: prd
     skill_runtimes:
       - .agents/skills
       - .claude/skills
     # owners defaults: team pm-team, layout meta
+    # PM authoring: /prd-think → /prd-quality from pinned prayog meta-pm profile
 
   # ─── Day N — uncomment when you add this stack to governance ─────────────
   # python-backend:
