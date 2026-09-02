@@ -115,15 +115,12 @@ profiles:
   meta-pm:
     skills:
       - repo: prayog-skills
-        # illustrative — tenant chooses the tag
-        ref: d3bd94e
-    community_skills:
-      - source: github/awesome-copilot
-        ref: v1.0.0
-        skill: prd
+        # illustrative — tenant chooses the tag (v0.5.4+ for think-first PM lane)
+        ref: v0.5.4
     skill_runtimes:
       - .agents/skills
       - .claude/skills
+    # PM skills (prd-think, prd-quality, validate chain) come from prayog profiles/meta-pm.yaml
 
   python-backend:
     constitution:

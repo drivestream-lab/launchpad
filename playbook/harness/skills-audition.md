@@ -2,7 +2,7 @@
 
 Score skills before marking harness or PM pipeline ready. Lab sample prompts: [launchpad/skills-audition](https://github.com/drivestream-lab/launchpad/blob/develop/playbook/harness/skills-audition.md).
 
-**PM skills** install from [skills-matrix.md](skills-matrix.md) (`prayog-skills` + community `prd`) — hub symlinks via `apply-harness --meta`.
+**PM skills** install from [skills-matrix.md](skills-matrix.md) (pinned prayog `meta-pm` profile) — hub symlinks via `apply-harness --meta`.
 
 **Dev skills** install via `launchpad apply-harness --repo <name> --apply` — commit submodule gitlinks and pin file; skill symlinks are local-only.
 
@@ -12,7 +12,8 @@ Score skills before marking harness or PM pipeline ready. Lab sample prompts: [l
 
 | Skill | Sample run date | Pass (Y/N) | Notes |
 |-------|-----------------|------------|-------|
-| prd | | | Community awesome-copilot |
+| prd-think | | | prayog-skills — brief → candidate PRD |
+| prd-quality | | | prayog-skills — blind score + promote signal |
 | validate-requirements | | | prayog-skills |
 | review-findings | | | prayog-skills |
 | update-documents | | | prayog-skills |

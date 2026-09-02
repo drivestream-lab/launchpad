@@ -7,8 +7,8 @@ PM workspace for **{{ORG}}** (`{{META_REPO}}`).
 
 Installed under **`.harness/skills/<skill>/`** (hub) mirrored to **`.agents/skills/`** and **`.claude/skills/`**:
 
-- Community: `/prd` @ awesome-copilot
 - Prayog PM bundle @ **{{AGENT_SKILLS_REF}}**: {{AGENT_SKILLS_SLASH_LIST}}
+- Authoring (human): `/prd-think` → `/prd-quality` → promote → validate chain
 
 Pin record: [`.harness-pin.yaml`](.harness-pin.yaml) (`profile: meta-pm`).
 

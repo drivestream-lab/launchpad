@@ -40,7 +40,7 @@ def test_render_harness_meta_prd_ready() -> None:
     meta = raw["profiles"]["meta-pm"]
     assert meta["skills"][0]["repo"] == "prayog-skills"
     assert meta["skills"][0]["ref"] == "latest"
-    assert meta["community_skills"][0]["skill"] == "prd"
+    assert "community_skills" not in meta
     assert "python-agent-skills" not in text
     assert list(raw["profiles"]) == ["meta-pm"]
 

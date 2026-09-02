@@ -176,7 +176,8 @@ Short harness-only path (repo already exists with code):
 
 ## Meta repo (`apply-harness --meta`)
 
-PM workspace — no rules submodule. Installs prayog PM skills + community `prd` (awesome-copilot).
+PM workspace — no rules submodule. Installs prayog PM bundle from pinned
+`profiles/meta-pm.yaml` (think-first: `/prd-think`, `/prd-quality`, validate chain).
 
 ```bash
 launchpad apply-harness --meta --dry-run

@@ -11,15 +11,9 @@ profiles:
     skills:
       - repo: prayog-skills
         ref: latest
-    community_skills:
-      - source: github/awesome-copilot
-        ref: v1.0.0
-        skill: prd
     skill_runtimes:
       - .agents/skills
       - .claude/skills
-    codeowners_template: CODEOWNERS.meta-pm
-    harness_pin_template: harness-pin.meta.yaml
 
 # Per-repo overrides (optional).
 # If absent, repo's harness_profile defaults to its stack from governance.yaml.

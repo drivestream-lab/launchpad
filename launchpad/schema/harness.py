@@ -24,7 +24,7 @@ profiles        Map of stack name → HarnessProfile.
     repo        Skill repo slug.
     org         Optional override org.
     ref         Git ref.
-  community_skills    Optional. External skill repos (e.g. awesome-copilot /prd on meta).
+  community_skills    Optional. External skill repos (not used for default meta-pm).
     source      GitHub org/repo slug.
     ref         Pinned tag or branch.
     skill       Skill directory name under source repo skills/.
