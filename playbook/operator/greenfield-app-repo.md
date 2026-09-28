@@ -279,7 +279,8 @@ cp .env.example .env && make setup && make check && make test
 | `nextjs-frontend` | `nextjs-bff-foundation` | Implemented |
 | `terraform-iac` | `terraform-azure-foundation` or `terraform-aws-foundation` | IaC repos |
 | `flink` | TBD | Brownfield / apply-harness only |
-| `edge-agent` | `edge-agent-triton-foundation` | `v0.1.0` |
+| `edge-agent` | `edge-agent-foundation` (preferred) / `edge-agent-triton-foundation` (legacy) | `v0.1.1` / `v0.1.0` |
+| `rust-device` | `rust-device-foundation` | `v0.1.1` |
 | `meta-pm` | `tenant-meta-foundation` | Meta repos only |
 
 ---

@@ -11,6 +11,22 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.38] — 2026-09-28
+
+### Fixed
+
+- **`init-client` default branch:** when `policy.default_branch` is `develop`
+  (or any name other than GitHub's auto_init tip), create that branch from
+  `main`/`master` before PATCHing the default. Stops HTTP 422
+  "branch … was not found" on brand-new private repos.
+
+### Docs
+
+- Stack catalog + greenfield playbook: `edge-agent-foundation` preferred;
+  `rust-device` / `rust-device-foundation` listed.
+
+---
+
 ## [0.5.37] — 2026-09-02
 
 ### Changed
