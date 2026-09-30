@@ -66,7 +66,8 @@ A **new layout family** is needed only when the source/CODEOWNERS tree diverges.
 | `nextjs-frontend` | Next.js BFF | nextjs-bff-rules | nextjs-bff-foundation | `app_nextjs` | `frontend-devs` |
 | `terraform-iac` | Terraform IaC | terraform-infra-rules | terraform-*-foundation | `iac` | `platform-devs` |
 | `flink` | Flink streaming monorepo | data-platform-rules | TBD (brownfield until built) | `flink` | `data-platform-devs` |
-| `edge-agent` | Edge agent | edge-agent-rules | edge-agent-triton-foundation (also edge-triton-client under same stack — Law 5) | `app_src` | `edge-agent-devs` |
+| `edge-agent` | Edge agent | edge-agent-rules | edge-agent-foundation (preferred); edge-agent-triton-foundation legacy Triton+MQTT; edge-triton-client same stack — Law 5 | `app_src` | `edge-agent-devs` |
+| `rust-device` | Rust device daemon | rust-device-rules | rust-device-foundation | `app_src` (+ `extra_paths` for `/crates/`) | declare `owners.team` (e.g. `edge-agent-devs`) |
 | `edge-inference-engine` | Edge inference engine | edge-inference-engine-rules | edge-pytorch-inference-foundation | `app_src` (+ optional `extra_paths`) | declare `owners.team` |
 | `android-kotlin` | Android / Kotlin | android-kotlin-rules | android-kotlin-foundation | `android_kotlin` | `mobile-devs` |
 | `ios-swift` | iOS / Swift | ios-swift-rules | ios-swift-foundation | `ios_swift` | `mobile-devs` |

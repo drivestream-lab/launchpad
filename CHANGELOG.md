@@ -11,7 +11,7 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
-## [0.5.38] — 2026-09-30
+## [0.5.39] — 2026-09-30
 
 ### Changed
 
@@ -33,6 +33,22 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 repos that still have `push: … feature/**` must update `on:` via a per-repo PR
 (or replace only the trigger block). New seeds after this tag get the PR-only
 default automatically.
+
+---
+
+## [0.5.38] — 2026-09-28
+
+### Fixed
+
+- **`init-client` default branch:** when `policy.default_branch` is `develop`
+  (or any name other than GitHub's auto_init tip), create that branch from
+  `main`/`master` before PATCHing the default. Stops HTTP 422
+  "branch … was not found" on brand-new private repos.
+
+### Docs
+
+- Stack catalog + greenfield playbook: `edge-agent-foundation` preferred;
+  `rust-device` / `rust-device-foundation` listed.
 
 ---
 
