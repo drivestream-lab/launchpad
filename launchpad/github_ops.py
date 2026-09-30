@@ -253,11 +253,41 @@ def ensure_branch(
 
 
 def set_default_branch(client: GitHubClient, org: str, repo: str, branch: str) -> None:
+    """Set default branch, creating it from auto_init ``main``/``master`` when needed.
+
+    Org repos created with ``auto_init: true`` start on ``main``. Programmes that
+    set ``policy.default_branch: develop`` previously failed with HTTP 422
+    ("branch develop was not found"). Seed the target branch from an existing
+    tip first, then flip the default.
+    """
     if not repo_exists(client, org, repo):
         print(f"  WARN: cannot set default branch — repo missing: {org}/{repo}")
         return
     data = client.rest("GET", f"/repos/{org}/{repo}")
     current = str(data.get("default_branch") or "")
+    if current == branch and branch_exists(client, org, repo, branch):
+        print(f"  Default branch OK: {org}/{repo}@{branch}")
+        return
+
+    if not branch_exists(client, org, repo, branch):
+        source = None
+        for candidate in (current, "main", "master"):
+            if candidate and candidate != branch and branch_exists(client, org, repo, candidate):
+                source = candidate
+                break
+        if source is None:
+            print(
+                f"  ERROR: cannot set default branch {branch!r} on {org}/{repo} — "
+                f"no seed branch (main/master/{current or '∅'}) exists yet",
+                file=sys.stderr,
+            )
+            raise GitHubError(
+                f"PATCH /repos/{org}/{repo} aborted: branch {branch!r} missing "
+                "and no auto_init tip to fork from",
+                status=422,
+            )
+        ensure_branch(client, org, repo, branch, from_branch=source)
+
     if current == branch:
         print(f"  Default branch OK: {org}/{repo}@{branch}")
         return
