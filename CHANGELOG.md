@@ -11,6 +11,31 @@ Pick `<tag>` from the latest section below or [GitHub Releases](https://github.c
 
 ---
 
+## [0.5.38] — 2026-09-30
+
+### Changed
+
+- **Seeded `ci.yml` triggers:** default is **`pull_request` → develop/main only**.
+  Removed `push` on `feature/**` (and default tip `push`) to stop double-running
+  CI on every WIP push + PR update — a major Actions-minutes burn under multi-repo
+  wave delivery. Job id remains **`ci`** for gitflow `require_ci`.
+
+### Docs
+
+- Template comments: optional tip-health `push` to develop/main; optional
+  `paths-ignore` for docs/md.
+- `templates/README.md` + `playbook/github/github-enforcement.md` — CI trigger
+  policy table and migration note.
+
+### Migration (enrolled tenants)
+
+`apply-harness` **still skips** existing `.github/workflows/ci.yml`. Brownfield
+repos that still have `push: … feature/**` must update `on:` via a per-repo PR
+(or replace only the trigger block). New seeds after this tag get the PR-only
+default automatically.
+
+---
+
 ## [0.5.37] — 2026-09-02
 
 ### Changed

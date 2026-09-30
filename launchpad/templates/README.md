@@ -89,8 +89,15 @@ When `harness-<org>.yaml` sets `delivery_contract` (e.g. `sdd-delivery/v2`),
 
 | File | Purpose |
 |------|---------|
-| `github/workflows/ci.yml` | Placeholder CI — job name `ci` for required checks |
+| `github/workflows/ci.yml` | Placeholder CI — job name `ci` for required checks; **PR-only** default (no `feature/**` push) |
 | `github/workflows/policy-branch-name.yml` | Branch name validation on PRs to `develop` |
+
+**CI triggers (seeded default):** `pull_request` to `develop`/`main` only. Do **not**
+add `push: feature/**` — that doubles CI with PR runs and burns shared Actions
+minutes. Optional tip-health `push` to `develop`/`main` and `paths-ignore` for
+docs/md are commented in the template. **Skip if exists** — customized
+tenant `ci.yml` is never overwritten; migrate brownfield `on:` blocks via
+repo PRs (see CHANGELOG migration note).
 
 Manual-only workflows (not auto-seeded):
 
