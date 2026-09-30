@@ -46,9 +46,25 @@ v0.5.10 does **not** yet automate rulesets or workflow seeding. Tenants deploy w
 |----------|---------|
 | `policy-branch-name.yml` | Validates branch names on PRs to `develop` |
 | `policy-merge-source.yml` | Restricts merge sources into `main` |
-| `ci.yml` | Lint/test gate |
+| `ci.yml` | Lint/test gate (job id **`ci`** for `require_ci`) |
 
-Copy into each repo's `.github/workflows/`, tune for your org, and enable as required checks when ready. See [branching-policy.md](../ship/branching-policy.md) for naming rules and rollout phases.
+`apply-harness` seeds `ci.yml` and `policy-branch-name.yml` when
+`delivery_contract` is set (**skip if the file already exists**).
+
+### CI trigger policy (Actions minutes)
+
+| Event | Default? | Rationale |
+|-------|----------|-----------|
+| `pull_request` → develop/main | **Yes** | Gate before merge; required when `require_ci` is on |
+| `push` → `feature/**` | **No** | Duplicates PR CI; burns org minutes on every WIP push |
+| `push` → develop/main | Optional | Tip health only; enable if minutes allow |
+| `paths-ignore` docs/md | Optional | Avoid CI on docs-only changes |
+
+Seeded template is **PR-only**. Already-enrolled repos keep their existing
+`ci.yml` until a tenant PR updates `on:` — launchpad will not overwrite.
+
+Copy/tune workflows and enable as required checks when ready. See
+[branching-policy.md](../ship/branching-policy.md) for naming rules and rollout phases.
 
 ---
 

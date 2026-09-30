@@ -1,13 +1,24 @@
-# Placeholder CI — replace with repo-specific lint/test (Python, Next.js, etc.).
-# Job name must stay "ci" when enabling as a required branch-protection check.
+# Placeholder CI — replace steps with repo-specific lint/test (Python, Next.js, …).
+# Job name must stay "ci" when enabling as a required branch-protection check
+# (gitflow / governance options.require_ci).
+#
+# Triggers (minutes-safe default):
+#   - pull_request → develop/main — gate before merge (keep when require_ci is on)
+#   - Do NOT push on feature branches — duplicates PR CI and burns org Actions minutes
+#   - Optional tip health: uncomment push to develop/main below
+#   - Optional: paths-ignore for docs-only PRs (uncomment paths-ignore block)
 
 name: ci
 
 on:
   pull_request:
     branches: [develop, main]
-  push:
-    branches: [develop, main, 'feature/**']
+    # paths-ignore:
+    #   - '**.md'
+    #   - 'docs/**'
+  # Optional tip health after merge (drop if Actions minutes are tight):
+  # push:
+  #   branches: [develop, main]
 
 jobs:
   ci:
