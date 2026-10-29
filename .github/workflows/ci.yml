@@ -38,8 +38,8 @@ jobs:
           print(f'version OK: {__version__}')
           "
 
-      - name: Install pytest
-        run: pip install pytest
+      - name: Install test tools
+        run: pip install pytest pre-commit==4.2.0
 
       - name: Full unit test suite
         run: pytest tests/ -v

@@ -46,7 +46,7 @@ v0.5.10 does **not** yet automate rulesets or workflow seeding. Tenants deploy w
 |----------|---------|
 | `policy-branch-name.yml` | Validates branch names on PRs to `develop` |
 | `policy-merge-source.yml` | Restricts merge sources into `main` |
-| `ci.yml` | Lint/test gate (job id **`ci`** for `require_ci`) |
+| `ci.yml` | Full verification for PRs to `main` only, job ID `ci` |
 
 `apply-harness` seeds `ci.yml` and `policy-branch-name.yml` when
 `delivery_contract` is set (**skip if the file already exists**).
@@ -55,10 +55,10 @@ v0.5.10 does **not** yet automate rulesets or workflow seeding. Tenants deploy w
 
 | Event | Default? | Rationale |
 |-------|----------|-----------|
-| `pull_request` → develop/main | **Yes** | Gate before merge; required when `require_ci` is on |
-| `push` → `feature/**` | **No** | Duplicates PR CI; burns org minutes on every WIP push |
-| `push` → develop/main | Optional | Tip health only; enable if minutes allow |
-| `paths-ignore` docs/md | Optional | Avoid CI on docs-only changes |
+| `pull_request` → `main` | **Yes** | Full verification before merge |
+| `pull_request` → `develop` | **No** | Branch name policy only, verification runs locally |
+| `push` | **No** | Avoid duplicate verification runs |
+| Documentation-only PRs to `main` | **Yes** | Run all verification checks |
 
 Seeded template is **PR-only**. Already-enrolled repos keep their existing
 `ci.yml` until a tenant PR updates `on:` — launchpad will not overwrite.
@@ -77,7 +77,8 @@ Copy/tune workflows and enable as required checks when ready. See
 | **Ruleset** `branch-naming-standard` | Allowed branch name patterns (manual deploy) |
 | **`policy-branch-name` workflow** | PRs to `develop` — head ref validation |
 | **`policy-merge-source` workflow** | `main` accepts only allowed sources |
-| **`ci` workflow** | Lint/test; required check when enabled |
+| **`ci` workflow** | Full verification for PRs to `main` only |
+| **Local pre-commit hooks** | Format, lint, tests, production build, and Docker build before each commit |
 | **CODEOWNERS** | Review routing per profile |
 | **QA manifest** | Deploy mix (not git) — documented in tenant `qa/` directory per org (not in launchpad kit) |
 
@@ -97,7 +98,11 @@ Copy/tune workflows and enable as required checks when ready. See
 
 1. Bootstrap with `init-client --apply` — default branch + basic protection
 2. Merge workflow PRs (policy-branch-name, policy-merge-source, ci) into each repo
-3. Enable those workflows as required checks in branch protection (GitHub UI or API)
+3. Enable `policy-branch-name` for `develop` and `ci` for `main` in branch protection.
+4. Define the repository Make targets and install local hooks with `pre-commit install`.
+
+See [local verification](../../launchpad/templates/README.md#local-verification) for the Make targets and setup commands.
+Existing repositories need manual migration because `apply-harness` preserves workflow and hook files.
 
 ---
 
@@ -106,8 +111,8 @@ Copy/tune workflows and enable as required checks when ready. See
 1. Add people to teams in GitHub → Organization → Teams
 2. Run `launchpad apply-gates --meta --apply` (and per app profile when the
    pinned delivery contract declares app labels)
-3. Run `ci` on a test PR to `develop`
-4. Enable workflow required checks when workflows are merged
+3. Test `policy-branch-name` on a PR to `develop` and `ci` on a PR to `main`.
+4. Enable each check only for its target branch.
 5. Open test PR `develop` → `main`; confirm **release-managers** can merge
 
 See [teams-and-rbac.md](../ship/teams-and-rbac.md) and [python-automation.md](../../docs/onboarding/factory-cli.md).

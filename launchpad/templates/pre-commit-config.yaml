@@ -1,0 +1,38 @@
+# Define these Make targets with the repository verification commands.
+# Each target must return a nonzero status if its check fails.
+default_install_hook_types: [pre-commit]
+default_stages: [pre-commit]
+
+repos:
+  - repo: local
+    hooks:
+      - id: format-check
+        name: Format check
+        entry: make format-check
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: lint
+        name: Lint
+        entry: make lint
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: unit-tests
+        name: Unit tests
+        entry: make test
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: production-build
+        name: Production build
+        entry: make build
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: docker-build
+        name: Docker build
+        entry: make docker-build
+        language: system
+        pass_filenames: false
+        always_run: true

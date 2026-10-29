@@ -417,38 +417,41 @@ def _seed_delivery_workflows(
     profile_name: str,
     apply: bool,
 ) -> None:
-    """Seed SDD delivery GitHub workflows into app repos (skip meta-pm)."""
+    """Seed delivery checks and branch policy into app repos."""
     if profile_name == PM_HARNESS_PROFILE or not delivery_contract:
         return
 
-    for kit_rel in _DELIVERY_WORKFLOW_TEMPLATES:
+    templates = {
+        kit_rel: f".github/workflows/{Path(kit_rel).name}"
+        for kit_rel in _DELIVERY_WORKFLOW_TEMPLATES
+    }
+    templates["pre-commit-config.yaml"] = ".pre-commit-config.yaml"
+
+    for kit_rel, dest_rel in templates.items():
         tpl_path = _resolve_kit_template(kit_rel)
-        workflow_name = Path(kit_rel).name
-        dest = repo_path / ".github" / "workflows" / workflow_name
+        dest = repo_path / dest_rel
 
         if tpl_path is None:
             print(
-                f"  WARN: workflow template '{kit_rel}' not found in kit — skipping",
+                f"  WARN: Cannot find delivery template '{kit_rel}'",
                 file=sys.stderr,
             )
             continue
 
         if not apply:
             if dest.is_file():
-                print(f"    [dry-run] skip (exists)  .github/workflows/{workflow_name}")
+                print(f"    [dry-run] preserve existing file  {dest_rel}")
             else:
-                print(
-                    f"    [dry-run] .github/workflows/{workflow_name}  ← {kit_rel}"
-                )
+                print(f"    [dry-run] {dest_rel}  ← {kit_rel}")
             continue
 
         if dest.is_file():
-            print(f"  –  skip (exists)  .github/workflows/{workflow_name}")
+            print(f"  –  preserve existing file  {dest_rel}")
             continue
 
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(tpl_path.read_text(encoding="utf-8"), encoding="utf-8")
-        print(f"  ✔  workflow  ← {kit_rel}  →  .github/workflows/{workflow_name}")
+        print(f"  ✔  delivery file  ← {kit_rel}  →  {dest_rel}")
 
 
 def _seed_gitignore_harness(repo_path: Path, *, apply: bool) -> None:
@@ -949,10 +952,11 @@ def _run_apply_harness(
         target_flag = "--meta" if meta else f"--repo {target}"
         next_steps = [f"launchpad {client_prefix}status {target_flag}".strip()]
         if not meta and h.delivery_contract:
-            next_steps.insert(
-                0,
-                'git add .harness-pin.yaml .github/workflows/ && git commit -m "chore: sync harness and delivery workflows"',
-            )
+            next_steps[:0] = [
+                "python -m pip install pre-commit==4.2.0 && pre-commit install",
+                "pre-commit run --all-files",
+                'git add .harness-pin.yaml .github/workflows/ .pre-commit-config.yaml && git commit -m "chore: sync delivery checks"',
+            ]
         print_next_box(next_steps)
 
     return done(0)
